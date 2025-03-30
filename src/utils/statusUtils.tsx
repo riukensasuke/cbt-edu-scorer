@@ -11,6 +11,14 @@ export const getStatusBadge = (status: string) => {
       return <Badge variant="outline" className="text-yellow-500 border-yellow-500">Akan Datang</Badge>;
     case "missed":
       return <Badge className="bg-red-500">Terlewatkan</Badge>;
+    case "active":
+      return <Badge className="bg-green-500">Aktif</Badge>;
+    case "draft":
+      return <Badge variant="outline">Draft</Badge>;
+    case "scheduled":
+      return <Badge className="bg-blue-500">Terjadwal</Badge>;
+    case "completed":
+      return <Badge className="bg-gray-500">Selesai</Badge>;
     default:
       return <Badge variant="outline">Tidak Tersedia</Badge>;
   }
