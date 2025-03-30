@@ -2,20 +2,20 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
-interface ExamData {
+export interface ExamData {
   id: string;
   title: string;
   subject: string;
   grade?: string;
   teacher: string;
   date: string;
-  time?: string;
+  time?: string; // Optional time is correct
   duration?: number;
   status: string;
   class?: string;
 }
 
-interface ResultData {
+export interface ResultData {
   id: string;
   title: string;
   subject: string;

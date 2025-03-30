@@ -12,7 +12,7 @@ interface ExamCardProps {
     subject: string;
     teacher: string;
     date: string;
-    time?: string;
+    time?: string; // This is already optional
     duration?: number;
     status: string;
   };

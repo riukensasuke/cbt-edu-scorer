@@ -12,8 +12,8 @@ interface Exam {
   subject: string;
   teacher: string;
   date: string;
-  time: string;
-  duration: number;
+  time?: string; // Changed to optional with ?
+  duration?: number;
   status: string;
 }
 
