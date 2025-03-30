@@ -16,6 +16,10 @@ import QuestionBank from "./pages/QuestionBank";
 import TakeExam from "./pages/TakeExam";
 import ExamResults from "./pages/ExamResults";
 import NotFound from "./pages/NotFound";
+import ActiveExams from "./pages/ActiveExams";
+import UsersManagement from "./pages/UsersManagement";
+import ClassManagement from "./pages/ClassManagement";
+import Settings from "./pages/Settings";
 
 // Create protected route component
 const ProtectedRoute = ({ children, allowedRoles }: { children: JSX.Element, allowedRoles: string[] }) => {
@@ -77,11 +81,21 @@ const App = () => (
                 </ProtectedRoute>
               } 
             />
+
+            {/* Exam Management */}
             <Route 
               path="/exams" 
               element={
                 <ProtectedRoute allowedRoles={["admin", "teacher"]}>
                   <ExamManagement />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/exams/active" 
+              element={
+                <ProtectedRoute allowedRoles={["student"]}>
+                  <ActiveExams />
                 </ProtectedRoute>
               } 
             />
@@ -106,6 +120,32 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRoles={["admin", "teacher", "student"]}>
                   <ExamResults />
+                </ProtectedRoute>
+              } 
+            />
+
+            {/* Admin routes */}
+            <Route 
+              path="/users" 
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <UsersManagement />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/classes" 
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <ClassManagement />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/settings" 
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <Settings />
                 </ProtectedRoute>
               } 
             />

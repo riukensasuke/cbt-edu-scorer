@@ -4,7 +4,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, Calendar, Clock, FileText, Trophy } from "lucide-react";
+import { AlertCircle, Calendar, Clock, FileText, Trophy, AlertTriangle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 const StudentDashboard = () => {
@@ -61,6 +61,26 @@ const StudentDashboard = () => {
       date: "5 Oktober 2023",
     },
   ];
+
+  // Mock data for missed exams
+  const missedExams = [
+    {
+      id: "4",
+      title: "Latihan IPA",
+      subject: "IPA",
+      teacher: "Ibu Rini",
+      date: "1 Oktober 2023",
+      status: "missed",
+    },
+    {
+      id: "5",
+      title: "Latihan IPS",
+      subject: "IPS",
+      teacher: "Bapak Ahmad",
+      date: "25 September 2023",
+      status: "missed",
+    },
+  ];
   
   // Get exam status badge
   const getStatusBadge = (status: string) => {
@@ -69,6 +89,8 @@ const StudentDashboard = () => {
         return <Badge className="bg-green-500">Tersedia</Badge>;
       case "upcoming":
         return <Badge variant="outline" className="text-yellow-500 border-yellow-500">Akan Datang</Badge>;
+      case "missed":
+        return <Badge className="bg-red-500">Terlewatkan</Badge>;
       default:
         return <Badge variant="outline">Tidak Tersedia</Badge>;
     }
@@ -207,6 +229,52 @@ const StudentDashboard = () => {
             </CardFooter>
           </Card>
         </div>
+
+        {/* Missed Exams Section */}
+        <Card className="border-red-200">
+          <CardHeader className="text-red-700">
+            <div className="flex items-center space-x-2">
+              <AlertTriangle className="h-5 w-5" />
+              <CardTitle>Ujian Terlewatkan</CardTitle>
+            </div>
+            <CardDescription className="text-red-600/80">
+              Mata pelajaran yang belum dikerjakan
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {missedExams.map((exam) => (
+                <div
+                  key={exam.id}
+                  className="border border-red-200 rounded-lg p-4 bg-red-50"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-medium">{exam.title}</h3>
+                    {getStatusBadge(exam.status)}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm mb-4">
+                    <div className="flex items-center">
+                      <FileText className="h-4 w-4 mr-2 text-muted-foreground" />
+                      <span>{exam.subject}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+                      <span>Batas waktu: {exam.date}</span>
+                    </div>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Guru: {exam.teacher}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+          <CardFooter>
+            <p className="text-sm text-red-600 w-full text-center">
+              Hubungi guru pengampu untuk informasi lebih lanjut
+            </p>
+          </CardFooter>
+        </Card>
 
         <Card>
           <CardHeader>

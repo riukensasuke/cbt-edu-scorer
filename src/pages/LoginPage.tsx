@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { BookOpen, UserCog, Users } from "lucide-react";
 
 const LoginPage = () => {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<UserRole>("student");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -23,7 +23,7 @@ const LoginPage = () => {
     setIsSubmitting(true);
     
     try {
-      await login(email, password, role);
+      await login(username, password, role);
       
       // Navigate to the appropriate dashboard based on role
       if (role === "admin") {
@@ -74,13 +74,13 @@ const LoginPage = () => {
               <form onSubmit={handleLogin}>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="username">Nama Pengguna</Label>
                     <Input
-                      id="email"
-                      type="email"
-                      placeholder="email@sekolah.edu"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      id="username"
+                      type="text"
+                      placeholder={role === "student" ? "Nama lengkap siswa" : role === "teacher" ? "Nama lengkap guru" : "Username admin"}
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
                       required
                     />
                   </div>
@@ -90,7 +90,7 @@ const LoginPage = () => {
                     <Input
                       id="password"
                       type="password"
-                      placeholder="••••••••"
+                      placeholder={role === "student" ? "NISN" : role === "teacher" ? "NIP/NUPTK" : "Password admin"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
@@ -101,7 +101,7 @@ const LoginPage = () => {
                 <TabsContent value="student">
                   <div className="mt-4 mb-2">
                     <p className="text-sm text-muted-foreground">
-                      Masukkan email dan password yang telah diberikan oleh guru.
+                      Masukkan nama lengkap dan NISN sebagai password.
                     </p>
                   </div>
                 </TabsContent>
@@ -109,7 +109,7 @@ const LoginPage = () => {
                 <TabsContent value="teacher">
                   <div className="mt-4 mb-2">
                     <p className="text-sm text-muted-foreground">
-                      Masukkan email dan password yang telah terdaftar di sistem.
+                      Masukkan nama lengkap dan NIP (PNS) atau NUPTK (non-ASN) sebagai password.
                     </p>
                   </div>
                 </TabsContent>
@@ -117,7 +117,7 @@ const LoginPage = () => {
                 <TabsContent value="admin">
                   <div className="mt-4 mb-2">
                     <p className="text-sm text-muted-foreground">
-                      Masukkan email dan password administrator.
+                      Gunakan username dan password default administrator.
                     </p>
                   </div>
                 </TabsContent>
