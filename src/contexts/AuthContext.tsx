@@ -94,18 +94,13 @@ const mockUsers = [
   }
 ];
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-
-  // Check for existing session on component mount
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
-  }, []);
+export const AuthProvider = ({ children }: AuthProviderProps) => {
+  // Initializing state outside of component rendering
+  const storedUser = typeof window !== 'undefined' ? localStorage.getItem("user") : null;
+  const initialUser = storedUser ? JSON.parse(storedUser) : null;
+  
+  const [user, setUser] = useState<User | null>(initialUser);
+  const [loading, setLoading] = useState<boolean>(false);
 
   // Login function using username instead of email
   const login = async (username: string, password: string, role: UserRole) => {
