@@ -340,7 +340,7 @@ const ClassManagement = () => {
                     variant="outline" 
                     size="sm" 
                     className="flex-1"
-                    onClick={() => exportToExcel(cls.id)}
+                    onClick={() => exportToExcelHandler(cls.id)}
                   >
                     <Download className="h-4 w-4 mr-1" /> Export
                   </Button>
@@ -382,10 +382,18 @@ const ClassManagement = () => {
                   <Button variant="outline" size="sm">
                     <UserPlus className="h-4 w-4 mr-1" /> Tambah
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => exportToExcelHandler(selectedClass)}
+                  >
                     <Download className="h-4 w-4 mr-1" /> Export
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => importStudents(selectedClass)}
+                  >
                     <Upload className="h-4 w-4 mr-1" /> Import
                   </Button>
                 </div>
