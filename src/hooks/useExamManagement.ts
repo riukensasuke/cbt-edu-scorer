@@ -1,68 +1,76 @@
 
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+
+export interface ExamData {
+  id: string;
+  title: string;
+  subject: string;
+  class: string;
+  date: string;
+  duration: number;
+  status: string;
+  questions: number;
+  creator: string;
+}
 
 // Mock data for exams
-const mockExams = [
+const mockExams: ExamData[] = [
   {
     id: "1",
-    title: "UTS Matematika Kelas 6",
+    title: "UTS Matematika Semester Ganjil",
     subject: "Matematika",
-    grade: "Kelas 6",
-    status: "active",
-    type: "UTS",
+    class: "6A",
+    date: "2023-10-15",
     duration: 90,
+    status: "active",
     questions: 25,
-    startDate: "2023-10-15",
-    endDate: "2023-10-15",
-    createdBy: "Ibu Siti"
+    creator: "Ibu Siti"
   },
   {
     id: "2",
-    title: "UTS Bahasa Indonesia Kelas 5",
+    title: "UTS Bahasa Indonesia Semester Ganjil",
     subject: "Bahasa Indonesia",
-    grade: "Kelas 5",
-    status: "active",
-    type: "UTS",
-    duration: 90,
+    class: "5B",
+    date: "2023-10-20",
+    duration: 60,
+    status: "scheduled",
     questions: 20,
-    startDate: "2023-10-16",
-    endDate: "2023-10-16",
-    createdBy: "Bapak Ahmad"
+    creator: "Bapak Ahmad"
   },
   {
     id: "3",
-    title: "UTS IPA Kelas 4",
+    title: "Latihan Soal IPA Bab 1",
     subject: "IPA",
-    grade: "Kelas 4",
+    class: "4A",
+    date: "2023-10-10",
+    duration: 45,
     status: "draft",
-    type: "UTS",
-    duration: 90,
     questions: 15,
-    startDate: "2023-10-17",
-    endDate: "2023-10-17",
-    createdBy: "Ibu Rini"
+    creator: "Ibu Rini"
   },
   {
     id: "4",
-    title: "UAS Matematika Kelas 6",
-    subject: "Matematika",
-    grade: "Kelas 6",
-    status: "scheduled",
-    type: "UAS",
-    duration: 120,
-    questions: 40,
-    startDate: "2023-12-10",
-    endDate: "2023-12-10",
-    createdBy: "Ibu Siti"
+    title: "Ulangan Harian IPS",
+    subject: "IPS",
+    class: "3B",
+    date: "2023-09-28",
+    duration: 60,
+    status: "completed",
+    questions: 20,
+    creator: "Bapak Tono"
   },
 ];
 
 export const useExamManagement = () => {
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredExams, setFilteredExams] = useState(mockExams);
   
-  // Filter function
+  // Filter exams based on tab and search query
   const filterExams = (status: string, search: string) => {
     let filtered = [...mockExams];
     
@@ -74,9 +82,8 @@ export const useExamManagement = () => {
     // Filter by search query
     if (search) {
       filtered = filtered.filter(exam => 
-        exam.title.toLowerCase().includes(search.toLowerCase()) ||
-        exam.subject.toLowerCase().includes(search.toLowerCase()) ||
-        exam.grade.toLowerCase().includes(search.toLowerCase())
+        exam.title.toLowerCase().includes(search.toLowerCase()) || 
+        exam.subject.toLowerCase().includes(search.toLowerCase())
       );
     }
     
@@ -95,11 +102,23 @@ export const useExamManagement = () => {
     filterExams(activeTab, query);
   };
   
+  // Delete exam
+  const deleteExam = (examId: string) => {
+    // In a real app, this would call an API
+    setFilteredExams(prev => prev.filter(exam => exam.id !== examId));
+    
+    toast({
+      title: "Ujian dihapus",
+      description: "Ujian telah berhasil dihapus",
+    });
+  };
+  
   return {
     activeTab,
     searchQuery,
     filteredExams,
     handleTabChange,
-    handleSearch
+    handleSearch,
+    deleteExam
   };
 };

@@ -6,6 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { exportToExcel, importExcelFile, readExcelFile } from "@/utils/excelUtils";
 import {
   BookOpen,
   Filter,
@@ -99,10 +101,23 @@ const mockQuestions = [
 
 const QuestionBank = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredQuestions, setFilteredQuestions] = useState(mockQuestions);
   const [selectedQuestionType, setSelectedQuestionType] = useState<string>("multiple_choice");
+  const [isAddQuestionDialogOpen, setIsAddQuestionDialogOpen] = useState(false);
+  const [isEditQuestionDialogOpen, setIsEditQuestionDialogOpen] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState<any>(null);
+  const [newQuestion, setNewQuestion] = useState({
+    question: "",
+    type: "multiple_choice",
+    subject: "",
+    grade: "",
+    options: ["", "", "", ""],
+    answer: "",
+    creator: user?.name || ""
+  });
   
   // Filter function
   const filterQuestions = (type: string, search: string) => {
@@ -135,6 +150,111 @@ const QuestionBank = () => {
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     filterQuestions(activeTab, query);
+  };
+
+  // Handle question form change
+  const handleQuestionFormChange = (field: string, value: any) => {
+    setNewQuestion(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Handle option change for multiple choice
+  const handleOptionChange = (index: number, value: string) => {
+    const updatedOptions = [...newQuestion.options];
+    updatedOptions[index] = value;
+    setNewQuestion(prev => ({ ...prev, options: updatedOptions }));
+  };
+
+  // Save new question
+  const saveQuestion = () => {
+    // Validate form
+    if (!newQuestion.question || !newQuestion.subject || !newQuestion.grade) {
+      toast({
+        title: "Form tidak lengkap",
+        description: "Silakan lengkapi informasi soal",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // In a real app, this would save to a database
+    toast({
+      title: "Soal berhasil ditambahkan",
+      description: "Soal baru telah ditambahkan ke bank soal"
+    });
+
+    // Close dialog and reset form
+    setIsAddQuestionDialogOpen(false);
+    setNewQuestion({
+      question: "",
+      type: "multiple_choice",
+      subject: "",
+      grade: "",
+      options: ["", "", "", ""],
+      answer: "",
+      creator: user?.name || ""
+    });
+  };
+
+  // Edit question
+  const handleEditQuestion = (questionId: string) => {
+    const question = mockQuestions.find(q => q.id === questionId);
+    if (question) {
+      setCurrentQuestion(question);
+      setIsEditQuestionDialogOpen(true);
+    }
+  };
+
+  // Save edited question
+  const saveEditedQuestion = () => {
+    // In a real app, this would update the question in the database
+    toast({
+      title: "Soal berhasil diperbarui",
+      description: "Perubahan pada soal telah disimpan"
+    });
+    
+    setIsEditQuestionDialogOpen(false);
+  };
+
+  // Export questions to Excel
+  const handleExportToExcel = () => {
+    const dataToExport = filteredQuestions.map(question => ({
+      'Pertanyaan': question.question,
+      'Jenis Soal': question.type === 'multiple_choice' ? 'Pilihan Ganda' : 
+                   question.type === 'essay' ? 'Esai' : 
+                   question.type === 'matching' ? 'Menjodohkan' : 'Bergambar',
+      'Mata Pelajaran': question.subject,
+      'Kelas': question.grade,
+      'Pembuat': question.creator
+    }));
+    
+    exportToExcel(dataToExport, "Data_Soal", "Bank_Soal");
+    
+    toast({
+      title: "Data berhasil diexport",
+      description: "Data soal telah diexport ke Excel"
+    });
+  };
+  
+  // Import questions from Excel
+  const handleImportFromExcel = () => {
+    importExcelFile(async (file) => {
+      try {
+        const importedQuestions = await readExcelFile(file);
+        
+        toast({
+          title: "Data berhasil diimport",
+          description: `${importedQuestions.length} data soal telah diimport`
+        });
+        
+        // In a real app, this would process and save the imported questions
+      } catch (error) {
+        toast({
+          title: "Gagal import data",
+          description: "Format file tidak valid",
+          variant: "destructive"
+        });
+      }
+    });
   };
   
   // Question type badge and icon
@@ -289,13 +409,13 @@ const QuestionBank = () => {
           </div>
           
           <div className="flex items-center space-x-2">
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleImportFromExcel}>
               <Upload className="h-4 w-4 mr-2" /> Impor
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleExportToExcel}>
               <Download className="h-4 w-4 mr-2" /> Ekspor
             </Button>
-            <Dialog>
+            <Dialog open={isAddQuestionDialogOpen} onOpenChange={setIsAddQuestionDialogOpen}>
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="mr-2 h-4 w-4" /> Tambah Soal
@@ -314,7 +434,10 @@ const QuestionBank = () => {
                     <Label htmlFor="questionType">Jenis Soal</Label>
                     <Select 
                       value={selectedQuestionType} 
-                      onValueChange={setSelectedQuestionType}
+                      onValueChange={(value) => {
+                        setSelectedQuestionType(value);
+                        handleQuestionFormChange("type", value);
+                      }}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Pilih jenis soal" />
@@ -331,7 +454,7 @@ const QuestionBank = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="subject">Mata Pelajaran</Label>
-                      <Select>
+                      <Select onValueChange={(value) => handleQuestionFormChange("subject", value)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Pilih mata pelajaran" />
                         </SelectTrigger>
@@ -347,7 +470,7 @@ const QuestionBank = () => {
                     
                     <div className="space-y-2">
                       <Label htmlFor="grade">Kelas</Label>
-                      <Select>
+                      <Select onValueChange={(value) => handleQuestionFormChange("grade", value)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Pilih kelas" />
                         </SelectTrigger>
@@ -363,15 +486,138 @@ const QuestionBank = () => {
                     </div>
                   </div>
                   
-                  {/* Render different form based on question type */}
-                  {renderQuestionForm()}
+                  {/* Question content based on type */}
+                  {selectedQuestionType === "multiple_choice" && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="question">Pertanyaan</Label>
+                        <Textarea 
+                          id="question" 
+                          placeholder="Tulis pertanyaan di sini..." 
+                          onChange={(e) => handleQuestionFormChange("question", e.target.value)}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label>Pilihan Jawaban</Label>
+                        
+                        {newQuestion.options.map((option, index) => (
+                          <div key={index} className="flex items-center space-x-2 mt-2">
+                            <Input 
+                              placeholder={`Pilihan ${index + 1}`} 
+                              value={option}
+                              onChange={(e) => handleOptionChange(index, e.target.value)}
+                            />
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleQuestionFormChange("answer", option)}
+                            >
+                              {newQuestion.answer === option ? "✓ Jawaban Benar" : "Pilih Sebagai Jawaban"}
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                  
+                  {selectedQuestionType === "essay" && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="question">Pertanyaan</Label>
+                        <Textarea 
+                          id="question" 
+                          placeholder="Tulis pertanyaan di sini..." 
+                          onChange={(e) => handleQuestionFormChange("question", e.target.value)}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="answer">Kunci Jawaban (untuk referensi)</Label>
+                        <Textarea 
+                          id="answer" 
+                          placeholder="Tulis jawaban yang diharapkan di sini..." 
+                          onChange={(e) => handleQuestionFormChange("answer", e.target.value)}
+                        />
+                      </div>
+                    </>
+                  )}
+                  
+                  {selectedQuestionType === "matching" && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="question">Instruksi</Label>
+                        <Textarea 
+                          id="question" 
+                          placeholder="Contoh: Jodohkan nama provinsi dengan ibukotanya" 
+                          onChange={(e) => handleQuestionFormChange("question", e.target.value)}
+                        />
+                      </div>
+                      
+                      <Label>Item untuk Dijodohkan</Label>
+                      {[...Array(4)].map((_, index) => (
+                        <div key={index} className="grid grid-cols-2 gap-2 mt-2">
+                          <Input placeholder="Item Kiri" />
+                          <Input placeholder="Item Kanan" />
+                        </div>
+                      ))}
+                    </>
+                  )}
+                  
+                  {selectedQuestionType === "image" && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="image">Gambar</Label>
+                        <div className="border-2 border-dashed rounded-md p-6 text-center hover:bg-muted/50 transition-colors cursor-pointer">
+                          <ImagePlus className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                          <p className="text-sm text-muted-foreground mb-2">Klik untuk mengunggah gambar</p>
+                          <p className="text-xs text-muted-foreground">PNG, JPG, atau GIF (maks. 2MB)</p>
+                          <Input id="image" type="file" accept="image/*" className="hidden" />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="question">Pertanyaan</Label>
+                        <Textarea 
+                          id="question" 
+                          placeholder="Contoh: Apakah nama dari bagian tumbuhan pada gambar di atas?" 
+                          onChange={(e) => handleQuestionFormChange("question", e.target.value)}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label>Pilihan Jawaban</Label>
+                        
+                        {newQuestion.options.map((option, index) => (
+                          <div key={index} className="flex items-center space-x-2 mt-2">
+                            <Input 
+                              placeholder={`Pilihan ${index + 1}`} 
+                              value={option}
+                              onChange={(e) => handleOptionChange(index, e.target.value)}
+                            />
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleQuestionFormChange("answer", option)}
+                            >
+                              {newQuestion.answer === option ? "✓ Jawaban Benar" : "Pilih Sebagai Jawaban"}
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
                 
                 <DialogFooter>
-                  <DialogClose asChild>
-                    <Button variant="outline">Batal</Button>
-                  </DialogClose>
-                  <Button type="submit">Simpan Soal</Button>
+                  <Button variant="outline" onClick={() => setIsAddQuestionDialogOpen(false)}>
+                    Batal
+                  </Button>
+                  <Button type="button" onClick={saveQuestion}>
+                    Simpan Soal
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -471,7 +717,11 @@ const QuestionBank = () => {
                             Dibuat oleh: {question.creator}
                           </div>
                           <div className="flex items-center space-x-2">
-                            <Button variant="outline" size="icon">
+                            <Button 
+                              variant="outline" 
+                              size="icon"
+                              onClick={() => handleEditQuestion(question.id)}
+                            >
                               <Edit className="h-4 w-4" />
                             </Button>
                             <Button variant="outline" size="icon" className="text-destructive hover:text-destructive">
@@ -492,6 +742,65 @@ const QuestionBank = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Edit Question Dialog */}
+      <Dialog open={isEditQuestionDialogOpen} onOpenChange={setIsEditQuestionDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Edit Soal</DialogTitle>
+            <DialogDescription>
+              Edit informasi soal. Klik simpan ketika selesai.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            {currentQuestion && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-question">Pertanyaan</Label>
+                  <Textarea 
+                    id="edit-question" 
+                    defaultValue={currentQuestion.question}
+                  />
+                </div>
+                
+                {currentQuestion.type === "multiple_choice" && (
+                  <div className="space-y-2">
+                    <Label>Pilihan Jawaban</Label>
+                    {currentQuestion.options.map((option: string, index: number) => (
+                      <div key={index} className="flex items-center space-x-2 mt-2">
+                        <Input defaultValue={option} />
+                        <Badge className={option === currentQuestion.answer ? "bg-green-500" : ""}>
+                          {option === currentQuestion.answer ? "Jawaban Benar" : "Opsi"}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {currentQuestion.type === "essay" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-answer">Kunci Jawaban (untuk referensi)</Label>
+                    <Textarea 
+                      id="edit-answer" 
+                      defaultValue={currentQuestion.answer}
+                    />
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditQuestionDialogOpen(false)}>
+              Batal
+            </Button>
+            <Button type="button" onClick={saveEditedQuestion}>
+              Simpan Perubahan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };

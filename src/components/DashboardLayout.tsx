@@ -1,3 +1,4 @@
+
 import React, { ReactNode, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,19 +13,43 @@ import {
   Settings,
   Users,
   X,
-  GraduationCap
+  GraduationCap,
+  ChevronDown,
+  ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger
+} from "@/components/ui/collapsible";
 
 interface DashboardLayoutProps {
   children: ReactNode;
   title: string;
 }
 
+// Mock data for teachers and classes
+const classTeachers = [
+  { class: "1A", teacher: "Nurjannah" },
+  { class: "1B", teacher: "Maemunah" },
+  { class: "2A", teacher: "Erniwati" },
+  { class: "2B", teacher: "Sulastri" },
+  { class: "3A", teacher: "Rahmawati" },
+  { class: "3B", teacher: "Haryanto" },
+  { class: "4A", teacher: "Supardi" },
+  { class: "4B", teacher: "Sumarno" },
+  { class: "5A", teacher: "Supriyanto" },
+  { class: "5B", teacher: "Sutarman" },
+  { class: "6A", teacher: "Joko" },
+  { class: "6B", teacher: "Budiman" }
+];
+
 const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [classMenuOpen, setClassMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -167,6 +192,42 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
                   <span>{item.label}</span>
                 </Link>
               ))}
+              
+              {user?.role === "admin" && (
+                <Collapsible
+                  open={classMenuOpen}
+                  onOpenChange={setClassMenuOpen}
+                  className="mt-4"
+                >
+                  <CollapsibleTrigger asChild>
+                    <button className="flex items-center justify-between w-full px-3 py-2 text-sidebar-foreground rounded-md hover:bg-sidebar-accent group transition-colors">
+                      <div className="flex items-center">
+                        <span className="mr-3 text-sidebar-foreground/70 group-hover:text-sidebar-foreground">
+                          <GraduationCap size={20} />
+                        </span>
+                        <span>Daftar Kelas</span>
+                      </div>
+                      {classMenuOpen ? (
+                        <ChevronDown className="h-4 w-4" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4" />
+                      )}
+                    </button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="pl-9 space-y-1">
+                    {classTeachers.map((item, index) => (
+                      <Link
+                        key={index}
+                        to={`/admin/classes/${item.class}`}
+                        className="flex items-center justify-between px-3 py-2 text-sidebar-foreground rounded-md hover:bg-sidebar-accent group transition-colors text-sm"
+                      >
+                        <span>Kelas {item.class}</span>
+                        <span className="text-xs text-sidebar-foreground/70">{item.teacher}</span>
+                      </Link>
+                    ))}
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
             </div>
           </nav>
 

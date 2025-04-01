@@ -39,7 +39,6 @@ import {
   SelectValue
 } from "@/components/ui/select";
 
-// Mock data for users
 const mockUsers = [
   // Admins
   {
@@ -112,6 +111,7 @@ const UsersManagement = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredUsers, setFilteredUsers] = useState(mockUsers);
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
+  const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
   const [newUser, setNewUser] = useState({
     name: "",
     identificationNumber: "",
@@ -120,18 +120,26 @@ const UsersManagement = () => {
     subject: "",
     status: "active"
   });
+  const [editUser, setEditUser] = useState({
+    id: "",
+    name: "",
+    username: "",
+    identificationNumber: "",
+    role: "student",
+    class: "",
+    subject: "",
+    status: "active",
+    username: ""
+  });
   const { toast } = useToast();
   
-  // Filter function
   const filterUsers = (role: string, search: string) => {
     let filtered = [...mockUsers];
     
-    // Filter by role if not "all"
     if (role !== "all") {
       filtered = filtered.filter(user => user.role === role);
     }
     
-    // Filter by search query
     if (search) {
       filtered = filtered.filter(user => 
         user.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -143,26 +151,21 @@ const UsersManagement = () => {
     setFilteredUsers(filtered);
   };
   
-  // Handle tab change
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     filterUsers(value, searchQuery);
   };
   
-  // Handle search
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     filterUsers(activeTab, query);
   };
 
-  // Handle new user form change
   const handleUserFormChange = (field: string, value: string) => {
     setNewUser(prev => ({ ...prev, [field]: value }));
   };
 
-  // Save new user
   const saveUser = () => {
-    // Validate form
     if (!newUser.name || !newUser.identificationNumber) {
       toast({
         title: "Form tidak lengkap",
@@ -172,16 +175,13 @@ const UsersManagement = () => {
       return;
     }
 
-    // In a real app, this would save to a database
     toast({
       title: "Pengguna berhasil ditambahkan",
       description: `${newUser.name} telah ditambahkan sebagai ${newUser.role === 'student' ? 'siswa' : newUser.role === 'teacher' ? 'guru' : 'admin'}`
     });
 
-    // Close dialog
     setIsAddUserDialogOpen(false);
     
-    // Reset form
     setNewUser({
       name: "",
       identificationNumber: "",
@@ -191,20 +191,48 @@ const UsersManagement = () => {
       status: "active"
     });
   };
-  
-  // Handle edit user
+
   const handleEditUser = (userId: string) => {
     const user = mockUsers.find(user => user.id === userId);
     
-    toast({
-      title: "Edit pengguna",
-      description: `Mengedit data pengguna: ${user?.name}`
-    });
-    
-    // In a real app, this would open an edit form with user data
+    if (user) {
+      setEditUser({
+        id: user.id,
+        name: user.name,
+        username: user.username,
+        identificationNumber: user.identificationNumber || "",
+        role: user.role,
+        class: user.class || "",
+        subject: user.subject || "",
+        status: user.status
+      });
+      
+      setIsEditUserDialogOpen(true);
+    }
   };
-  
-  // Handle delete user
+
+  const handleEditUserFormChange = (field: string, value: string) => {
+    setEditUser(prev => ({ ...prev, [field]: value }));
+  };
+
+  const saveEditedUser = () => {
+    if (!editUser.name) {
+      toast({
+        title: "Form tidak lengkap",
+        description: "Silakan lengkapi nama pengguna",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    toast({
+      title: "Pengguna berhasil diperbarui",
+      description: `Data ${editUser.name} telah diperbarui`
+    });
+
+    setIsEditUserDialogOpen(false);
+  };
+
   const handleDeleteUser = (userId: string) => {
     const user = mockUsers.find(user => user.id === userId);
     
@@ -213,11 +241,8 @@ const UsersManagement = () => {
       description: `Pengguna ${user?.name} telah dihapus`,
       variant: "destructive"
     });
-    
-    // In a real app, this would delete the user from the database
   };
-  
-  // Export users to Excel
+
   const handleExportToExcel = () => {
     const dataToExport = filteredUsers.map(user => ({
       Nama: user.name,
@@ -235,8 +260,7 @@ const UsersManagement = () => {
       description: "Data pengguna telah diexport ke Excel"
     });
   };
-  
-  // Import users from Excel
+
   const handleImportFromExcel = () => {
     importExcelFile(async (file) => {
       try {
@@ -246,8 +270,6 @@ const UsersManagement = () => {
           title: "Data berhasil diimport",
           description: `${importedUsers.length} data pengguna telah diimport`
         });
-        
-        // In a real app, this would process and save the imported users
       } catch (error) {
         toast({
           title: "Gagal import data",
@@ -389,6 +411,143 @@ const UsersManagement = () => {
               </DialogContent>
             </Dialog>
             
+            <Dialog open={isEditUserDialogOpen} onOpenChange={setIsEditUserDialogOpen}>
+              <DialogContent className="sm:max-w-[600px]">
+                <DialogHeader>
+                  <DialogTitle>Edit Pengguna</DialogTitle>
+                  <DialogDescription>
+                    Edit informasi pengguna. Klik simpan ketika selesai.
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="grid gap-4 py-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Jenis Pengguna</label>
+                    <Select 
+                      value={editUser.role}
+                      onValueChange={(value) => handleEditUserFormChange("role", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih jenis pengguna" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="teacher">Guru</SelectItem>
+                        <SelectItem value="student">Siswa</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="edit-name" className="text-sm font-medium">Nama Lengkap</label>
+                    <Input 
+                      id="edit-name" 
+                      placeholder="Masukkan nama lengkap"
+                      value={editUser.name}
+                      onChange={(e) => handleEditUserFormChange("name", e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="edit-username" className="text-sm font-medium">Username</label>
+                    <Input 
+                      id="edit-username" 
+                      placeholder="Username"
+                      value={editUser.username}
+                      onChange={(e) => handleEditUserFormChange("username", e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="edit-id" className="text-sm font-medium">Nomor Identitas</label>
+                    <Input 
+                      id="edit-id" 
+                      placeholder="NISN/NIP/NUPTK"
+                      value={editUser.identificationNumber}
+                      onChange={(e) => handleEditUserFormChange("identificationNumber", e.target.value)}
+                    />
+                  </div>
+                  
+                  {editUser.role === "student" && (
+                    <div className="space-y-2">
+                      <label htmlFor="edit-class" className="text-sm font-medium">Kelas (untuk Siswa)</label>
+                      <Select 
+                        value={editUser.class} 
+                        onValueChange={(value) => handleEditUserFormChange("class", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih kelas" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1A">1A</SelectItem>
+                          <SelectItem value="1B">1B</SelectItem>
+                          <SelectItem value="2A">2A</SelectItem>
+                          <SelectItem value="2B">2B</SelectItem>
+                          <SelectItem value="3A">3A</SelectItem>
+                          <SelectItem value="3B">3B</SelectItem>
+                          <SelectItem value="4A">4A</SelectItem>
+                          <SelectItem value="4B">4B</SelectItem>
+                          <SelectItem value="5A">5A</SelectItem>
+                          <SelectItem value="5B">5B</SelectItem>
+                          <SelectItem value="6A">6A</SelectItem>
+                          <SelectItem value="6B">6B</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                  
+                  {editUser.role === "teacher" && (
+                    <div className="space-y-2">
+                      <label htmlFor="edit-subject" className="text-sm font-medium">Mata Pelajaran (untuk Guru)</label>
+                      <Select 
+                        value={editUser.subject} 
+                        onValueChange={(value) => handleEditUserFormChange("subject", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih mata pelajaran" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="matematika">Matematika</SelectItem>
+                          <SelectItem value="bahasa-indonesia">Bahasa Indonesia</SelectItem>
+                          <SelectItem value="ipa">IPA</SelectItem>
+                          <SelectItem value="ips">IPS</SelectItem>
+                          <SelectItem value="pkn">PKN</SelectItem>
+                          <SelectItem value="agama">Pendidikan Agama</SelectItem>
+                          <SelectItem value="pjok">PJOK</SelectItem>
+                          <SelectItem value="seni">Seni Budaya</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="edit-status" className="text-sm font-medium">Status</label>
+                    <Select 
+                      value={editUser.status} 
+                      onValueChange={(value) => handleEditUserFormChange("status", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Aktif</SelectItem>
+                        <SelectItem value="inactive">Tidak Aktif</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsEditUserDialogOpen(false)}>
+                    Batal
+                  </Button>
+                  <Button type="button" onClick={saveEditedUser}>
+                    Simpan Perubahan
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+            
             <Button variant="secondary" onClick={handleExportToExcel}>
               <Download className="mr-2 h-4 w-4" /> Export
             </Button>
@@ -472,7 +631,11 @@ const UsersManagement = () => {
                         </div>
                         
                         <div className="flex items-center justify-end space-x-2">
-                          <Button variant="outline" size="sm" onClick={() => handleEditUser(user.id)}>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleEditUser(user.id)}
+                          >
                             <Edit className="h-4 w-4 mr-1" /> Edit
                           </Button>
                           <Button 

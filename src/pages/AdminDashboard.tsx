@@ -1,10 +1,11 @@
-
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LineChart, BarChart, PieChart } from "recharts";
-import { Activity, BookOpen, Calendar, FileText, Users } from "lucide-react";
+import { LineChart, BarChart, PieChart, ResponsiveContainer, Cell, Legend, Tooltip } from "recharts";
+import { Activity, BookOpen, Calendar, FileText, Users, DownloadCloud, Sync } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 // Mock data for charts
 const examData = [
@@ -16,8 +17,96 @@ const examData = [
   { name: "Jun", jumlah: 6 },
 ];
 
+// Mock data for exam status by class
+const examStatusByClass = [
+  {
+    className: "Kelas 1A",
+    teacher: "Nurjannah",
+    active: 2,
+    pending: 1,
+    missed: 0,
+    completed: 4
+  },
+  {
+    className: "Kelas 2B",
+    teacher: "Erniwati",
+    active: 1,
+    pending: 2,
+    missed: 1,
+    completed: 3
+  },
+  {
+    className: "Kelas 3A",
+    teacher: "Rahmawati",
+    active: 0,
+    pending: 3,
+    missed: 0,
+    completed: 5
+  },
+  {
+    className: "Kelas 4B",
+    teacher: "Sumarno",
+    active: 2,
+    pending: 0,
+    missed: 1,
+    completed: 2
+  },
+  {
+    className: "Kelas 5A",
+    teacher: "Haryanto",
+    active: 1,
+    pending: 1,
+    missed: 0,
+    completed: 6
+  },
+  {
+    className: "Kelas 6B",
+    teacher: "Budiman",
+    active: 0,
+    pending: 2,
+    missed: 2,
+    completed: 4
+  },
+];
+
+// Mock data for exam status by subject
+const examStatusBySubject = [
+  {
+    subject: "Matematika",
+    active: 4,
+    pending: 3,
+    missed: 1,
+    completed: 12
+  },
+  {
+    subject: "Bahasa Indonesia",
+    active: 2,
+    pending: 2,
+    missed: 0,
+    completed: 10
+  },
+  {
+    subject: "IPA",
+    active: 1,
+    pending: 4,
+    missed: 2,
+    completed: 8
+  },
+  {
+    subject: "IPS",
+    active: 0,
+    pending: 3,
+    missed: 1,
+    completed: 7
+  },
+];
+
+// Colors for charts
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
+  const { toast } = useToast();
   
   // Mock stats for dashboard
   const stats = [
@@ -83,9 +172,32 @@ const AdminDashboard = () => {
     },
   ];
 
+  // Handle sync with Dapodik
+  const handleSyncDapodik = () => {
+    toast({
+      title: "Sinkronisasi Dapodik",
+      description: "Data sedang disinkronkan dengan Dapodik...",
+    });
+    
+    // Simulate successful sync after 2 seconds
+    setTimeout(() => {
+      toast({
+        title: "Sinkronisasi Berhasil",
+        description: "Data dari Dapodik berhasil disinkronkan",
+      });
+    }, 2000);
+  };
+
   return (
     <DashboardLayout title="Dashboard Administrator">
       <div className="grid gap-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-lg font-semibold">Ringkasan Data</h2>
+          <Button onClick={handleSyncDapodik}>
+            <Sync className="mr-2 h-4 w-4" /> Sinkronisasi Dapodik
+          </Button>
+        </div>
+        
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           {stats.map((stat, index) => (
             <Card key={index} className={`border ${stat.color}`}>
@@ -106,9 +218,11 @@ const AdminDashboard = () => {
         <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList>
             <TabsTrigger value="overview">Ikhtisar</TabsTrigger>
-            <TabsTrigger value="analytics">Analitik</TabsTrigger>
+            <TabsTrigger value="classes">Kelas</TabsTrigger>
+            <TabsTrigger value="subjects">Mata Pelajaran</TabsTrigger>
             <TabsTrigger value="reports">Laporan</TabsTrigger>
           </TabsList>
+          
           <TabsContent value="overview" className="space-y-4">
             <Card>
               <CardHeader>
@@ -194,28 +308,117 @@ const AdminDashboard = () => {
             </div>
           </TabsContent>
           
-          <TabsContent value="analytics" className="space-y-4">
+          <TabsContent value="classes" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Analisis Hasil Ujian</CardTitle>
-                <CardDescription>Perbandingan nilai rata-rata per mata pelajaran</CardDescription>
+                <CardTitle>Statistik Ujian Per Kelas</CardTitle>
+                <CardDescription>Monitoring status ujian untuk setiap kelas</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-80">
-                  <BarChart
-                    width={800}
-                    height={300}
-                    data={[
-                      { subject: "Matematika", average: 75 },
-                      { subject: "B. Indonesia", average: 82 },
-                      { subject: "IPA", average: 78 },
-                      { subject: "IPS", average: 80 },
-                      { subject: "B. Inggris", average: 76 },
-                    ]}
-                    margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
-                  >
-                    {/* BarChart components would go here */}
-                  </BarChart>
+                <div className="space-y-6">
+                  {examStatusByClass.map((classData, index) => (
+                    <div key={index} className="border rounded-lg p-4">
+                      <div className="flex justify-between items-center mb-4">
+                        <div>
+                          <h3 className="font-semibold">{classData.className}</h3>
+                          <p className="text-sm text-muted-foreground">Guru: {classData.teacher}</p>
+                        </div>
+                        <Button variant="outline" size="sm">
+                          Detail
+                        </Button>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        <div className="flex flex-col items-center p-3 rounded bg-green-50 text-green-700">
+                          <span className="text-2xl font-bold">{classData.active}</span>
+                          <span className="text-xs">Sedang Mengerjakan</span>
+                        </div>
+                        <div className="flex flex-col items-center p-3 rounded bg-blue-50 text-blue-700">
+                          <span className="text-2xl font-bold">{classData.pending}</span>
+                          <span className="text-xs">Belum Mengerjakan</span>
+                        </div>
+                        <div className="flex flex-col items-center p-3 rounded bg-amber-50 text-amber-700">
+                          <span className="text-2xl font-bold">{classData.missed}</span>
+                          <span className="text-xs">Terlewatkan</span>
+                        </div>
+                        <div className="flex flex-col items-center p-3 rounded bg-purple-50 text-purple-700">
+                          <span className="text-2xl font-bold">{classData.completed}</span>
+                          <span className="text-xs">Selesai</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="subjects" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Statistik Ujian Per Mata Pelajaran</CardTitle>
+                <CardDescription>Monitoring status ujian untuk setiap mata pelajaran</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {examStatusBySubject.map((subjectData, index) => (
+                    <div key={index} className="border rounded-lg p-4">
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="font-semibold">{subjectData.subject}</h3>
+                        <Button variant="outline" size="sm">
+                          Detail
+                        </Button>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        <div className="flex flex-col items-center p-3 rounded bg-green-50 text-green-700">
+                          <span className="text-2xl font-bold">{subjectData.active}</span>
+                          <span className="text-xs">Sedang Mengerjakan</span>
+                        </div>
+                        <div className="flex flex-col items-center p-3 rounded bg-blue-50 text-blue-700">
+                          <span className="text-2xl font-bold">{subjectData.pending}</span>
+                          <span className="text-xs">Belum Mengerjakan</span>
+                        </div>
+                        <div className="flex flex-col items-center p-3 rounded bg-amber-50 text-amber-700">
+                          <span className="text-2xl font-bold">{subjectData.missed}</span>
+                          <span className="text-xs">Terlewatkan</span>
+                        </div>
+                        <div className="flex flex-col items-center p-3 rounded bg-purple-50 text-purple-700">
+                          <span className="text-2xl font-bold">{subjectData.completed}</span>
+                          <span className="text-xs">Selesai</span>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 h-60">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Tooltip />
+                            <Legend />
+                            <PieChart width={400} height={200}>
+                              <Tooltip formatter={(value, name) => [`${value} ujian`, name]} />
+                              <Legend />
+                              <PieChart
+                                data={[
+                                  { name: 'Sedang Mengerjakan', value: subjectData.active },
+                                  { name: 'Belum Mengerjakan', value: subjectData.pending },
+                                  { name: 'Terlewatkan', value: subjectData.missed },
+                                  { name: 'Selesai', value: subjectData.completed },
+                                ]}
+                                cx="50%"
+                                cy="50%"
+                                outerRadius={80}
+                                label
+                              >
+                                {[0, 1, 2, 3].map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                              </PieChart>
+                            </PieChart>
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
