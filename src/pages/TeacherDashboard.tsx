@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -158,6 +157,11 @@ const TeacherDashboard = () => {
                   ))}
                 </div>
               </CardContent>
+              <CardFooter>
+                <Button variant="outline" className="w-full" onClick={() => navigate("/students")}>
+                  <Users className="mr-2 h-4 w-4" /> Kelola Data Siswa
+                </Button>
+              </CardFooter>
             </Card>
           </div>
         </div>

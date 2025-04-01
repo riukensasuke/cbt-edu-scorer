@@ -1,9 +1,11 @@
 
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, FileText, Eye, Edit, Copy, Trash2 } from "lucide-react";
 import { getStatusBadge } from "@/utils/statusUtils";
+import { useToast } from "@/hooks/use-toast";
 
 interface ExamItemProps {
   exam: {
@@ -22,9 +24,44 @@ interface ExamItemProps {
 }
 
 const ExamListItem = ({ exam }: ExamItemProps) => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleView = () => {
+    toast({
+      title: "Melihat detail ujian",
+      description: `Membuka detail ujian: ${exam.title}`,
+    });
+    navigate(`/exams/${exam.id}`);
+  };
+
+  const handleEdit = () => {
+    toast({
+      title: "Edit ujian",
+      description: `Mengedit ujian: ${exam.title}`,
+    });
+    navigate(`/exams/edit/${exam.id}`);
+  };
+
+  const handleCopy = () => {
+    toast({
+      title: "Duplikasi ujian",
+      description: `Ujian ${exam.title} berhasil diduplikasi`,
+    });
+    // In a real app, this would create a copy in the database
+  };
+
+  const handleDelete = () => {
+    toast({
+      title: "Hapus ujian",
+      description: `Ujian ${exam.title} berhasil dihapus`,
+      variant: "destructive",
+    });
+    // In a real app, this would delete the exam from the database
+  };
+
   return (
     <div
-      key={exam.id}
       className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
     >
       <div className="flex items-center justify-between mb-2">
@@ -56,16 +93,16 @@ const ExamListItem = ({ exam }: ExamItemProps) => {
           Dibuat oleh: {exam.createdBy}
         </div>
         <div className="flex items-center space-x-2">
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" onClick={handleView} title="Lihat">
             <Eye className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" onClick={handleEdit} title="Edit">
             <Edit className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" onClick={handleCopy} title="Duplikasi">
             <Copy className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="icon" className="text-destructive hover:text-destructive">
+          <Button variant="outline" size="icon" onClick={handleDelete} className="text-destructive hover:text-destructive" title="Hapus">
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
