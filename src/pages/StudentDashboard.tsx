@@ -15,7 +15,7 @@ const StudentDashboard = () => {
   return (
     <DashboardLayout title="Dashboard Siswa">
       <div className="grid gap-6">
-        <WelcomeCard studentName={studentName} />
+        <WelcomeCard name={studentName} role="student" />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <UpcomingExams 
