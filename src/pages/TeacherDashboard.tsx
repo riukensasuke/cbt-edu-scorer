@@ -6,13 +6,12 @@ import WelcomeCard from "@/components/dashboard/WelcomeCard";
 import UpcomingExams from "@/components/dashboard/UpcomingExams";
 import RecentResults from "@/components/dashboard/RecentResults";
 import Announcements from "@/components/dashboard/Announcements";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuth } from "@/contexts/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import SubjectStats from "@/components/Statistics/SubjectStats";
+import { useTeacherDashboard } from "@/hooks/useTeacherDashboard";
 
 const TeacherDashboard = () => {
-  const { user } = useAuth();
+  const { user, upcomingExams, recentResults, getBadgeForStatus, getScoreBadgeColor } = useTeacherDashboard();
   const [selectedSubject, setSelectedSubject] = useState<string>("Matematika");
   
   const subjects = ["Matematika", "Bahasa Indonesia", "IPA"];
@@ -56,8 +55,8 @@ const TeacherDashboard = () => {
               </CardContent>
             </Card>
             
-            <UpcomingExams />
-            <RecentResults />
+            <UpcomingExams exams={upcomingExams} getBadgeForStatus={getBadgeForStatus} />
+            <RecentResults results={recentResults} getScoreBadgeColor={getScoreBadgeColor} />
           </div>
           
           <div className="col-span-1 space-y-6">
