@@ -3,7 +3,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LineChart, BarChart, PieChart, ResponsiveContainer, Cell, Legend, Tooltip } from "recharts";
-import { Activity, BookOpen, Calendar, FileText, Users, DownloadCloud, Sync } from "lucide-react";
+import { Activity, BookOpen, Calendar, FileText, Users, DownloadCloud, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
@@ -194,7 +194,7 @@ const AdminDashboard = () => {
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold">Ringkasan Data</h2>
           <Button onClick={handleSyncDapodik}>
-            <Sync className="mr-2 h-4 w-4" /> Sinkronisasi Dapodik
+            <RefreshCw className="mr-2 h-4 w-4" /> Sinkronisasi Dapodik
           </Button>
         </div>
         
@@ -407,7 +407,6 @@ const AdminDashboard = () => {
                                 cx="50%"
                                 cy="50%"
                                 outerRadius={80}
-                                label
                               >
                                 {[0, 1, 2, 3].map((entry, index) => (
                                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

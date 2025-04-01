@@ -13,6 +13,11 @@ export interface ExamData {
   status: string;
   questions: number;
   creator: string;
+  grade?: string;
+  type?: string;
+  startDate?: string;
+  endDate?: string;
+  createdBy?: string;
 }
 
 // Mock data for exams
@@ -26,7 +31,12 @@ const mockExams: ExamData[] = [
     duration: 90,
     status: "active",
     questions: 25,
-    creator: "Ibu Siti"
+    creator: "Ibu Siti",
+    grade: "6A",
+    type: "UTS",
+    startDate: "2023-10-15",
+    endDate: "2023-10-15",
+    createdBy: "Ibu Siti"
   },
   {
     id: "2",
@@ -37,7 +47,12 @@ const mockExams: ExamData[] = [
     duration: 60,
     status: "scheduled",
     questions: 20,
-    creator: "Bapak Ahmad"
+    creator: "Bapak Ahmad",
+    grade: "5B",
+    type: "UTS",
+    startDate: "2023-10-20",
+    endDate: "2023-10-20",
+    createdBy: "Bapak Ahmad"
   },
   {
     id: "3",
@@ -48,7 +63,12 @@ const mockExams: ExamData[] = [
     duration: 45,
     status: "draft",
     questions: 15,
-    creator: "Ibu Rini"
+    creator: "Ibu Rini",
+    grade: "4A",
+    type: "Latihan",
+    startDate: "2023-10-10",
+    endDate: "2023-10-10",
+    createdBy: "Ibu Rini"
   },
   {
     id: "4",
@@ -59,7 +79,12 @@ const mockExams: ExamData[] = [
     duration: 60,
     status: "completed",
     questions: 20,
-    creator: "Bapak Tono"
+    creator: "Bapak Tono",
+    grade: "3B",
+    type: "Ulangan Harian",
+    startDate: "2023-09-28",
+    endDate: "2023-09-28",
+    createdBy: "Bapak Tono"
   },
 ];
 
