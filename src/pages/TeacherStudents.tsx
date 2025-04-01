@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,8 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
+import { exportToExcel, importExcelFile, readExcelFile } from "@/utils/excelUtils";
 import { 
   Search, 
   Filter, 
@@ -134,24 +132,15 @@ const TeacherStudents = () => {
   };
   
   // Export students to Excel
-  const exportToExcel = () => {
-    // Create workbook with student data
-    const worksheet = XLSX.utils.json_to_sheet(filteredStudents.map(student => ({
+  const handleExportToExcel = () => {
+    const dataToExport = filteredStudents.map(student => ({
       Nama: student.name,
       NISN: student.nisn,
       Kelas: student.class,
       Status: student.status === 'active' ? 'Aktif' : 'Tidak Aktif'
-    })));
+    }));
     
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, `Siswa ${activeTab}`);
-    
-    // Generate Excel file
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    
-    // Save file
-    saveAs(blob, `Data_Siswa_${activeTab}.xlsx`);
+    exportToExcel(dataToExport, `Data_Siswa_${activeTab}`, `Siswa ${activeTab}`);
     
     toast({
       title: "Data berhasil diexport",
@@ -160,42 +149,25 @@ const TeacherStudents = () => {
   };
   
   // Import students from Excel
-  const importFromExcel = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.xlsx, .xls';
-    input.onchange = (event: any) => {
-      const file = event.target.files[0];
-      if (!file) return;
-      
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        try {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          
-          const worksheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[worksheetName];
-          
-          const importedStudents = XLSX.utils.sheet_to_json(worksheet);
-          
-          toast({
-            title: "Data berhasil diimport",
-            description: `${importedStudents.length} data siswa telah diimport ke kelas ${activeTab}`
-          });
-          
-          // In a real app, this would process and save the imported students
-        } catch (error) {
-          toast({
-            title: "Gagal import data",
-            description: "Format file tidak valid",
-            variant: "destructive"
-          });
-        }
-      };
-      reader.readAsArrayBuffer(file);
-    };
-    input.click();
+  const handleImportFromExcel = () => {
+    importExcelFile(async (file) => {
+      try {
+        const importedStudents = await readExcelFile(file);
+        
+        toast({
+          title: "Data berhasil diimport",
+          description: `${importedStudents.length} data siswa telah diimport ke kelas ${activeTab}`
+        });
+        
+        // In a real app, this would process and save the imported students
+      } catch (error) {
+        toast({
+          title: "Gagal import data",
+          description: "Format file tidak valid",
+          variant: "destructive"
+        });
+      }
+    });
   };
 
   // Handle edit student
@@ -248,11 +220,11 @@ const TeacherStudents = () => {
               <PlusCircle className="mr-2 h-4 w-4" /> Tambah Siswa
             </Button>
             
-            <Button variant="secondary" onClick={exportToExcel}>
+            <Button variant="secondary" onClick={handleExportToExcel}>
               <Download className="mr-2 h-4 w-4" /> Export
             </Button>
             
-            <Button variant="outline" onClick={importFromExcel}>
+            <Button variant="outline" onClick={handleImportFromExcel}>
               <Upload className="mr-2 h-4 w-4" /> Import
             </Button>
           </div>

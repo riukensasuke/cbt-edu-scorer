@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,8 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
+import { exportToExcel, importExcelFile, readExcelFile } from "@/utils/excelUtils";
 import { 
   Search, 
   Filter, 
@@ -156,16 +154,6 @@ const UsersManagement = () => {
     setSearchQuery(query);
     filterUsers(activeTab, query);
   };
-  
-  // Export users to Excel
-  const exportToExcel = () => {
-    alert("Exporting users to Excel...");
-  };
-  
-  // Import users from Excel
-  const importFromExcel = () => {
-    alert("Importing users from Excel...");
-  };
 
   // Handle new user form change
   const handleUserFormChange = (field: string, value: string) => {
@@ -230,26 +218,17 @@ const UsersManagement = () => {
   };
   
   // Export users to Excel
-  const exportToExcel = () => {
-    // Create workbook with users data
-    const worksheet = XLSX.utils.json_to_sheet(filteredUsers.map(user => ({
+  const handleExportToExcel = () => {
+    const dataToExport = filteredUsers.map(user => ({
       Nama: user.name,
       'Nomor Identitas': user.identificationNumber || '',
       Peran: user.role === 'student' ? 'Siswa' : user.role === 'teacher' ? 'Guru' : 'Admin',
       Kelas: user.role === 'student' && user.class ? user.class : '',
       'Mata Pelajaran': user.role === 'teacher' && user.subject ? user.subject : '',
       Status: user.status === 'active' ? 'Aktif' : 'Tidak Aktif'
-    })));
+    }));
     
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Pengguna");
-    
-    // Generate Excel file
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    
-    // Save file
-    saveAs(blob, "Data_Pengguna.xlsx");
+    exportToExcel(dataToExport, "Data_Pengguna", "Pengguna");
     
     toast({
       title: "Data berhasil diexport",
@@ -258,42 +237,25 @@ const UsersManagement = () => {
   };
   
   // Import users from Excel
-  const importFromExcel = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.xlsx, .xls';
-    input.onchange = (event: any) => {
-      const file = event.target.files[0];
-      if (!file) return;
-      
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        try {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          
-          const worksheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[worksheetName];
-          
-          const importedUsers = XLSX.utils.sheet_to_json(worksheet);
-          
-          toast({
-            title: "Data berhasil diimport",
-            description: `${importedUsers.length} data pengguna telah diimport`
-          });
-          
-          // In a real app, this would process and save the imported users
-        } catch (error) {
-          toast({
-            title: "Gagal import data",
-            description: "Format file tidak valid",
-            variant: "destructive"
-          });
-        }
-      };
-      reader.readAsArrayBuffer(file);
-    };
-    input.click();
+  const handleImportFromExcel = () => {
+    importExcelFile(async (file) => {
+      try {
+        const importedUsers = await readExcelFile(file);
+        
+        toast({
+          title: "Data berhasil diimport",
+          description: `${importedUsers.length} data pengguna telah diimport`
+        });
+        
+        // In a real app, this would process and save the imported users
+      } catch (error) {
+        toast({
+          title: "Gagal import data",
+          description: "Format file tidak valid",
+          variant: "destructive"
+        });
+      }
+    });
   };
 
   return (
@@ -427,11 +389,11 @@ const UsersManagement = () => {
               </DialogContent>
             </Dialog>
             
-            <Button variant="secondary" onClick={exportToExcel}>
+            <Button variant="secondary" onClick={handleExportToExcel}>
               <Download className="mr-2 h-4 w-4" /> Export
             </Button>
             
-            <Button variant="outline" onClick={importFromExcel}>
+            <Button variant="outline" onClick={handleImportFromExcel}>
               <Upload className="mr-2 h-4 w-4" /> Import
             </Button>
           </div>
