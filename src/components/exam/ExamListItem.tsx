@@ -21,9 +21,10 @@ interface ExamItemProps {
     endDate: string;
     createdBy: string;
   };
+  onDelete?: (examId: string) => void;
 }
 
-const ExamListItem = ({ exam }: ExamItemProps) => {
+const ExamListItem = ({ exam, onDelete }: ExamItemProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -44,11 +45,15 @@ const ExamListItem = ({ exam }: ExamItemProps) => {
   };
 
   const handleDelete = () => {
-    toast({
-      title: "Hapus ujian",
-      description: `Ujian ${exam.title} berhasil dihapus`,
-      variant: "destructive",
-    });
+    if (onDelete) {
+      onDelete(exam.id);
+    } else {
+      toast({
+        title: "Hapus ujian",
+        description: `Ujian ${exam.title} berhasil dihapus`,
+        variant: "destructive",
+      });
+    }
     // In a real app, this would delete the exam from the database
   };
 

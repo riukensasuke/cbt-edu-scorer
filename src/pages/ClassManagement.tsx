@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,6 +41,8 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { exportToExcel, readExcelFile } from "@/utils/excelUtils";
 
 const mockClasses = [
   {
@@ -165,6 +168,7 @@ const ClassManagement = () => {
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [studentsForClass, setStudentsForClass] = useState<typeof mockStudents>([]);
+  const { toast } = useToast();
   
   const filteredClasses = mockClasses.filter(cls => 
     cls.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -176,7 +180,7 @@ const ClassManagement = () => {
     setStudentsForClass(mockStudents);
   };
   
-  const exportToExcel = (classId: string) => {
+  const exportToExcelHandler = (classId: string) => {
     const classToExport = mockClasses.find(c => c.id === classId);
     
     if (!classToExport) return;
@@ -188,7 +192,7 @@ const ClassManagement = () => {
       'Kelas': classToExport.name
     }));
     
-    exportToExcel(dataToExport, `Data_Siswa_${classToExport.name}`, `Siswa ${classToExport.name}`);
+    exportToExcel(dataToExport, `Data_Siswa_${classToExport.name}`);
     
     toast({
       title: "Data berhasil diekspor",
@@ -201,22 +205,32 @@ const ClassManagement = () => {
     
     if (!classToImport) return;
     
-    importExcelFile(async (file) => {
-      try {
-        const importedStudents = await readExcelFile(file);
-        
-        toast({
-          title: "Data berhasil diimpor",
-          description: `${importedStudents.length} data siswa telah diimpor ke kelas ${classToImport.name}`
-        });
-      } catch (error) {
-        toast({
-          title: "Gagal mengimpor data",
-          description: "Format file tidak valid",
-          variant: "destructive"
-        });
+    // Create file input element
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.xlsx, .xls';
+    
+    input.onchange = async (event: any) => {
+      const file = event.target.files[0];
+      if (file) {
+        try {
+          const importedStudents = await readExcelFile(file);
+          
+          toast({
+            title: "Data berhasil diimpor",
+            description: `${importedStudents.length} data siswa telah diimpor ke kelas ${classToImport.name}`
+          });
+        } catch (error) {
+          toast({
+            title: "Gagal mengimpor data",
+            description: "Format file tidak valid",
+            variant: "destructive"
+          });
+        }
       }
-    });
+    };
+    
+    input.click();
   };
 
   return (
