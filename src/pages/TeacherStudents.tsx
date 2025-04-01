@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { exportToExcel, importExcelFile, readExcelFile } from "@/utils/excelUtils";
 import { 
@@ -102,6 +104,8 @@ const TeacherStudents = () => {
   const [activeTab, setActiveTab] = useState("4A");
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredStudents, setFilteredStudents] = useState(mockStudentsByClass["4A"]);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [currentStudent, setCurrentStudent] = useState<any>(null);
   const { toast } = useToast();
   
   // Filter function
@@ -174,12 +178,36 @@ const TeacherStudents = () => {
   const handleEditStudent = (studentId: string) => {
     const student = filteredStudents.find(s => s.id === studentId);
     
+    if (student) {
+      setCurrentStudent({...student});
+      setIsEditModalOpen(true);
+    }
+  };
+  
+  // Handle student form submission
+  const handleStudentFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // In a real app, this would update the student data
+    setFilteredStudents(prev => 
+      prev.map(s => s.id === currentStudent.id ? {...currentStudent} : s)
+    );
+    
     toast({
-      title: "Edit siswa",
-      description: `Mengedit data siswa: ${student?.name}`
+      title: "Data siswa diperbarui",
+      description: `Data siswa ${currentStudent.name} telah berhasil diperbarui.`,
     });
     
-    // In a real app, this would open an edit form with student data
+    setIsEditModalOpen(false);
+  };
+  
+  // Handle input changes for the student form
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setCurrentStudent({
+      ...currentStudent,
+      [name]: value
+    });
   };
   
   // Handle delete student
@@ -301,6 +329,92 @@ const TeacherStudents = () => {
             </Card>
           </TabsContent>
         </Tabs>
+        
+        {/* Edit Student Modal */}
+        <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Edit Data Siswa</DialogTitle>
+              <DialogDescription>
+                Ubah informasi siswa di bawah ini.
+              </DialogDescription>
+            </DialogHeader>
+            {currentStudent && (
+              <form onSubmit={handleStudentFormSubmit}>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <label htmlFor="name" className="text-right">
+                      Nama
+                    </label>
+                    <Input
+                      id="name"
+                      name="name"
+                      value={currentStudent.name}
+                      onChange={handleInputChange}
+                      className="col-span-3"
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <label htmlFor="nisn" className="text-right">
+                      NISN
+                    </label>
+                    <Input
+                      id="nisn"
+                      name="nisn"
+                      value={currentStudent.nisn}
+                      onChange={handleInputChange}
+                      className="col-span-3"
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <label htmlFor="class" className="text-right">
+                      Kelas
+                    </label>
+                    <Select
+                      name="class"
+                      defaultValue={currentStudent.class}
+                      onValueChange={(value) => handleInputChange({
+                        target: { name: "class", value }
+                      } as any)}
+                    >
+                      <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Pilih kelas" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="4A">Kelas 4A</SelectItem>
+                        <SelectItem value="5A">Kelas 5A</SelectItem>
+                        <SelectItem value="6A">Kelas 6A</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <label htmlFor="status" className="text-right">
+                      Status
+                    </label>
+                    <Select
+                      name="status"
+                      defaultValue={currentStudent.status}
+                      onValueChange={(value) => handleInputChange({
+                        target: { name: "status", value }
+                      } as any)}
+                    >
+                      <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Pilih status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Aktif</SelectItem>
+                        <SelectItem value="inactive">Tidak Aktif</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit">Simpan Perubahan</Button>
+                </DialogFooter>
+              </form>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );

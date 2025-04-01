@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,7 +41,6 @@ import {
   SelectValue
 } from "@/components/ui/select";
 
-// Mock data for classes
 const mockClasses = [
   {
     id: "1",
@@ -130,7 +128,6 @@ const mockClasses = [
   }
 ];
 
-// Mock data for students in a class
 const mockStudents = [
   {
     id: "1",
@@ -169,27 +166,57 @@ const ClassManagement = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [studentsForClass, setStudentsForClass] = useState<typeof mockStudents>([]);
   
-  // Filter classes based on search query
   const filteredClasses = mockClasses.filter(cls => 
     cls.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     cls.teacher.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
-  // View students for a class
   const viewStudents = (classId: string) => {
     setSelectedClass(classId);
-    // In a real app, fetch students for this class
     setStudentsForClass(mockStudents);
   };
   
-  // Export class data to Excel
   const exportToExcel = (classId: string) => {
-    alert(`Exporting class ${classId} data to Excel...`);
+    const classToExport = mockClasses.find(c => c.id === classId);
+    
+    if (!classToExport) return;
+    
+    const dataToExport = mockStudents.map(student => ({
+      'Nama': student.name,
+      'NISN': student.nisn,
+      'Jenis Kelamin': student.gender,
+      'Kelas': classToExport.name
+    }));
+    
+    exportToExcel(dataToExport, `Data_Siswa_${classToExport.name}`, `Siswa ${classToExport.name}`);
+    
+    toast({
+      title: "Data berhasil diekspor",
+      description: `Data siswa kelas ${classToExport.name} telah diekspor ke Excel`
+    });
   };
   
-  // Import students for a class
   const importStudents = (classId: string) => {
-    alert(`Importing students for class ${classId}...`);
+    const classToImport = mockClasses.find(c => c.id === classId);
+    
+    if (!classToImport) return;
+    
+    importExcelFile(async (file) => {
+      try {
+        const importedStudents = await readExcelFile(file);
+        
+        toast({
+          title: "Data berhasil diimpor",
+          description: `${importedStudents.length} data siswa telah diimpor ke kelas ${classToImport.name}`
+        });
+      } catch (error) {
+        toast({
+          title: "Gagal mengimpor data",
+          description: "Format file tidak valid",
+          variant: "destructive"
+        });
+      }
+    });
   };
 
   return (

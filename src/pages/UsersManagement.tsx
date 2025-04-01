@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,12 +5,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { PlusCircle, Search, FileText, Download, Upload, Pencil, Trash } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { PlusCircle, Search, FileText, Download, Upload, Pencil, Trash2, X } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
+import { exportToExcel, importExcelFile, readExcelFile } from "@/utils/excelUtils";
 
-// Mock user data
 const mockUsers = [
   { 
     id: "1", 
@@ -55,16 +54,22 @@ const mockUsers = [
   },
 ];
 
-// User Management Component
 const UsersManagement = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredUsers, setFilteredUsers] = useState(mockUsers);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [newUser, setNewUser] = useState({
+    name: "",
+    username: "",
+    role: "student",
+    class: "",
+    status: "active"
+  });
   const { toast } = useToast();
 
-  // Filter users based on tab and search query
   const filterUsers = (role: string, query: string) => {
     let filtered = [...mockUsers];
     
@@ -92,7 +97,6 @@ const UsersManagement = () => {
     filterUsers(activeTab, query);
   };
 
-  // Mock function to edit user
   const handleEditUser = (userId: string) => {
     const user = mockUsers.find(u => u.id === userId);
     if (user) {
@@ -101,11 +105,9 @@ const UsersManagement = () => {
     }
   };
 
-  // Mock function to handle user form submission
   const handleUserFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // In a real app, you would update the user here
     toast({
       title: "Data Pengguna Diperbarui",
       description: `Data pengguna ${currentUser.name} telah berhasil diperbarui.`,
@@ -114,7 +116,6 @@ const UsersManagement = () => {
     setIsEditModalOpen(false);
   };
 
-  // Handle input changes for the user form
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setCurrentUser({
@@ -123,7 +124,93 @@ const UsersManagement = () => {
     });
   };
 
-  // Render role badge with appropriate color
+  const handleAddUserSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const newUserId = `user-${Date.now()}`;
+    
+    const userToAdd = {
+      id: newUserId,
+      name: newUser.name,
+      username: newUser.username,
+      role: newUser.role,
+      class: newUser.role === "student" ? newUser.class : "",
+      status: newUser.status
+    };
+    
+    setFilteredUsers(prev => [userToAdd, ...prev]);
+    
+    toast({
+      title: "Pengguna Ditambahkan",
+      description: `Pengguna ${newUser.name} telah berhasil ditambahkan.`,
+    });
+    
+    setNewUser({
+      name: "",
+      username: "",
+      role: "student",
+      class: "",
+      status: "active"
+    });
+    setIsAddModalOpen(false);
+  };
+
+  const handleNewUserInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setNewUser({
+      ...newUser,
+      [name]: value
+    });
+  };
+
+  const handleExportToExcel = () => {
+    const dataToExport = filteredUsers.map(user => ({
+      'Nama': user.name,
+      'Username': user.username,
+      'Role': user.role === 'admin' ? 'Administrator' : 
+              user.role === 'teacher' ? 'Guru' : 'Siswa',
+      'Kelas': user.class || '-',
+      'Status': user.status === 'active' ? 'Aktif' : 'Nonaktif'
+    }));
+    
+    exportToExcel(dataToExport, "Data_Pengguna", "Daftar_Pengguna");
+    
+    toast({
+      title: "Data berhasil diekspor",
+      description: "Data pengguna telah berhasil diekspor ke Excel"
+    });
+  };
+  
+  const handleImportFromExcel = () => {
+    importExcelFile(async (file) => {
+      try {
+        const importedUsers = await readExcelFile(file);
+        
+        const processedUsers = importedUsers.map((user: any, index: number) => ({
+          id: `imported-${Date.now()}-${index}`,
+          name: user.Nama || user.nama || "",
+          username: user.Username || user.username || `user${Date.now()}${index}`,
+          role: (user.Role || user.role || "student").toLowerCase(),
+          class: user.Kelas || user.kelas || "",
+          status: ((user.Status || user.status || "").toLowerCase().includes('aktif')) ? "active" : "inactive"
+        }));
+        
+        setFilteredUsers(prev => [...processedUsers, ...prev]);
+        
+        toast({
+          title: "Data berhasil diimpor",
+          description: `${processedUsers.length} data pengguna telah berhasil diimpor`
+        });
+      } catch (error) {
+        toast({
+          title: "Gagal mengimpor data",
+          description: "Format file tidak valid atau terjadi kesalahan",
+          variant: "destructive"
+        });
+      }
+    });
+  };
+
   const renderRoleBadge = (role: string) => {
     switch (role) {
       case "admin":
@@ -153,15 +240,133 @@ const UsersManagement = () => {
                 onChange={(e) => handleSearch(e.target.value)}
               />
             </div>
-            <Button>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Tambah Pengguna
-            </Button>
-            <Button variant="outline">
+            <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Tambah Pengguna
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>Tambah Pengguna Baru</DialogTitle>
+                  <DialogDescription>
+                    Isi formulir di bawah untuk menambahkan pengguna baru.
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleAddUserSubmit}>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <label htmlFor="add-name" className="text-right">
+                        Nama
+                      </label>
+                      <Input
+                        id="add-name"
+                        name="name"
+                        value={newUser.name}
+                        onChange={handleNewUserInputChange}
+                        className="col-span-3"
+                        required
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <label htmlFor="add-username" className="text-right">
+                        Username
+                      </label>
+                      <Input
+                        id="add-username"
+                        name="username"
+                        value={newUser.username}
+                        onChange={handleNewUserInputChange}
+                        className="col-span-3"
+                        required
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <label htmlFor="add-role" className="text-right">
+                        Role
+                      </label>
+                      <Select
+                        name="role"
+                        value={newUser.role}
+                        onValueChange={(value) => handleNewUserInputChange({
+                          target: { name: "role", value }
+                        } as any)}
+                      >
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Pilih role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="admin">Administrator</SelectItem>
+                          <SelectItem value="teacher">Guru</SelectItem>
+                          <SelectItem value="student">Siswa</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {newUser.role === "student" && (
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <label htmlFor="add-class" className="text-right">
+                          Kelas
+                        </label>
+                        <Select
+                          name="class"
+                          value={newUser.class}
+                          onValueChange={(value) => handleNewUserInputChange({
+                            target: { name: "class", value }
+                          } as any)}
+                        >
+                          <SelectTrigger className="col-span-3">
+                            <SelectValue placeholder="Pilih kelas" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1A">Kelas 1A</SelectItem>
+                            <SelectItem value="1B">Kelas 1B</SelectItem>
+                            <SelectItem value="2A">Kelas 2A</SelectItem>
+                            <SelectItem value="2B">Kelas 2B</SelectItem>
+                            <SelectItem value="3A">Kelas 3A</SelectItem>
+                            <SelectItem value="3B">Kelas 3B</SelectItem>
+                            <SelectItem value="4A">Kelas 4A</SelectItem>
+                            <SelectItem value="4B">Kelas 4B</SelectItem>
+                            <SelectItem value="5A">Kelas 5A</SelectItem>
+                            <SelectItem value="5B">Kelas 5B</SelectItem>
+                            <SelectItem value="6A">Kelas 6A</SelectItem>
+                            <SelectItem value="6B">Kelas 6B</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <label htmlFor="add-status" className="text-right">
+                        Status
+                      </label>
+                      <Select
+                        name="status"
+                        value={newUser.status}
+                        onValueChange={(value) => handleNewUserInputChange({
+                          target: { name: "status", value }
+                        } as any)}
+                      >
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Pilih status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="active">Aktif</SelectItem>
+                          <SelectItem value="inactive">Nonaktif</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button type="submit">Tambah Pengguna</Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+            <Button variant="outline" onClick={handleImportFromExcel}>
               <Upload className="mr-2 h-4 w-4" />
               Impor
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleExportToExcel}>
               <Download className="mr-2 h-4 w-4" />
               Ekspor
             </Button>
@@ -211,8 +416,18 @@ const UsersManagement = () => {
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm">
-                            <Trash className="h-4 w-4" />
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => {
+                              toast({
+                                title: "Pengguna dihapus",
+                                description: `Pengguna ${user.name} telah dihapus.`,
+                              });
+                              setFilteredUsers(prev => prev.filter(u => u.id !== user.id));
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
@@ -230,7 +445,6 @@ const UsersManagement = () => {
           </TabsContent>
         </Tabs>
 
-        {/* Edit User Modal */}
         <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>

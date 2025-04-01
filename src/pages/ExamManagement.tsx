@@ -12,7 +12,7 @@ import NewExamDialog from "@/components/exam/NewExamDialog";
 
 const ExamManagement = () => {
   const { user } = useAuth();
-  const { activeTab, searchQuery, filteredExams, handleTabChange, handleSearch } = useExamManagement();
+  const { activeTab, searchQuery, filteredExams, handleTabChange, handleSearch, deleteExam } = useExamManagement();
 
   return (
     <DashboardLayout title="Manajemen Ujian">
@@ -22,10 +22,10 @@ const ExamManagement = () => {
             searchQuery={searchQuery} 
             onSearchChange={handleSearch} 
           />
-          <NewExamDialog />
+          {/* NewExamDialog has been removed from here to prevent duplicate buttons */}
         </Dialog>
         
-        <Tabs defaultValue="all" onValueChange={handleTabChange}>
+        <Tabs defaultValue="all" value={activeTab} onValueChange={handleTabChange}>
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="all">Semua</TabsTrigger>
             <TabsTrigger value="active">Aktif</TabsTrigger>
@@ -45,7 +45,7 @@ const ExamManagement = () => {
                 <div className="space-y-4">
                   {filteredExams.length > 0 ? (
                     filteredExams.map((exam) => (
-                      <ExamListItem key={exam.id} exam={exam} />
+                      <ExamListItem key={exam.id} exam={exam} onDelete={deleteExam} />
                     ))
                   ) : (
                     <div className="text-center py-10">
