@@ -1,11 +1,25 @@
+
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LineChart, BarChart, PieChart, ResponsiveContainer, Cell, Legend, Tooltip } from "recharts";
-import { Activity, BookOpen, Calendar, FileText, Users, DownloadCloud, RefreshCw } from "lucide-react";
+import { Activity, BookOpen, Calendar, FileText, Users, DownloadCloud, RefreshCw, Database, Server, Key, Globe, Building, Save, Upload, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+
+// Mock data for Dapodik configuration
+interface DapodikConfig {
+  appName: string;
+  appIpAddress: string;
+  dapodikIpAddress: string;
+  dapodikKey: string;
+  npsn: string;
+  isConnected: boolean;
+}
 
 // Mock data for charts
 const examData = [
@@ -107,24 +121,60 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const { toast } = useToast();
+  const [backupDialogOpen, setBackupDialogOpen] = useState(false);
   
-  // Mock stats for dashboard
+  // State for Dapodik configuration
+  const [dapodikConfig, setDapodikConfig] = useState<DapodikConfig>({
+    appName: "Sistem Ujian Sekolah",
+    appIpAddress: "",
+    dapodikIpAddress: "",
+    dapodikKey: "",
+    npsn: "",
+    isConnected: false
+  });
+  
+  // Function to handle Dapodik form changes
+  const handleDapodikChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setDapodikConfig(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+  
+  // Function to save Dapodik configuration
+  const saveDapodikConfig = () => {
+    // In a real application, this would save to backend/database
+    setDapodikConfig(prev => ({
+      ...prev,
+      isConnected: true
+    }));
+    
+    toast({
+      title: "Konfigurasi Dapodik disimpan",
+      description: "Data Web Service Dapodik berhasil disimpan.",
+    });
+  };
+  
+  // Mock stats for dashboard - Updated to show Dapodik data if connected
   const stats = [
     {
       title: "Total Siswa",
-      value: "125",
+      value: dapodikConfig.isConnected ? "532" : "125",
       description: "Aktif di sistem",
       icon: <Users className="h-6 w-6 text-blue-500" />,
       color: "border-blue-200 bg-blue-50",
       iconColor: "bg-blue-100",
+      source: dapodikConfig.isConnected ? "Data dari Dapodik" : "Data internal"
     },
     {
       title: "Total Guru",
-      value: "8",
+      value: dapodikConfig.isConnected ? "34" : "8",
       description: "Aktif di sistem",
       icon: <BookOpen className="h-6 w-6 text-green-500" />,
       color: "border-green-200 bg-green-50",
       iconColor: "bg-green-100",
+      source: dapodikConfig.isConnected ? "Data dari Dapodik" : "Data internal"
     },
     {
       title: "Ujian Aktif",
@@ -133,14 +183,16 @@ const AdminDashboard = () => {
       icon: <FileText className="h-6 w-6 text-yellow-500" />,
       color: "border-yellow-200 bg-yellow-50",
       iconColor: "bg-yellow-100",
+      source: "Data internal"
     },
     {
       title: "Semester",
-      value: "Genap",
+      value: dapodikConfig.isConnected ? "Ganjil" : "Genap",
       description: "2023/2024",
       icon: <Calendar className="h-6 w-6 text-purple-500" />,
       color: "border-purple-200 bg-purple-50",
       iconColor: "bg-purple-100",
+      source: dapodikConfig.isConnected ? "Data dari Dapodik" : "Data internal"
     },
   ];
 
@@ -174,6 +226,16 @@ const AdminDashboard = () => {
 
   // Handle sync with Dapodik
   const handleSyncDapodik = () => {
+    // Check if Dapodik is configured
+    if (!dapodikConfig.dapodikIpAddress || !dapodikConfig.dapodikKey) {
+      toast({
+        title: "Konfigurasi belum lengkap",
+        description: "Silakan lengkapi konfigurasi Data Web Service Dapodik terlebih dahulu.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     toast({
       title: "Sinkronisasi Dapodik",
       description: "Data sedang disinkronkan dengan Dapodik...",
@@ -185,17 +247,214 @@ const AdminDashboard = () => {
         title: "Sinkronisasi Berhasil",
         description: "Data dari Dapodik berhasil disinkronkan",
       });
+      
+      // Update the isConnected flag
+      setDapodikConfig(prev => ({
+        ...prev,
+        isConnected: true
+      }));
+      
     }, 2000);
+  };
+  
+  // Backup and restore functions
+  const handleBackup = () => {
+    toast({
+      title: "Backup Data",
+      description: "Proses backup data sedang berjalan...",
+    });
+    
+    // Simulate successful backup after 2 seconds
+    setTimeout(() => {
+      toast({
+        title: "Backup Berhasil",
+        description: "Data telah berhasil dicadangkan.",
+      });
+      
+      // In a real app, this would trigger a download of the backup file
+      const dummyBlob = new Blob(["Backup data aplikasi ujian"], { type: "text/plain" });
+      const url = URL.createObjectURL(dummyBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `backup-data-ujian-${new Date().toISOString().slice(0, 10)}.bak`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+    }, 2000);
+  };
+  
+  const handleRestore = () => {
+    // Create file input element
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.bak';
+    
+    input.onchange = (event: any) => {
+      const file = event.target.files[0];
+      if (file) {
+        toast({
+          title: "Restore Data",
+          description: "Proses restore data sedang berjalan...",
+        });
+        
+        // Simulate successful restore after 2 seconds
+        setTimeout(() => {
+          toast({
+            title: "Restore Berhasil",
+            description: "Data telah berhasil dipulihkan.",
+          });
+        }, 2000);
+      }
+    };
+    
+    input.click();
   };
 
   return (
     <DashboardLayout title="Dashboard Administrator">
       <div className="grid gap-6">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-wrap justify-between items-center gap-2">
           <h2 className="text-lg font-semibold">Ringkasan Data</h2>
-          <Button onClick={handleSyncDapodik}>
-            <RefreshCw className="mr-2 h-4 w-4" /> Sinkronisasi Dapodik
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <Server className="mr-2 h-4 w-4" /> Data Web Service Dapodik
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[525px]">
+                <DialogHeader>
+                  <DialogTitle>Konfigurasi Web Service Dapodik</DialogTitle>
+                  <DialogDescription>
+                    Masukkan konfigurasi untuk menghubungkan aplikasi dengan Dapodik.
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <label htmlFor="appName" className="text-right text-sm">
+                      Nama Aplikasi
+                    </label>
+                    <Input
+                      id="appName"
+                      name="appName"
+                      value={dapodikConfig.appName}
+                      onChange={handleDapodikChange}
+                      className="col-span-3"
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <label htmlFor="appIpAddress" className="text-right text-sm">
+                      Alamat IP Aplikasi
+                    </label>
+                    <Input
+                      id="appIpAddress"
+                      name="appIpAddress"
+                      value={dapodikConfig.appIpAddress}
+                      onChange={handleDapodikChange}
+                      className="col-span-3"
+                      placeholder="Contoh: 192.168.1.10"
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <label htmlFor="dapodikIpAddress" className="text-right text-sm">
+                      Alamat IP Dapodik
+                    </label>
+                    <Input
+                      id="dapodikIpAddress"
+                      name="dapodikIpAddress"
+                      value={dapodikConfig.dapodikIpAddress}
+                      onChange={handleDapodikChange}
+                      className="col-span-3"
+                      placeholder="Contoh: 192.168.1.5"
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <label htmlFor="dapodikKey" className="text-right text-sm">
+                      Key Web Service
+                    </label>
+                    <Input
+                      id="dapodikKey"
+                      name="dapodikKey"
+                      type="password"
+                      value={dapodikConfig.dapodikKey}
+                      onChange={handleDapodikChange}
+                      className="col-span-3"
+                      placeholder="Masukkan key dari Dapodik"
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <label htmlFor="npsn" className="text-right text-sm">
+                      NPSN Sekolah
+                    </label>
+                    <Input
+                      id="npsn"
+                      name="npsn"
+                      value={dapodikConfig.npsn}
+                      onChange={handleDapodikChange}
+                      className="col-span-3"
+                      placeholder="Contoh: 20xxxxxxx"
+                    />
+                  </div>
+                </div>
+                
+                <DialogFooter>
+                  <Button type="submit" onClick={saveDapodikConfig}>
+                    <Save className="mr-2 h-4 w-4" /> Simpan
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+            
+            <Button onClick={handleSyncDapodik}>
+              <RefreshCw className="mr-2 h-4 w-4" /> Sinkronisasi Dapodik
+            </Button>
+            
+            <Dialog open={backupDialogOpen} onOpenChange={setBackupDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <Database className="mr-2 h-4 w-4" /> Backup & Restore
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Backup & Restore Data</DialogTitle>
+                  <DialogDescription>
+                    Cadangkan atau pulihkan data aplikasi ujian.
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="flex flex-col gap-4 py-4">
+                  <div className="border rounded-lg p-4 space-y-2">
+                    <h3 className="font-medium">Backup Data</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Cadangkan seluruh data aplikasi termasuk soal, ujian, dan hasil ujian.
+                    </p>
+                    <Button className="w-full mt-2" onClick={handleBackup}>
+                      <Download className="mr-2 h-4 w-4" /> Download Backup
+                    </Button>
+                  </div>
+                  
+                  <div className="border rounded-lg p-4 space-y-2">
+                    <h3 className="font-medium">Restore Data</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Pulihkan data dari file backup yang telah dibuat sebelumnya.
+                    </p>
+                    <Button variant="outline" className="w-full mt-2" onClick={handleRestore}>
+                      <Upload className="mr-2 h-4 w-4" /> Upload File Backup
+                    </Button>
+                  </div>
+                </div>
+                
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setBackupDialogOpen(false)}>
+                    Tutup
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -209,6 +468,11 @@ const AdminDashboard = () => {
                   <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
                   <h3 className="text-2xl font-bold">{stat.value}</h3>
                   <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
+                  {stat.source && (
+                    <Badge variant={stat.source.includes("Dapodik") ? "outline" : "secondary"} className="mt-2 text-xs">
+                      {stat.source}
+                    </Badge>
+                  )}
                 </div>
               </CardContent>
             </Card>

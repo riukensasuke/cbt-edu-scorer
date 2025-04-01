@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -161,6 +160,36 @@ const mockStudents = [
     name: "Agus Hermawan",
     nisn: "0054321098",
     gender: "Laki-laki"
+  },
+  {
+    id: "6",
+    name: "Ratna Dewi",
+    nisn: "0043219876",
+    gender: "Perempuan"
+  },
+  {
+    id: "7",
+    name: "Eko Prasetyo",
+    nisn: "0032198765",
+    gender: "Laki-laki"
+  },
+  {
+    id: "8",
+    name: "Nurul Hidayah",
+    nisn: "0021987654",
+    gender: "Perempuan"
+  },
+  {
+    id: "9",
+    name: "Dian Permata",
+    nisn: "0010987654",
+    gender: "Perempuan"
+  },
+  {
+    id: "10",
+    name: "Faisal Akbar",
+    nisn: "0009876543",
+    gender: "Laki-laki"
   }
 ];
 
@@ -168,6 +197,18 @@ const ClassManagement = () => {
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [studentsForClass, setStudentsForClass] = useState<typeof mockStudents>([]);
+  const [isAddClassModalOpen, setIsAddClassModalOpen] = useState(false);
+  const [newClass, setNewClass] = useState({
+    name: "",
+    teacher: "",
+    year: "2023/2024"
+  });
+  const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
+  const [newStudent, setNewStudent] = useState({
+    name: "",
+    nisn: "",
+    gender: "Laki-laki"
+  });
   const { toast } = useToast();
   
   const filteredClasses = mockClasses.filter(cls => 
@@ -205,7 +246,6 @@ const ClassManagement = () => {
     
     if (!classToImport) return;
     
-    // Create file input element
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.xlsx, .xls';
@@ -232,6 +272,66 @@ const ClassManagement = () => {
     
     input.click();
   };
+  
+  const handleAddClass = () => {
+    toast({
+      title: "Kelas baru ditambahkan",
+      description: `Kelas ${newClass.name} dengan guru ${newClass.teacher} berhasil ditambahkan`
+    });
+    
+    setNewClass({
+      name: "",
+      teacher: "",
+      year: "2023/2024"
+    });
+    
+    setIsAddClassModalOpen(false);
+  };
+  
+  const handleAddStudent = () => {
+    toast({
+      title: "Siswa baru ditambahkan",
+      description: `Siswa ${newStudent.name} berhasil ditambahkan ke kelas`
+    });
+    
+    setNewStudent({
+      name: "",
+      nisn: "",
+      gender: "Laki-laki"
+    });
+    
+    setIsAddStudentModalOpen(false);
+  };
+  
+  const handleClassInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setNewClass({
+      ...newClass,
+      [name]: value
+    });
+  };
+  
+  const handleClassSelectChange = (name: string, value: string) => {
+    setNewClass({
+      ...newClass,
+      [name]: value
+    });
+  };
+  
+  const handleStudentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setNewStudent({
+      ...newStudent,
+      [name]: value
+    });
+  };
+  
+  const handleStudentSelectChange = (name: string, value: string) => {
+    setNewStudent({
+      ...newStudent,
+      [name]: value
+    });
+  };
 
   return (
     <DashboardLayout title="Manajemen Kelas">
@@ -249,7 +349,7 @@ const ClassManagement = () => {
           </div>
           
           <div className="flex space-x-2">
-            <Dialog>
+            <Dialog open={isAddClassModalOpen} onOpenChange={setIsAddClassModalOpen}>
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="mr-2 h-4 w-4" /> Tambah Kelas
@@ -266,26 +366,40 @@ const ClassManagement = () => {
                 <div className="grid gap-4 py-4">
                   <div className="space-y-2">
                     <label htmlFor="className" className="text-sm font-medium">Nama Kelas</label>
-                    <Input id="className" placeholder="Contoh: 6A" />
+                    <Input 
+                      id="name" 
+                      name="name" 
+                      placeholder="Contoh: 6A" 
+                      value={newClass.name} 
+                      onChange={handleClassInputChange} 
+                    />
                   </div>
                   
                   <div className="space-y-2">
                     <label htmlFor="teacher" className="text-sm font-medium">Guru Kelas</label>
-                    <Select>
+                    <Select 
+                      name="teacher" 
+                      value={newClass.teacher}
+                      onValueChange={(value) => handleClassSelectChange("teacher", value)}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Pilih guru" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="teacher-1">Ibu Siti</SelectItem>
-                        <SelectItem value="teacher-2">Bapak Ahmad</SelectItem>
-                        <SelectItem value="teacher-3">Ibu Rini</SelectItem>
+                        <SelectItem value="Ibu Siti">Ibu Siti</SelectItem>
+                        <SelectItem value="Bapak Ahmad">Bapak Ahmad</SelectItem>
+                        <SelectItem value="Ibu Rini">Ibu Rini</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   
                   <div className="space-y-2">
                     <label htmlFor="academicYear" className="text-sm font-medium">Tahun Ajaran</label>
-                    <Select defaultValue="2023/2024">
+                    <Select 
+                      name="year"
+                      value={newClass.year}
+                      onValueChange={(value) => handleClassSelectChange("year", value)}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Pilih tahun ajaran" />
                       </SelectTrigger>
@@ -298,10 +412,8 @@ const ClassManagement = () => {
                 </div>
                 
                 <DialogFooter>
-                  <DialogClose asChild>
-                    <Button variant="outline">Batal</Button>
-                  </DialogClose>
-                  <Button type="submit">Simpan Kelas</Button>
+                  <Button variant="outline" onClick={() => setIsAddClassModalOpen(false)}>Batal</Button>
+                  <Button type="submit" onClick={handleAddClass}>Simpan Kelas</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -379,7 +491,11 @@ const ClassManagement = () => {
                   />
                 </div>
                 <div className="flex space-x-2">
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setIsAddStudentModalOpen(true)}
+                  >
                     <UserPlus className="h-4 w-4 mr-1" /> Tambah
                   </Button>
                   <Button 
@@ -441,6 +557,63 @@ const ClassManagement = () => {
             </DialogContent>
           </Dialog>
         )}
+        
+        <Dialog open={isAddStudentModalOpen} onOpenChange={setIsAddStudentModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Tambah Siswa Baru</DialogTitle>
+              <DialogDescription>
+                Masukkan informasi siswa baru untuk kelas {mockClasses.find(c => c.id === selectedClass)?.name}.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="grid gap-4 py-4">
+              <div className="space-y-2">
+                <label htmlFor="studentName" className="text-sm font-medium">Nama Siswa</label>
+                <Input 
+                  id="name" 
+                  name="name" 
+                  placeholder="Nama lengkap siswa" 
+                  value={newStudent.name} 
+                  onChange={handleStudentInputChange} 
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="nisn" className="text-sm font-medium">NISN</label>
+                <Input 
+                  id="nisn" 
+                  name="nisn" 
+                  placeholder="Nomor Induk Siswa Nasional" 
+                  value={newStudent.nisn} 
+                  onChange={handleStudentInputChange} 
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="gender" className="text-sm font-medium">Jenis Kelamin</label>
+                <Select 
+                  name="gender"
+                  value={newStudent.gender}
+                  onValueChange={(value) => handleStudentSelectChange("gender", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih jenis kelamin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Laki-laki">Laki-laki</SelectItem>
+                    <SelectItem value="Perempuan">Perempuan</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsAddStudentModalOpen(false)}>Batal</Button>
+              <Button type="submit" onClick={handleAddStudent}>Simpan Siswa</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );

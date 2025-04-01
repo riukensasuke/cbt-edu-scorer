@@ -22,7 +22,6 @@ const ExamManagement = () => {
             searchQuery={searchQuery} 
             onSearchChange={handleSearch} 
           />
-          {/* NewExamDialog has been removed from here to prevent duplicate buttons */}
         </Dialog>
         
         <Tabs defaultValue="all" value={activeTab} onValueChange={handleTabChange}>
@@ -45,7 +44,11 @@ const ExamManagement = () => {
                 <div className="space-y-4">
                   {filteredExams.length > 0 ? (
                     filteredExams.map((exam) => (
-                      <ExamListItem key={exam.id} exam={exam} onDelete={deleteExam} />
+                      <ExamListItem 
+                        key={exam.id} 
+                        exam={exam} 
+                        onDelete={deleteExam} 
+                      />
                     ))
                   ) : (
                     <div className="text-center py-10">
