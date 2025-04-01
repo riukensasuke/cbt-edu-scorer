@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Badge } from "@/components/ui/badge";
+import { getStatusBadge, getScoreBadgeColor } from '@/utils/statusUtils';
 
 export interface ExamData {
   id: string;
@@ -79,26 +79,7 @@ export const useTeacherDashboard = () => {
 
   // Function to get the appropriate badge for exam status
   const getBadgeForStatus = (status: string) => {
-    switch (status) {
-      case "draft":
-        return <Badge variant="outline">Draft</Badge>;
-      case "scheduled":
-        return <Badge variant="secondary">Terjadwal</Badge>;
-      case "active":
-        return <Badge>Aktif</Badge>;
-      case "completed":
-        return <Badge className="bg-green-500">Selesai</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
-
-  // Function to get the color for score badges
-  const getScoreBadgeColor = (score: number) => {
-    if (score >= 90) return "bg-green-500";
-    if (score >= 80) return "bg-blue-500";
-    if (score >= 70) return "bg-yellow-500";
-    return "bg-red-500";
+    return getStatusBadge(status);
   };
 
   return {
@@ -109,3 +90,4 @@ export const useTeacherDashboard = () => {
     getScoreBadgeColor
   };
 };
+
