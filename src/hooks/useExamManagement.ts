@@ -13,11 +13,11 @@ export interface ExamData {
   status: string;
   questions: number;
   creator: string;
-  grade?: string;
-  type?: string;
-  startDate?: string;
-  endDate?: string;
-  createdBy?: string;
+  grade: string; // Changed from optional to required
+  type: string; // Changed from optional to required
+  startDate: string; // Changed from optional to required
+  endDate: string; // Changed from optional to required
+  createdBy: string; // Changed from optional to required
 }
 
 // Mock data for exams
