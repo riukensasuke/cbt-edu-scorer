@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,6 +21,8 @@ import UsersManagement from "./pages/UsersManagement";
 import ClassManagement from "./pages/ClassManagement";
 import Settings from "./pages/Settings";
 import TeacherStudents from "./pages/TeacherStudents";
+import ExamDetails from "./pages/ExamDetails";
+import ExamEdit from "./pages/ExamEdit";
 
 // Create protected route component
 const ProtectedRoute = ({ children, allowedRoles }: { children: JSX.Element, allowedRoles: string[] }) => {
@@ -88,6 +91,22 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRoles={["admin", "teacher"]}>
                   <ExamManagement />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/exams/:id" 
+              element={
+                <ProtectedRoute allowedRoles={["admin", "teacher"]}>
+                  <ExamDetails />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/exams/edit/:id" 
+              element={
+                <ProtectedRoute allowedRoles={["admin", "teacher"]}>
+                  <ExamEdit />
                 </ProtectedRoute>
               } 
             />

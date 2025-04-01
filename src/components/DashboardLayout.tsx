@@ -1,4 +1,3 @@
-
 import React, { ReactNode, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,7 +11,8 @@ import {
   Menu,
   Settings,
   Users,
-  X
+  X,
+  GraduationCap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -87,6 +87,11 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
           label: "Hasil Ujian",
           icon: <LineChart size={20} />,
           path: "/results",
+        },
+        {
+          label: "Siswa",
+          icon: <GraduationCap size={20} />,
+          path: "/students",
         },
       ];
     } else {

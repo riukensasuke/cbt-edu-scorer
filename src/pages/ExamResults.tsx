@@ -10,6 +10,15 @@ import { Check, X, Download, Search, FileText, User, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
+import { exportToExcel } from "@/utils/excelUtils";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 
 // Mock data for results
 const mockResultDetails = {
@@ -72,52 +81,9 @@ const mockResultDetails = {
   ]
 };
 
-// Mock student detailed result
-const studentDetailedResult = {
-  student: mockResultDetails.students[0],
-  examTitle: mockResultDetails.examTitle,
-  subject: mockResultDetails.subject,
-  date: mockResultDetails.date,
-  questions: [
-    {
-      id: "q1",
-      question: "Berapakah hasil dari 24 × 8?",
-      answer: "192",
-      studentAnswer: "192",
-      correct: true
-    },
-    {
-      id: "q2",
-      question: "Berapa hasil dari (4 × 6) + (7 × 3)?",
-      answer: "45",
-      studentAnswer: "45",
-      correct: true
-    },
-    {
-      id: "q3",
-      question: "Selesaikan soal cerita berikut: Ibu membeli 5 kg buah apel dengan harga Rp15.000 per kg dan 3 kg buah jeruk dengan harga Rp12.000 per kg. Berapa total uang yang harus dibayar ibu?",
-      answer: "Rp111.000",
-      studentAnswer: "Rp75.000",
-      correct: false
-    },
-    {
-      id: "q4",
-      question: "Sebuah persegi panjang memiliki panjang 12 cm dan lebar 8 cm. Berapakah luas persegi panjang tersebut?",
-      answer: "96 cm²",
-      studentAnswer: "96 cm²",
-      correct: true
-    },
-    {
-      id: "q5",
-      question: "Jelaskan cara menghitung luas segitiga dan berikan contoh perhitungannya!",
-      answer: "Luas segitiga = (alas × tinggi) ÷ 2",
-      studentAnswer: "Luas segitiga dihitung dengan rumus (alas × tinggi) ÷ 2. Contoh: Segitiga dengan alas 6 cm dan tinggi 8 cm memiliki luas (6 × 8) ÷ 2 = 24 cm².",
-      correct: true,
-      score: 8,
-      maxScore: 10
-    }
-  ]
-};
+// Mock data for class and subject filters
+const mockClasses = ["Kelas 4A", "Kelas 5A", "Kelas 6A"];
+const mockSubjects = ["Matematika", "Bahasa Indonesia", "IPA", "IPS", "Bahasa Inggris"];
 
 // Score badge color based on score
 const getScoreBadgeColor = (score: number) => {
@@ -131,14 +97,130 @@ const ExamResults = () => {
   const { id } = useParams<{id?: string}>();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [selectedClass, setSelectedClass] = useState<string>("Kelas 6A");
+  const [selectedSubject, setSelectedSubject] = useState<string>("Matematika");
   
   // Filter students based on search query
   const filteredStudents = mockResultDetails.students.filter(student => 
     student.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
+  // Handle export to Excel
+  const handleExportToExcel = () => {
+    // Prepare data for export
+    const dataToExport = filteredStudents.map((student, index) => ({
+      'No': index + 1,
+      'Nama Siswa': student.name,
+      'Nilai': student.score,
+      'Benar': student.correctAnswers,
+      'Salah': student.wrongAnswers,
+      'Peringkat': student.rank,
+      'Status': student.status === 'pass' ? 'Lulus' : 'Tidak Lulus',
+    }));
+    
+    // Add summary data
+    const summaryData = [
+      { 
+        'No': '', 
+        'Nama Siswa': 'NILAI RATA-RATA', 
+        'Nilai': mockResultDetails.averageScore, 
+        'Benar': '', 
+        'Salah': '', 
+        'Peringkat': '', 
+        'Status': '' 
+      },
+      { 
+        'No': '', 
+        'Nama Siswa': 'NILAI TERTINGGI', 
+        'Nilai': mockResultDetails.highestScore, 
+        'Benar': '', 
+        'Salah': '', 
+        'Peringkat': '', 
+        'Status': '' 
+      },
+      { 
+        'No': '', 
+        'Nama Siswa': 'NILAI TERENDAH', 
+        'Nilai': mockResultDetails.lowestScore, 
+        'Benar': '', 
+        'Salah': '', 
+        'Peringkat': '', 
+        'Status': '' 
+      },
+      { 
+        'No': '', 
+        'Nama Siswa': 'JUMLAH SISWA', 
+        'Nilai': filteredStudents.length, 
+        'Benar': '', 
+        'Salah': '', 
+        'Peringkat': '', 
+        'Status': '' 
+      }
+    ];
+    
+    // Combine student data with summary
+    const allData = [...dataToExport, ...summaryData];
+    
+    // Export to Excel
+    const filename = `Hasil_Ujian_${selectedSubject}_${selectedClass}`;
+    exportToExcel(allData, filename);
+    
+    toast({
+      title: "Data berhasil diexport",
+      description: `Data hasil ujian ${selectedSubject} untuk ${selectedClass} telah diexport ke Excel`
+    });
+  };
+
+  // Mock student detailed result
+  const studentDetailedResult = {
+    student: mockResultDetails.students[0],
+    examTitle: mockResultDetails.examTitle,
+    subject: mockResultDetails.subject,
+    date: mockResultDetails.date,
+    questions: [
+      {
+        id: "q1",
+        question: "Berapakah hasil dari 24 × 8?",
+        answer: "192",
+        studentAnswer: "192",
+        correct: true
+      },
+      {
+        id: "q2",
+        question: "Berapa hasil dari (4 × 6) + (7 × 3)?",
+        answer: "45",
+        studentAnswer: "45",
+        correct: true
+      },
+      {
+        id: "q3",
+        question: "Selesaikan soal cerita berikut: Ibu membeli 5 kg buah apel dengan harga Rp15.000 per kg dan 3 kg buah jeruk dengan harga Rp12.000 per kg. Berapa total uang yang harus dibayar ibu?",
+        answer: "Rp111.000",
+        studentAnswer: "Rp75.000",
+        correct: false
+      },
+      {
+        id: "q4",
+        question: "Sebuah persegi panjang memiliki panjang 12 cm dan lebar 8 cm. Berapakah luas persegi panjang tersebut?",
+        answer: "96 cm²",
+        studentAnswer: "96 cm²",
+        correct: true
+      },
+      {
+        id: "q5",
+        question: "Jelaskan cara menghitung luas segitiga dan berikan contoh perhitungannya!",
+        answer: "Luas segitiga = (alas × tinggi) ÷ 2",
+        studentAnswer: "Luas segitiga dihitung dengan rumus (alas × tinggi) ÷ 2. Contoh: Segitiga dengan alas 6 cm dan tinggi 8 cm memiliki luas (6 × 8) ÷ 2 = 24 cm².",
+        correct: true,
+        score: 8,
+        maxScore: 10
+      }
+    ]
+  };
+
   // View for admin and teachers
   const renderTeacherView = () => {
     return (
@@ -175,23 +257,46 @@ const ExamResults = () => {
               <p className="text-muted-foreground">Grafik distribusi nilai akan ditampilkan di sini</p>
             </div>
             
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
               <h3 className="font-medium">Daftar Nilai Siswa</h3>
-              <div className="flex items-center space-x-2">
-                <div className="relative w-60">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="search"
-                    placeholder="Cari siswa..."
-                    className="pl-8"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-                <Button variant="outline" size="icon">
-                  <Download className="h-4 w-4" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 w-full md:w-auto">
+                <Select value={selectedClass} onValueChange={setSelectedClass}>
+                  <SelectTrigger className="w-full md:w-[180px]">
+                    <SelectValue placeholder="Pilih kelas" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {mockClasses.map(cls => (
+                      <SelectItem key={cls} value={cls}>{cls}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                <Select value={selectedSubject} onValueChange={setSelectedSubject}>
+                  <SelectTrigger className="w-full md:w-[180px]">
+                    <SelectValue placeholder="Pilih mata pelajaran" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {mockSubjects.map(subject => (
+                      <SelectItem key={subject} value={subject}>{subject}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                <Button onClick={handleExportToExcel} className="w-full md:w-auto">
+                  <Download className="mr-2 h-4 w-4" /> Download Nilai
                 </Button>
               </div>
+            </div>
+            
+            <div className="relative mb-4">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Cari siswa..."
+                className="pl-8"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
             
             <div className="border rounded-md overflow-hidden">

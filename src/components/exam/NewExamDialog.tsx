@@ -1,214 +1,218 @@
 
-import React, { useState } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
 import {
+  Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogClose
+  DialogTrigger,
 } from "@/components/ui/dialog";
-import {
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { PlusCircle } from "lucide-react";
 
 const NewExamDialog = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
+  const [open, setOpen] = useState(false);
   const [examData, setExamData] = useState({
     title: "",
     subject: "",
     grade: "",
-    type: "",
-    duration: "",
-    startDate: "",
-    endDate: "",
-    startTime: "",
-    endTime: "",
-    status: ""
+    type: "daily",
+    duration: "60",
+    description: "",
   });
 
-  const handleChange = (field: string, value: string) => {
-    setExamData(prev => ({ ...prev, [field]: value }));
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setExamData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleProceedToQuestions = () => {
-    // Validate form data
+  const handleSelectChange = (name: string, value: string) => {
+    setExamData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate form
     if (!examData.title || !examData.subject || !examData.grade) {
       toast({
-        title: "Form tidak lengkap",
-        description: "Silakan lengkapi informasi ujian",
-        variant: "destructive"
+        title: "Validasi Error",
+        description: "Mohon isi semua field yang wajib diisi",
+        variant: "destructive",
       });
       return;
     }
-
+    
+    // Success
     toast({
       title: "Ujian berhasil dibuat",
-      description: "Melanjutkan ke pemilihan soal",
+      description: "Ujian baru telah ditambahkan ke daftar ujian",
     });
     
-    // In a real app, this would redirect to the question selection page
+    // Close dialog
+    setOpen(false);
+    
+    // Navigate to questions bank
+    navigate("/questions");
+  };
+
+  const handleContinueToQuestions = () => {
+    // Save first
+    if (!examData.title || !examData.subject || !examData.grade) {
+      toast({
+        title: "Validasi Error",
+        description: "Mohon isi semua field yang wajib diisi",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    toast({
+      title: "Ujian berhasil dibuat",
+      description: "Silakan pilih soal untuk ujian ini",
+    });
+    
+    // Close dialog and navigate
+    setOpen(false);
+    navigate("/questions");
   };
 
   return (
-    <DialogContent className="sm:max-w-[600px]">
-      <DialogHeader>
-        <DialogTitle>Buat Ujian Baru</DialogTitle>
-        <DialogDescription>
-          Isi informasi ujian baru. Klik simpan ketika selesai.
-        </DialogDescription>
-      </DialogHeader>
-      
-      <div className="grid gap-4 py-4">
-        <div className="space-y-2">
-          <label htmlFor="title" className="text-sm font-medium">Nama Ujian</label>
-          <Input 
-            id="title" 
-            placeholder="Contoh: UTS Matematika Kelas 6" 
-            value={examData.title}
-            onChange={(e) => handleChange("title", e.target.value)}
-          />
-        </div>
-        
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label htmlFor="subject" className="text-sm font-medium">Mata Pelajaran</label>
-            <Select onValueChange={(value) => handleChange("subject", value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Pilih mata pelajaran" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="matematika">Matematika</SelectItem>
-                <SelectItem value="bahasa-indonesia">Bahasa Indonesia</SelectItem>
-                <SelectItem value="ipa">IPA</SelectItem>
-                <SelectItem value="ips">IPS</SelectItem>
-                <SelectItem value="bahasa-inggris">Bahasa Inggris</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="space-y-2">
-            <label htmlFor="grade" className="text-sm font-medium">Kelas</label>
-            <Select onValueChange={(value) => handleChange("grade", value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Pilih kelas" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="kelas-1">Kelas 1</SelectItem>
-                <SelectItem value="kelas-2">Kelas 2</SelectItem>
-                <SelectItem value="kelas-3">Kelas 3</SelectItem>
-                <SelectItem value="kelas-4">Kelas 4</SelectItem>
-                <SelectItem value="kelas-5">Kelas 5</SelectItem>
-                <SelectItem value="kelas-6">Kelas 6</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label htmlFor="type" className="text-sm font-medium">Jenis Ujian</label>
-            <Select onValueChange={(value) => handleChange("type", value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Pilih jenis" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="uts">UTS</SelectItem>
-                <SelectItem value="uas">UAS</SelectItem>
-                <SelectItem value="ulangan">Ulangan Harian</SelectItem>
-                <SelectItem value="latihan">Latihan</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="space-y-2">
-            <label htmlFor="duration" className="text-sm font-medium">Durasi (menit)</label>
-            <Input 
-              id="duration" 
-              type="number" 
-              placeholder="90" 
-              min="5" 
-              value={examData.duration}
-              onChange={(e) => handleChange("duration", e.target.value)}
-            />
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label htmlFor="startDate" className="text-sm font-medium">Tanggal Mulai</label>
-            <Input 
-              id="startDate" 
-              type="date" 
-              value={examData.startDate}
-              onChange={(e) => handleChange("startDate", e.target.value)}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <label htmlFor="endDate" className="text-sm font-medium">Tanggal Selesai</label>
-            <Input 
-              id="endDate" 
-              type="date" 
-              value={examData.endDate}
-              onChange={(e) => handleChange("endDate", e.target.value)}
-            />
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label htmlFor="startTime" className="text-sm font-medium">Waktu Mulai</label>
-            <Input 
-              id="startTime" 
-              type="time" 
-              value={examData.startTime}
-              onChange={(e) => handleChange("startTime", e.target.value)}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <label htmlFor="endTime" className="text-sm font-medium">Waktu Selesai</label>
-            <Input 
-              id="endTime" 
-              type="time" 
-              value={examData.endTime}
-              onChange={(e) => handleChange("endTime", e.target.value)}
-            />
-          </div>
-        </div>
-        
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Status Ujian</label>
-          <Select onValueChange={(value) => handleChange("status", value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Pilih status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="scheduled">Terjadwal</SelectItem>
-              <SelectItem value="active">Aktif</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      
-      <DialogFooter>
-        <DialogClose asChild>
-          <Button variant="outline">Batal</Button>
-        </DialogClose>
-        <Button type="button" onClick={handleProceedToQuestions}>
-          Lanjutkan ke Pemilihan Soal
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button>
+          <PlusCircle className="mr-2 h-4 w-4" /> Buat Ujian Baru
         </Button>
-      </DialogFooter>
-    </DialogContent>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[600px]">
+        <form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle>Buat Ujian Baru</DialogTitle>
+            <DialogDescription>
+              Isi informasi dasar untuk ujian baru. Anda dapat menambahkan soal nanti.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-1 gap-2">
+              <label htmlFor="title" className="text-sm font-medium">
+                Judul Ujian *
+              </label>
+              <Input
+                id="title"
+                name="title"
+                value={examData.title}
+                onChange={handleInputChange}
+                placeholder="Contoh: UTS Matematika Semester 1"
+                required
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <label htmlFor="subject" className="text-sm font-medium">
+                  Mata Pelajaran *
+                </label>
+                <Input
+                  id="subject"
+                  name="subject"
+                  value={examData.subject}
+                  onChange={handleInputChange}
+                  placeholder="Contoh: Matematika"
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <label htmlFor="grade" className="text-sm font-medium">
+                  Kelas *
+                </label>
+                <Input
+                  id="grade"
+                  name="grade"
+                  value={examData.grade}
+                  onChange={handleInputChange}
+                  placeholder="Contoh: 6A"
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <label htmlFor="type" className="text-sm font-medium">
+                  Tipe Ujian
+                </label>
+                <Select 
+                  value={examData.type} 
+                  onValueChange={(value) => handleSelectChange("type", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih tipe ujian" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="daily">Ulangan Harian</SelectItem>
+                    <SelectItem value="mid">Ujian Tengah Semester</SelectItem>
+                    <SelectItem value="final">Ujian Akhir Semester</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <label htmlFor="duration" className="text-sm font-medium">
+                  Durasi (menit)
+                </label>
+                <Input
+                  id="duration"
+                  name="duration"
+                  type="number"
+                  min="1"
+                  value={examData.duration}
+                  onChange={handleInputChange}
+                />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <label htmlFor="description" className="text-sm font-medium">
+                Deskripsi
+              </label>
+              <Textarea
+                id="description"
+                name="description"
+                value={examData.description}
+                onChange={handleInputChange}
+                placeholder="Deskripsi tentang ujian ini..."
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter className="flex justify-between">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              Batal
+            </Button>
+            <div className="flex gap-2">
+              <Button type="submit">Simpan</Button>
+              <Button 
+                type="button"
+                onClick={handleContinueToQuestions}
+              >
+                Lanjutkan ke Pemilihan Soal
+              </Button>
+            </div>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 };
 

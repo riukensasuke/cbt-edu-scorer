@@ -28,18 +28,10 @@ const ExamListItem = ({ exam }: ExamItemProps) => {
   const { toast } = useToast();
 
   const handleView = () => {
-    toast({
-      title: "Melihat detail ujian",
-      description: `Membuka detail ujian: ${exam.title}`,
-    });
     navigate(`/exams/${exam.id}`);
   };
 
   const handleEdit = () => {
-    toast({
-      title: "Edit ujian",
-      description: `Mengedit ujian: ${exam.title}`,
-    });
     navigate(`/exams/edit/${exam.id}`);
   };
 
