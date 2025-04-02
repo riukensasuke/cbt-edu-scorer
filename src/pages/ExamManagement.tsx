@@ -3,7 +3,6 @@ import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useExamManagement } from "@/hooks/useExamManagement";
 import ExamFilters from "@/components/exam/ExamFilters";
@@ -18,12 +17,12 @@ const ExamManagement = () => {
     <DashboardLayout title="Manajemen Ujian">
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <Dialog>
+          <div className="relative w-full sm:w-64">
             <ExamFilters 
               searchQuery={searchQuery} 
               onSearchChange={handleSearch} 
             />
-          </Dialog>
+          </div>
           <NewExamDialog />
         </div>
         
