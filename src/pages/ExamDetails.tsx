@@ -1,389 +1,271 @@
 
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import DashboardLayout from "@/components/DashboardLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, FileText, Users, School, GraduationCap } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { getStatusBadge } from "@/utils/statusUtils";
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import DashboardLayout from '@/components/DashboardLayout';
+import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Calendar, Clock, FileText, User, Users, Info, Edit, Trash2, Copy, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
-// Extended mock exam data to include proper IDs from ExamManagement
-const mockExamData = {
-  "exam-1": {
-    id: "exam-1",
-    title: "UTS Matematika Semester 1",
-    subject: "Matematika",
-    grade: "Kelas 6A",
-    status: "active",
-    type: "mid",
-    duration: 90,
-    questions: 25,
-    startDate: "2023-10-10T08:00:00",
-    endDate: "2023-10-10T09:30:00",
-    createdBy: "Ibu Siti",
-    description: "Ujian Tengah Semester untuk mata pelajaran Matematika kelas 6A",
-    instructions: "Kerjakan soal dengan teliti. Baca setiap pertanyaan dengan seksama sebelum menjawab.",
-    passingScore: 70,
-    questionDetails: [
-      {
-        id: "q1",
-        type: "multiple_choice",
-        question: "Berapakah hasil dari 24 × 8?",
-        options: ["192", "172", "196", "188"],
-        answer: "192"
-      },
-      {
-        id: "q2",
-        type: "multiple_choice",
-        question: "Berapa hasil dari (4 × 6) + (7 × 3)?",
-        options: ["45", "39", "51", "42"],
-        answer: "45"
-      },
-      {
-        id: "q3",
-        type: "essay",
-        question: "Selesaikan soal cerita berikut: Ibu membeli 5 kg buah apel dengan harga Rp15.000 per kg dan 3 kg buah jeruk dengan harga Rp12.000 per kg. Berapa total uang yang harus dibayar ibu?",
-        answer: "Rp111.000"
-      },
-      {
-        id: "q4",
-        type: "multiple_choice",
-        question: "Sebuah persegi panjang memiliki panjang 12 cm dan lebar 8 cm. Berapakah luas persegi panjang tersebut?",
-        options: ["96 cm²", "80 cm²", "20 cm²", "40 cm²"],
-        answer: "96 cm²"
-      },
-      {
-        id: "q5",
-        type: "essay",
-        question: "Jelaskan cara menghitung luas segitiga dan berikan contoh perhitungannya!",
-        answer: "Luas segitiga = (alas × tinggi) ÷ 2"
-      }
-    ]
-  },
-  "exam-2": {
-    id: "exam-2",
-    title: "UAS Bahasa Indonesia",
-    subject: "Bahasa Indonesia",
-    grade: "Kelas 5A",
-    status: "scheduled",
-    type: "final",
-    duration: 120,
-    questions: 30,
-    startDate: "2023-12-15T10:00:00",
-    endDate: "2023-12-15T12:00:00",
-    createdBy: "Bapak Ahmad",
-    description: "Ujian Akhir Semester untuk mata pelajaran Bahasa Indonesia kelas 5A",
-    instructions: "Jawablah dengan bahasa yang baik dan benar. Perhatikan penggunaan tanda baca.",
-    passingScore: 75,
-    questionDetails: [
-      {
-        id: "q1",
-        type: "multiple_choice",
-        question: "Kalimat berikut yang menggunakan kata baku adalah...",
-        options: [
-          "Dia praktek mengajar di sekolah itu",
-          "Saya mempraktikkan ilmu yang telah saya pelajari",
-          "Mereka mempraktekan apa yang diajarkan",
-          "Kami sedang praktek memasak"
-        ],
-        answer: "Saya mempraktikkan ilmu yang telah saya pelajari"
-      },
-      {
-        id: "q2",
-        type: "essay",
-        question: "Tuliskan satu paragraf deskriptif tentang lingkungan sekolahmu!",
-        answer: "(Jawaban bervariasi)"
-      }
-    ]
-  },
-  "exam-3": {
-    id: "exam-3",
-    title: "Ulangan Harian IPA",
-    subject: "IPA",
-    grade: "Kelas 6A",
-    status: "draft",
-    type: "daily",
-    duration: 60,
-    questions: 20,
-    startDate: "",
-    endDate: "",
-    createdBy: "Ibu Rini",
-    description: "Ulangan harian untuk mata pelajaran IPA kelas 6A tentang sistem tata surya",
-    instructions: "Kerjakan dengan teliti dan jangan lupa tulis nama pada lembar jawaban.",
-    passingScore: 70,
-    questionDetails: [
-      {
-        id: "q1",
-        type: "multiple_choice",
-        question: "Planet terbesar di tata surya kita adalah...",
-        options: ["Jupiter", "Saturnus", "Uranus", "Neptunus"],
-        answer: "Jupiter"
-      },
-      {
-        id: "q2",
-        type: "multiple_choice",
-        question: "Berapa jumlah planet di tata surya?",
-        options: ["7", "8", "9", "10"],
-        answer: "8"
-      }
-    ]
-  }
+// Ensure we get the mock data from the global window object
+const getExamData = (id: string) => {
+  // @ts-ignore
+  const mockExamData = window.mockExamData || {};
+  return mockExamData[id];
 };
-
-// Add more exams to match with ExamManagement
-for (let i = 4; i <= 10; i++) {
-  mockExamData[`exam-${i}`] = {
-    id: `exam-${i}`,
-    title: `Ujian Sample ${i}`,
-    subject: i % 3 === 0 ? "Matematika" : i % 3 === 1 ? "Bahasa Indonesia" : "IPA",
-    grade: `Kelas ${Math.floor(Math.random() * 6) + 1}`,
-    status: i % 4 === 0 ? "active" : i % 4 === 1 ? "scheduled" : i % 4 === 2 ? "completed" : "draft",
-    type: i % 3 === 0 ? "mid" : i % 3 === 1 ? "final" : "daily",
-    duration: 60 + (i * 10),
-    questions: 10 + i,
-    startDate: new Date(Date.now() + (i * 86400000)).toISOString(),
-    endDate: new Date(Date.now() + (i * 86400000) + 3600000).toISOString(),
-    createdBy: i % 2 === 0 ? "Ibu Siti" : "Bapak Ahmad",
-    description: `Deskripsi untuk ujian sample ${i}`,
-    instructions: `Petunjuk pengerjaan untuk ujian sample ${i}`,
-    passingScore: 60 + i,
-    questionDetails: [
-      {
-        id: `q1-exam${i}`,
-        type: "multiple_choice",
-        question: `Contoh pertanyaan 1 untuk ujian ${i}?`,
-        options: ["Pilihan A", "Pilihan B", "Pilihan C", "Pilihan D"],
-        answer: "Pilihan A"
-      },
-      {
-        id: `q2-exam${i}`,
-        type: "essay",
-        question: `Contoh pertanyaan essay untuk ujian ${i}?`,
-        answer: "Contoh jawaban"
-      }
-    ]
-  };
-}
 
 const ExamDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("details");
   const [exam, setExam] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   useEffect(() => {
-    // Simulate fetching exam details
-    if (id && mockExamData[id as keyof typeof mockExamData]) {
-      setExam(mockExamData[id as keyof typeof mockExamData]);
-    } else {
-      toast({
-        title: "Error",
-        description: "Ujian tidak ditemukan",
-        variant: "destructive",
-      });
+    // Simulate loading exam data with a small delay
+    const timer = setTimeout(() => {
+      if (id) {
+        const examData = getExamData(id);
+        if (examData) {
+          setExam(examData);
+          setLoading(false);
+        } else {
+          toast({
+            title: "Error",
+            description: "Ujian tidak ditemukan",
+            variant: "destructive",
+          });
+          navigate("/exams");
+        }
+      }
+    }, 500); // Simulate API delay
+
+    return () => clearTimeout(timer);
+  }, [id, navigate, toast]);
+
+  // Handle delete confirmation
+  const handleDelete = () => {
+    setIsDeleteDialogOpen(false);
+    toast({
+      title: "Ujian Dihapus",
+      description: `Ujian ${exam.title} berhasil dihapus`,
+    });
+    navigate("/exams");
+  };
+
+  // Handle duplicate exam
+  const handleDuplicate = () => {
+    toast({
+      title: "Ujian Diduplikasi",
+      description: `Salinan dari ${exam.title} telah dibuat`,
+    });
+  };
+
+  // Status badge color
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "active":
+        return <Badge className="bg-green-500">Aktif</Badge>;
+      case "scheduled":
+        return <Badge variant="secondary">Terjadwal</Badge>;
+      case "completed":
+        return <Badge variant="outline">Selesai</Badge>;
+      case "draft":
+      default:
+        return <Badge variant="outline">Draft</Badge>;
     }
-    setLoading(false);
-  }, [id, toast]);
+  };
 
   if (loading) {
     return (
       <DashboardLayout title="Detail Ujian">
-        <div className="flex items-center justify-center h-64">
+        <div className="flex justify-center items-center h-64">
           <p>Loading...</p>
         </div>
       </DashboardLayout>
     );
   }
 
-  if (!exam) {
-    return (
-      <DashboardLayout title="Detail Ujian">
-        <div className="flex flex-col items-center justify-center h-64">
-          <h2 className="text-xl font-bold mb-2">Ujian tidak ditemukan</h2>
-          <Button onClick={() => navigate("/exams")}>Kembali ke Daftar Ujian</Button>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "-";
-    return new Date(dateString).toLocaleString("id-ID", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
   return (
     <DashboardLayout title="Detail Ujian">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">{exam.title}</h1>
-            <p className="text-muted-foreground">
-              {exam.subject} • {exam.grade}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => navigate("/exams")}>
-              Kembali
-            </Button>
-            <Button onClick={() => navigate(`/exams/edit/${exam.id}`)}>
-              Edit Ujian
-            </Button>
-          </div>
+          <h1 className="text-2xl font-bold">Detail Ujian</h1>
+          <Button variant="outline" onClick={() => navigate("/exams")}>
+            Kembali
+          </Button>
         </div>
 
         <Card>
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>{exam.title}</CardTitle>
-                <CardDescription>
-                  {exam.subject} • {exam.grade}
-                </CardDescription>
-              </div>
-              {getStatusBadge(exam.status)}
+          <CardHeader className="flex flex-row items-start justify-between">
+            <div>
+              <CardTitle className="text-xl">{exam.title}</CardTitle>
+              <CardDescription className="flex items-center mt-1">
+                {getStatusBadge(exam.status)}
+                <span className="ml-3">{exam.subject} • {exam.grade}</span>
+              </CardDescription>
+            </div>
+            <div className="flex space-x-2">
+              <Button variant="outline" size="sm" onClick={() => navigate(`/exams/edit/${exam.id}`)}>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleDuplicate}>
+                <Copy className="mr-2 h-4 w-4" />
+                Duplikasi
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-red-500 hover:text-red-500" 
+                onClick={() => setIsDeleteDialogOpen(true)}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Hapus
+              </Button>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span>Durasi: {exam.duration} menit</span>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-sm font-medium mb-2">Informasi Ujian</h3>
+                  <div className="bg-muted p-4 rounded-lg space-y-3">
+                    <div className="flex items-center">
+                      <Clock className="h-4 w-4 text-muted-foreground mr-2" />
+                      <span className="text-sm">Durasi: {exam.duration} menit</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Calendar className="h-4 w-4 text-muted-foreground mr-2" />
+                      <span className="text-sm">
+                        Waktu: {exam.startDate ? new Date(exam.startDate).toLocaleString() : "Belum dijadwalkan"}
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <FileText className="h-4 w-4 text-muted-foreground mr-2" />
+                      <span className="text-sm">Jumlah Soal: {exam.questions}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <User className="h-4 w-4 text-muted-foreground mr-2" />
+                      <span className="text-sm">Dibuat oleh: {exam.createdBy}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <CheckCircle2 className="h-4 w-4 text-muted-foreground mr-2" />
+                      <span className="text-sm">KKM: {exam.passingScore}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="text-sm font-medium mb-2">Deskripsi</h3>
+                  <div className="bg-muted p-4 rounded-lg">
+                    <p className="text-sm">{exam.description}</p>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <FileText className="h-4 w-4 text-muted-foreground" />
-                <span>Soal: {exam.questions} butir</span>
+              
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-sm font-medium mb-2">Petunjuk Pengerjaan</h3>
+                  <div className="bg-muted p-4 rounded-lg">
+                    <p className="text-sm">{exam.instructions}</p>
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="text-sm font-medium mb-2">Statistik Pengerjaan</h3>
+                  <div className="bg-muted p-4 rounded-lg">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="text-center p-2 bg-green-50 border border-green-200 rounded-lg">
+                        <p className="text-xs text-green-700">Telah Mengerjakan</p>
+                        <p className="text-xl font-semibold text-green-700">24</p>
+                      </div>
+                      <div className="text-center p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p className="text-xs text-yellow-700">Belum Mengerjakan</p>
+                        <p className="text-xl font-semibold text-yellow-700">8</p>
+                      </div>
+                      <div className="text-center p-2 bg-orange-50 border border-orange-200 rounded-lg">
+                        <p className="text-xs text-orange-700">Nilai Rata-rata</p>
+                        <p className="text-xl font-semibold text-orange-700">76.5</p>
+                      </div>
+                      <div className="text-center p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-xs text-blue-700">Tingkat Kelulusan</p>
+                        <p className="text-xl font-semibold text-blue-700">86%</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>Mulai: {formatDate(exam.startDate)}</span>
+            </div>
+            
+            <div>
+              <h3 className="text-sm font-medium mb-2">Daftar Soal</h3>
+              <div className="border rounded-lg overflow-hidden">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-muted/40">
+                    <tr>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Soal</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kesulitan</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {[1, 2, 3, 4, 5].map((num) => (
+                      <tr key={num} className="hover:bg-muted/30">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">{num}</td>
+                        <td className="px-6 py-4 text-sm">Soal nomor {num} tentang {exam.subject}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <Badge variant="outline">{num % 2 === 0 ? "Pilihan Ganda" : "Essay"}</Badge>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <Badge variant={num % 3 === 0 ? "destructive" : num % 3 === 1 ? "default" : "secondary"}>
+                            {num % 3 === 0 ? "Sulit" : num % 3 === 1 ? "Sedang" : "Mudah"}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>Selesai: {formatDate(exam.endDate)}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <School className="h-4 w-4 text-muted-foreground" />
-                <span>Nilai Minimum: {exam.passingScore}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <span>Dibuat oleh: {exam.createdBy}</span>
+              <div className="mt-4">
+                <Button variant="outline" disabled>
+                  Kelola Soal
+                </Button>
               </div>
             </div>
           </CardContent>
+          <CardFooter className="flex justify-between">
+            <Button variant="outline" onClick={() => navigate("/exams")}>
+              Kembali ke Daftar Ujian
+            </Button>
+            <Button onClick={() => navigate(`/results/${exam.id}`)}>
+              Lihat Hasil
+            </Button>
+          </CardFooter>
         </Card>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-3 mb-4">
-            <TabsTrigger value="details">Detail</TabsTrigger>
-            <TabsTrigger value="questions">Daftar Soal</TabsTrigger>
-            <TabsTrigger value="participants">Peserta</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="details">
-            <Card>
-              <CardHeader>
-                <CardTitle>Informasi Ujian</CardTitle>
-                <CardDescription>Detail lengkap tentang ujian</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h3 className="font-medium mb-2">Deskripsi</h3>
-                  <p>{exam.description || "Tidak ada deskripsi"}</p>
-                </div>
-                <div>
-                  <h3 className="font-medium mb-2">Petunjuk</h3>
-                  <p>{exam.instructions || "Tidak ada petunjuk"}</p>
-                </div>
-                <div>
-                  <h3 className="font-medium mb-2">Tipe Ujian</h3>
-                  <Badge variant="outline" className="capitalize">
-                    {exam.type === "mid"
-                      ? "Ujian Tengah Semester"
-                      : exam.type === "final"
-                      ? "Ujian Akhir Semester"
-                      : "Ulangan Harian"}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="questions">
-            <Card>
-              <CardHeader>
-                <CardTitle>Daftar Soal</CardTitle>
-                <CardDescription>{exam.questions} soal dalam ujian ini</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {exam.questionDetails?.map((question: any, index: number) => (
-                    <div key={question.id} className="border rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-medium">Soal {index + 1}</h3>
-                        <Badge variant="outline">{question.type === "multiple_choice" ? "Pilihan Ganda" : "Essay"}</Badge>
-                      </div>
-                      <p className="mb-4">{question.question}</p>
-                      
-                      {question.type === "multiple_choice" && (
-                        <div className="space-y-2">
-                          <h4 className="text-sm font-medium">Pilihan Jawaban:</h4>
-                          <ul className="space-y-1 ml-4">
-                            {question.options.map((option: string, i: number) => (
-                              <li key={i} className="flex items-center gap-2">
-                                <span className="text-xs bg-muted px-2 py-1 rounded-full">{String.fromCharCode(65 + i)}</span>
-                                <span>{option}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-                      <div className="mt-4 pt-2 border-t">
-                        <h4 className="text-sm font-medium">Kunci Jawaban:</h4>
-                        <p className="text-green-600">{question.answer}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="participants">
-            <Card>
-              <CardHeader>
-                <CardTitle>Daftar Peserta</CardTitle>
-                <CardDescription>Siswa yang mengikuti ujian ini</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-6">
-                  <GraduationCap className="mx-auto h-12 w-12 text-muted-foreground" />
-                  <h3 className="mt-2 font-medium">Tidak ada peserta saat ini</h3>
-                  <p className="text-muted-foreground max-w-sm mx-auto mt-1">
-                    {exam.status === "draft"
-                      ? "Ujian masih dalam status draft. Peserta akan ditampilkan setelah ujian dijadwalkan."
-                      : exam.status === "scheduled"
-                      ? "Ujian sudah terjadwal. Peserta akan ditampilkan setelah ujian dimulai."
-                      : "Ujian sedang berlangsung, belum ada siswa yang mengakses ujian ini."}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
       </div>
+      
+      {/* Delete confirmation dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Konfirmasi Hapus Ujian</DialogTitle>
+            <DialogDescription>
+              Apakah Anda yakin ingin menghapus ujian "{exam?.title}"? Tindakan ini tidak dapat dibatalkan.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>Batal</Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Hapus Ujian
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };

@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { exportToExcel } from "@/utils/excelUtils";
 import { useToast } from "@/hooks/use-toast";
+import ScoreDistribution from "@/components/results/ScoreDistribution";
 import { 
   Select,
   SelectContent,

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -9,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
-// Mock exam data - use the same extended data as in ExamDetails.tsx
 const mockExamData = {
   "exam-1": {
     id: "exam-1",
@@ -61,7 +59,6 @@ const mockExamData = {
   }
 };
 
-// Add more exams to match with ExamManagement
 for (let i = 4; i <= 10; i++) {
   mockExamData[`exam-${i}`] = {
     id: `exam-${i}`,
@@ -101,23 +98,44 @@ const ExamEdit = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate fetching exam data from API
-    if (id && mockExamData[id as keyof typeof mockExamData]) {
-      const exam = mockExamData[id as keyof typeof mockExamData];
+    if (!id) {
       setExamData({
-        ...exam,
-        startDate: exam.startDate ? new Date(exam.startDate).toISOString().slice(0, 16) : "",
-        endDate: exam.endDate ? new Date(exam.endDate).toISOString().slice(0, 16) : ""
+        title: "New Exam",
+        subject: "General",
+        grade: "All",
+        status: "draft",
+        type: "daily",
+        duration: 60,
+        startDate: "",
+        endDate: "",
+        description: "New exam description",
+        instructions: "General instructions for students",
+        passingScore: 70,
       });
       setLoading(false);
-    } else if (id) {
-      toast({
-        title: "Error",
-        description: "Ujian tidak ditemukan",
-        variant: "destructive",
-      });
-      navigate("/exams");
+      return;
     }
+
+    const timer = setTimeout(() => {
+      if (mockExamData[id as keyof typeof mockExamData]) {
+        const exam = mockExamData[id as keyof typeof mockExamData];
+        setExamData({
+          ...exam,
+          startDate: exam.startDate ? new Date(exam.startDate).toISOString().slice(0, 16) : "",
+          endDate: exam.endDate ? new Date(exam.endDate).toISOString().slice(0, 16) : ""
+        });
+        setLoading(false);
+      } else {
+        toast({
+          title: "Error",
+          description: "Ujian tidak ditemukan",
+          variant: "destructive",
+        });
+        navigate("/exams");
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
   }, [id, navigate, toast]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -132,7 +150,6 @@ const ExamEdit = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate form
     if (!examData.title || !examData.subject || !examData.grade || !examData.duration) {
       toast({
         title: "Validasi Error",
@@ -142,24 +159,19 @@ const ExamEdit = () => {
       return;
     }
 
-    // Success
     toast({
       title: "Ujian berhasil diperbarui",
       description: `Ujian ${examData.title} telah diperbarui`,
     });
     
-    // In a real app, you would save the data to API here
     console.log("Updated exam data:", examData);
     
-    // Redirect back to exam details
     navigate(`/exams/${id}`);
   };
 
   const handleContinueToQuestions = () => {
-    // Save first
     handleSubmit({ preventDefault: () => {} } as React.FormEvent);
     
-    // Navigate to questions
     navigate("/questions");
     
     toast({
