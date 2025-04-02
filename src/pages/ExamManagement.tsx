@@ -70,8 +70,11 @@ const ExamManagement = () => {
         </Tabs>
       </div>
 
-      {/* Custom NewExamDialog component */}
-      <NewExamDialog open={isNewExamDialogOpen} onOpenChange={setIsNewExamDialogOpen} />
+      {/* NewExamDialog with proper props */}
+      <NewExamDialog 
+        open={isNewExamDialogOpen} 
+        onOpenChange={setIsNewExamDialogOpen} 
+      />
     </DashboardLayout>
   );
 };
