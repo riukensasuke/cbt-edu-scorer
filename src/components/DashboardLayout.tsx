@@ -15,7 +15,10 @@ import {
   X,
   GraduationCap,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Database,
+  Key,
+  BookOpenCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -50,6 +53,7 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [classMenuOpen, setClassMenuOpen] = useState(false);
+  const [learningMenuOpen, setLearningMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -88,6 +92,16 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
           label: "Hasil Ujian",
           icon: <LineChart size={20} />,
           path: "/results",
+        },
+        {
+          label: "Token Ujian",
+          icon: <Key size={20} />,
+          path: "/token",
+        },
+        {
+          label: "Backup & Restore",
+          icon: <Database size={20} />,
+          path: "/backup",
         },
         {
           label: "Pengaturan",
@@ -194,39 +208,71 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
               ))}
               
               {user?.role === "admin" && (
-                <Collapsible
-                  open={classMenuOpen}
-                  onOpenChange={setClassMenuOpen}
-                  className="mt-4"
-                >
-                  <CollapsibleTrigger asChild>
-                    <button className="flex items-center justify-between w-full px-3 py-2 text-sidebar-foreground rounded-md hover:bg-sidebar-accent group transition-colors">
-                      <div className="flex items-center">
-                        <span className="mr-3 text-sidebar-foreground/70 group-hover:text-sidebar-foreground">
-                          <GraduationCap size={20} />
-                        </span>
-                        <span>Daftar Kelas</span>
-                      </div>
-                      {classMenuOpen ? (
-                        <ChevronDown className="h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="pl-9 space-y-1">
-                    {classTeachers.map((item, index) => (
+                <>
+                  <Collapsible
+                    open={classMenuOpen}
+                    onOpenChange={setClassMenuOpen}
+                    className="mt-4"
+                  >
+                    <CollapsibleTrigger asChild>
+                      <button className="flex items-center justify-between w-full px-3 py-2 text-sidebar-foreground rounded-md hover:bg-sidebar-accent group transition-colors">
+                        <div className="flex items-center">
+                          <span className="mr-3 text-sidebar-foreground/70 group-hover:text-sidebar-foreground">
+                            <GraduationCap size={20} />
+                          </span>
+                          <span>Daftar Kelas</span>
+                        </div>
+                        {classMenuOpen ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="pl-9 space-y-1">
+                      {classTeachers.map((item, index) => (
+                        <Link
+                          key={index}
+                          to={`/admin/classes/${item.class}`}
+                          className="flex items-center justify-between px-3 py-2 text-sidebar-foreground rounded-md hover:bg-sidebar-accent group transition-colors text-sm"
+                        >
+                          <span>Kelas {item.class}</span>
+                          <span className="text-xs text-sidebar-foreground/70">{item.teacher}</span>
+                        </Link>
+                      ))}
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  <Collapsible
+                    open={learningMenuOpen}
+                    onOpenChange={setLearningMenuOpen}
+                    className="mt-4"
+                  >
+                    <CollapsibleTrigger asChild>
+                      <button className="flex items-center justify-between w-full px-3 py-2 text-sidebar-foreground rounded-md hover:bg-sidebar-accent group transition-colors">
+                        <div className="flex items-center">
+                          <span className="mr-3 text-sidebar-foreground/70 group-hover:text-sidebar-foreground">
+                            <BookOpenCheck size={20} />
+                          </span>
+                          <span>Data Pembelajaran</span>
+                        </div>
+                        {learningMenuOpen ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="pl-9 space-y-1">
                       <Link
-                        key={index}
-                        to={`/admin/classes/${item.class}`}
-                        className="flex items-center justify-between px-3 py-2 text-sidebar-foreground rounded-md hover:bg-sidebar-accent group transition-colors text-sm"
+                        to="/admin/learning-data"
+                        className="flex items-center px-3 py-2 text-sidebar-foreground rounded-md hover:bg-sidebar-accent group transition-colors text-sm"
                       >
-                        <span>Kelas {item.class}</span>
-                        <span className="text-xs text-sidebar-foreground/70">{item.teacher}</span>
+                        <span>Data Guru & Mapel</span>
                       </Link>
-                    ))}
-                  </CollapsibleContent>
-                </Collapsible>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </>
               )}
             </div>
           </nav>

@@ -17,12 +17,15 @@ const ExamManagement = () => {
   return (
     <DashboardLayout title="Manajemen Ujian">
       <div className="space-y-6">
-        <Dialog>
-          <ExamFilters 
-            searchQuery={searchQuery} 
-            onSearchChange={handleSearch} 
-          />
-        </Dialog>
+        <div className="flex justify-between items-center">
+          <Dialog>
+            <ExamFilters 
+              searchQuery={searchQuery} 
+              onSearchChange={handleSearch} 
+            />
+          </Dialog>
+          <NewExamDialog />
+        </div>
         
         <Tabs defaultValue="all" value={activeTab} onValueChange={handleTabChange}>
           <TabsList className="grid w-full grid-cols-4">

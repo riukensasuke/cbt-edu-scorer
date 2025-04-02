@@ -23,6 +23,9 @@ import Settings from "./pages/Settings";
 import TeacherStudents from "./pages/TeacherStudents";
 import ExamDetails from "./pages/ExamDetails";
 import ExamEdit from "./pages/ExamEdit";
+import LearningData from "./pages/LearningData";
+import TokenManagement from "./pages/TokenManagement";
+import BackupRestore from "./pages/BackupRestore";
 
 // Create protected route component
 const ProtectedRoute = ({ children, allowedRoles }: { children: JSX.Element, allowedRoles: string[] }) => {
@@ -161,10 +164,42 @@ const App = () => (
               } 
             />
             <Route 
+              path="/admin/classes/:classId?" 
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <ClassManagement />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
               path="/settings" 
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
                   <Settings />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/learning-data" 
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <LearningData />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/token" 
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <TokenManagement />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/backup" 
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <BackupRestore />
                 </ProtectedRoute>
               } 
             />
