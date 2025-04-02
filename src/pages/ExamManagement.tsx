@@ -8,10 +8,13 @@ import { useExamManagement } from "@/hooks/useExamManagement";
 import ExamFilters from "@/components/exam/ExamFilters";
 import ExamListItem from "@/components/exam/ExamListItem";
 import NewExamDialog from "@/components/exam/NewExamDialog";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 const ExamManagement = () => {
   const { user } = useAuth();
   const { activeTab, searchQuery, filteredExams, handleTabChange, handleSearch, deleteExam } = useExamManagement();
+  const [isNewExamDialogOpen, setIsNewExamDialogOpen] = useState(false);
 
   return (
     <DashboardLayout title="Manajemen Ujian">
@@ -23,7 +26,10 @@ const ExamManagement = () => {
               onSearchChange={handleSearch} 
             />
           </div>
-          <NewExamDialog />
+          <Button onClick={() => setIsNewExamDialogOpen(true)} size="default" className="bg-green-600 hover:bg-green-700">
+            <Plus className="mr-2 h-4 w-4" />
+            Buat Ujian Baru
+          </Button>
         </div>
         
         <Tabs defaultValue="all" value={activeTab} onValueChange={handleTabChange}>
@@ -63,6 +69,9 @@ const ExamManagement = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Custom NewExamDialog component */}
+      <NewExamDialog open={isNewExamDialogOpen} onOpenChange={setIsNewExamDialogOpen} />
     </DashboardLayout>
   );
 };

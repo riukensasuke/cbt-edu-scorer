@@ -4,8 +4,11 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Download, Upload, Plus } from "lucide-react";
+import { Search, Download, Upload, Plus, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { saveAs } from "file-saver";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Mock data for learning data
 const learningData = [
@@ -19,6 +22,16 @@ const learningData = [
 const LearningData = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
+  const [isAddDataOpen, setIsAddDataOpen] = useState(false);
+  const [isEditDataOpen, setIsEditDataOpen] = useState(false);
+  const [selectedData, setSelectedData] = useState<typeof learningData[0] | null>(null);
+  const [newData, setNewData] = useState({
+    teacherName: "",
+    subject: "",
+    level: "",
+    class: "",
+    subjectTeacher: ""
+  });
   
   const filteredData = learningData.filter(item => 
     item.teacherName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -27,6 +40,23 @@ const LearningData = () => {
   );
 
   const handleExport = () => {
+    // Prepare the data for export
+    const dataToExport = filteredData.map((item, index) => ({
+      'No': index + 1,
+      'Nama Guru': item.teacherName,
+      'Mata Pelajaran': item.subject,
+      'Tingkat': item.level,
+      'Kelas': item.class,
+      'Guru Mapel': item.subjectTeacher
+    }));
+    
+    // Convert to JSON string
+    const jsonString = JSON.stringify(dataToExport, null, 2);
+    
+    // Create a blob and download
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    saveAs(blob, 'data_pembelajaran.json');
+    
     toast({
       title: "Mengekspor data",
       description: "Data pembelajaran berhasil diekspor",
@@ -34,17 +64,73 @@ const LearningData = () => {
   };
 
   const handleImport = () => {
-    toast({
-      title: "Mengimpor data",
-      description: "Data pembelajaran berhasil diimpor",
-    });
+    // Create a file input
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json,.xlsx,.xls,.csv';
+    
+    // Handle file selection
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        toast({
+          title: "Mengimpor data",
+          description: `File ${file.name} berhasil diimpor`,
+        });
+      }
+    };
+    
+    // Trigger file dialog
+    input.click();
   };
 
   const handleAdd = () => {
-    toast({
-      title: "Tambah data",
-      description: "Form tambah data pembelajaran dibuka",
+    setIsAddDataOpen(true);
+  };
+  
+  const handleEdit = (item: typeof learningData[0]) => {
+    setSelectedData(item);
+    setNewData({
+      teacherName: item.teacherName,
+      subject: item.subject,
+      level: item.level,
+      class: item.class,
+      subjectTeacher: item.subjectTeacher
     });
+    setIsEditDataOpen(true);
+  };
+  
+  const handleDelete = (id: string) => {
+    toast({
+      title: "Hapus data",
+      description: `Data dengan ID ${id} telah dihapus`,
+    });
+  };
+  
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setNewData(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleSelectChange = (name: string, value: string) => {
+    setNewData(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleSaveNewData = () => {
+    toast({
+      title: "Data berhasil ditambahkan",
+      description: `Data pembelajaran baru telah disimpan`,
+    });
+    setIsAddDataOpen(false);
+  };
+  
+  const handleSaveEditData = () => {
+    toast({
+      title: "Data berhasil diperbarui",
+      description: `Data pembelajaran telah diperbarui`,
+    });
+    setIsEditDataOpen(false);
+    setSelectedData(null);
   };
 
   return (
@@ -109,8 +195,12 @@ const LearningData = () => {
                       <td className="p-4 align-middle">{item.subjectTeacher}</td>
                       <td className="p-4 align-middle">
                         <div className="flex space-x-2">
-                          <Button variant="outline" size="sm">Edit</Button>
-                          <Button variant="outline" size="sm" className="text-red-500 hover:text-red-700">Hapus</Button>
+                          <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>
+                            <Edit className="h-4 w-4 mr-1" /> Edit
+                          </Button>
+                          <Button variant="outline" size="sm" className="text-red-500 hover:text-red-700" onClick={() => handleDelete(item.id)}>
+                            <Trash2 className="h-4 w-4 mr-1" /> Hapus
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -127,6 +217,184 @@ const LearningData = () => {
           </CardContent>
         </Card>
       </div>
+      
+      {/* Add Data Dialog */}
+      <Dialog open={isAddDataOpen} onOpenChange={setIsAddDataOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Tambah Data Pembelajaran</DialogTitle>
+            <DialogDescription>
+              Masukkan informasi data pembelajaran baru
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="teacherName" className="text-right text-sm font-medium">
+                Nama Guru
+              </label>
+              <Input
+                id="teacherName"
+                name="teacherName"
+                value={newData.teacherName}
+                onChange={handleInputChange}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="subject" className="text-right text-sm font-medium">
+                Mata Pelajaran
+              </label>
+              <Input
+                id="subject"
+                name="subject"
+                value={newData.subject}
+                onChange={handleInputChange}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="level" className="text-right text-sm font-medium">
+                Tingkat
+              </label>
+              <Select
+                value={newData.level}
+                onValueChange={(value) => handleSelectChange("level", value)}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Pilih tingkat" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1</SelectItem>
+                  <SelectItem value="2">2</SelectItem>
+                  <SelectItem value="3">3</SelectItem>
+                  <SelectItem value="4">4</SelectItem>
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="6">6</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="class" className="text-right text-sm font-medium">
+                Kelas
+              </label>
+              <Input
+                id="class"
+                name="class"
+                value={newData.class}
+                onChange={handleInputChange}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="subjectTeacher" className="text-right text-sm font-medium">
+                Guru Mapel
+              </label>
+              <Input
+                id="subjectTeacher"
+                name="subjectTeacher"
+                value={newData.subjectTeacher}
+                onChange={handleInputChange}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddDataOpen(false)}>
+              Batal
+            </Button>
+            <Button onClick={handleSaveNewData}>Simpan</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Edit Data Dialog */}
+      <Dialog open={isEditDataOpen} onOpenChange={setIsEditDataOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Data Pembelajaran</DialogTitle>
+            <DialogDescription>
+              Perbarui informasi data pembelajaran
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="editTeacherName" className="text-right text-sm font-medium">
+                Nama Guru
+              </label>
+              <Input
+                id="editTeacherName"
+                name="teacherName"
+                value={newData.teacherName}
+                onChange={handleInputChange}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="editSubject" className="text-right text-sm font-medium">
+                Mata Pelajaran
+              </label>
+              <Input
+                id="editSubject"
+                name="subject"
+                value={newData.subject}
+                onChange={handleInputChange}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="editLevel" className="text-right text-sm font-medium">
+                Tingkat
+              </label>
+              <Select
+                value={newData.level}
+                onValueChange={(value) => handleSelectChange("level", value)}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Pilih tingkat" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1</SelectItem>
+                  <SelectItem value="2">2</SelectItem>
+                  <SelectItem value="3">3</SelectItem>
+                  <SelectItem value="4">4</SelectItem>
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="6">6</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="editClass" className="text-right text-sm font-medium">
+                Kelas
+              </label>
+              <Input
+                id="editClass"
+                name="class"
+                value={newData.class}
+                onChange={handleInputChange}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="editSubjectTeacher" className="text-right text-sm font-medium">
+                Guru Mapel
+              </label>
+              <Input
+                id="editSubjectTeacher"
+                name="subjectTeacher"
+                value={newData.subjectTeacher}
+                onChange={handleInputChange}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDataOpen(false)}>
+              Batal
+            </Button>
+            <Button onClick={handleSaveEditData}>Simpan Perubahan</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };

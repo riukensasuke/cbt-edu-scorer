@@ -32,21 +32,33 @@ interface DashboardLayoutProps {
   title: string;
 }
 
-// Mock data for teachers and classes
-const classTeachers = [
-  { class: "1A", teacher: "Nurjannah" },
-  { class: "1B", teacher: "Maemunah" },
-  { class: "2A", teacher: "Erniwati" },
-  { class: "2B", teacher: "Sulastri" },
-  { class: "3A", teacher: "Rahmawati" },
-  { class: "3B", teacher: "Haryanto" },
-  { class: "4A", teacher: "Supardi" },
-  { class: "4B", teacher: "Sumarno" },
-  { class: "5A", teacher: "Supriyanto" },
-  { class: "5B", teacher: "Sutarman" },
-  { class: "6A", teacher: "Joko" },
-  { class: "6B", teacher: "Budiman" }
-];
+// Organized class teachers by grade level
+const classTeachersByGrade = {
+  "1": [
+    { class: "1A", teacher: "Nurjannah" },
+    { class: "1B", teacher: "Maemunah" }
+  ],
+  "2": [
+    { class: "2A", teacher: "Erniwati" },
+    { class: "2B", teacher: "Sulastri" }
+  ],
+  "3": [
+    { class: "3A", teacher: "Rahmawati" },
+    { class: "3B", teacher: "Haryanto" }
+  ],
+  "4": [
+    { class: "4A", teacher: "Supardi" },
+    { class: "4B", teacher: "Sumarno" }
+  ],
+  "5": [
+    { class: "5A", teacher: "Supriyanto" },
+    { class: "5B", teacher: "Sutarman" }
+  ],
+  "6": [
+    { class: "6A", teacher: "Joko" },
+    { class: "6B", teacher: "Budiman" }
+  ]
+};
 
 const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
   const { user, logout } = useAuth();
@@ -54,10 +66,18 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [classMenuOpen, setClassMenuOpen] = useState(false);
   const [learningMenuOpen, setLearningMenuOpen] = useState(false);
+  const [expandedGrades, setExpandedGrades] = useState<Record<string, boolean>>({});
 
   const handleLogout = () => {
     logout();
     navigate("/login");
+  };
+
+  const toggleGradeExpanded = (grade: string) => {
+    setExpandedGrades(prev => ({
+      ...prev,
+      [grade]: !prev[grade]
+    }));
   };
 
   // Define navigation items based on user role
@@ -229,16 +249,36 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
                         )}
                       </button>
                     </CollapsibleTrigger>
-                    <CollapsibleContent className="pl-9 space-y-1">
-                      {classTeachers.map((item, index) => (
-                        <Link
-                          key={index}
-                          to={`/admin/classes/${item.class}`}
-                          className="flex items-center justify-between px-3 py-2 text-sidebar-foreground rounded-md hover:bg-sidebar-accent group transition-colors text-sm"
-                        >
-                          <span>Kelas {item.class}</span>
-                          <span className="text-xs text-sidebar-foreground/70">{item.teacher}</span>
-                        </Link>
+                    <CollapsibleContent className="pl-9">
+                      {Object.entries(classTeachersByGrade).map(([grade, classes]) => (
+                        <div key={grade} className="mb-2">
+                          <button
+                            onClick={() => toggleGradeExpanded(grade)}
+                            className="flex items-center justify-between w-full px-3 py-1 text-sidebar-foreground hover:bg-sidebar-accent group transition-colors text-sm"
+                          >
+                            <span>Kelas {grade}</span>
+                            {expandedGrades[grade] ? (
+                              <ChevronDown className="h-3 w-3" />
+                            ) : (
+                              <ChevronRight className="h-3 w-3" />
+                            )}
+                          </button>
+                          
+                          {expandedGrades[grade] && (
+                            <div className="pl-4 space-y-1 mt-1">
+                              {classes.map((item) => (
+                                <Link
+                                  key={item.class}
+                                  to={`/admin/classes/${item.class}`}
+                                  className="flex items-center justify-between px-3 py-1 text-sidebar-foreground rounded-md hover:bg-sidebar-accent group transition-colors text-sm"
+                                >
+                                  <span>Kelas {item.class}</span>
+                                  <span className="text-xs text-sidebar-foreground/70">{item.teacher}</span>
+                                </Link>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       ))}
                     </CollapsibleContent>
                   </Collapsible>

@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Database, Download, Upload, Calendar, Check, Clock, Archive, 
-  FileQuestion, FileText, Users, CircleDashed 
+  FileQuestion, FileText, Users, CircleDashed, FileDown, File
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
+import { saveAs } from "file-saver";
 
 const BackupRestore = () => {
   const { toast } = useToast();
@@ -16,6 +17,7 @@ const BackupRestore = () => {
   const [isRestoring, setIsRestoring] = useState(false);
   const [backupProgress, setBackupProgress] = useState(0);
   const [restoreProgress, setRestoreProgress] = useState(0);
+  const [backupFiles, setBackupFiles] = useState<File[]>([]);
 
   // Sample backup history
   const backupHistory = [
@@ -24,6 +26,7 @@ const BackupRestore = () => {
       date: "2023-10-15 14:30",
       size: "24.5 MB",
       status: "completed",
+      filename: "backup_20231015_1430.zip",
       items: {
         users: 120,
         students: 95,
@@ -40,6 +43,7 @@ const BackupRestore = () => {
       date: "2023-10-01 09:15",
       size: "23.8 MB",
       status: "completed",
+      filename: "backup_20231001_0915.zip",
       items: {
         users: 115,
         students: 90,
@@ -56,6 +60,7 @@ const BackupRestore = () => {
       date: "2023-09-15 11:45",
       size: "22.1 MB",
       status: "completed",
+      filename: "backup_20230915_1145.zip",
       items: {
         users: 110,
         students: 85,
@@ -79,9 +84,14 @@ const BackupRestore = () => {
         if (prev >= 100) {
           clearInterval(interval);
           setIsBackingUp(false);
+          
+          // Create a mock backup file
+          const now = new Date();
+          const filename = `backup_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}.zip`;
+          
           toast({
             title: "Backup berhasil",
-            description: "Data berhasil dibackup",
+            description: `Data berhasil dibackup dengan nama file ${filename}`,
           });
           return 100;
         }
@@ -112,10 +122,39 @@ const BackupRestore = () => {
   };
 
   const handleDownload = (backupId: string) => {
+    const backup = backupHistory.find(b => b.id === backupId);
+    if (!backup) return;
+    
+    // Create mock data for the backup file
+    const mockData = {
+      backupInfo: {
+        id: backup.id,
+        date: backup.date,
+        items: backup.items
+      }
+    };
+    
+    // Convert to JSON blob
+    const blob = new Blob([JSON.stringify(mockData, null, 2)], { type: "application/json" });
+    
+    // Download file using FileSaver
+    saveAs(blob, backup.filename);
+    
     toast({
       title: "Download berhasil",
-      description: "Backup berhasil didownload",
+      description: `Backup ${backup.filename} berhasil didownload`,
     });
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      setBackupFiles(Array.from(files));
+      toast({
+        title: "File berhasil diunggah",
+        description: `File ${files[0].name} siap untuk dipulihkan`,
+      });
+    }
   };
 
   return (
@@ -214,6 +253,7 @@ const BackupRestore = () => {
                   id="restore-file"
                   className="hidden"
                   accept=".zip,.sql,.backup"
+                  onChange={handleFileUpload}
                 />
                 <label
                   htmlFor="restore-file"
@@ -224,6 +264,18 @@ const BackupRestore = () => {
                   <span className="text-xs text-muted-foreground mt-1">atau drop file disini</span>
                 </label>
               </div>
+              
+              {backupFiles.length > 0 && (
+                <div className="mt-4 p-3 bg-muted rounded-md">
+                  <div className="flex items-center gap-2">
+                    <File className="h-5 w-5 text-muted-foreground" />
+                    <div className="text-sm flex-1 truncate">{backupFiles[0].name}</div>
+                    <Button variant="outline" size="sm" onClick={() => setBackupFiles([])}>
+                      Hapus
+                    </Button>
+                  </div>
+                </div>
+              )}
               
               {isRestoring && (
                 <div className="mt-4 space-y-2">
@@ -238,7 +290,7 @@ const BackupRestore = () => {
             <CardFooter>
               <Button 
                 onClick={() => handleRestore("upload")} 
-                disabled={isRestoring}
+                disabled={isRestoring || backupFiles.length === 0}
                 className="w-full"
               >
                 {isRestoring ? (
@@ -281,6 +333,10 @@ const BackupRestore = () => {
                     <div className="flex items-center">
                       <Database className="h-4 w-4 mr-2 text-muted-foreground" />
                       <span>Ukuran: {backup.size}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <FileDown className="h-4 w-4 mr-2 text-muted-foreground" />
+                      <span>File: {backup.filename}</span>
                     </div>
                     <div className="flex items-center">
                       <Users className="h-4 w-4 mr-2 text-muted-foreground" />
