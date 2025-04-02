@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import DashboardLayout from "@/components/DashboardLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import WelcomeCard from "@/components/dashboard/WelcomeCard";
 import UpcomingExams from "@/components/dashboard/UpcomingExams";
 import RecentResults from "@/components/dashboard/RecentResults";
@@ -62,9 +61,7 @@ const TeacherDashboard = () => {
           </div>
         </div>
 
-        {/* Developer Information Section */}
         <div className="grid gap-6 md:grid-cols-3">
-          {/* Developer Info */}
           <Card className="md:col-span-1">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -96,7 +93,6 @@ const TeacherDashboard = () => {
             </CardContent>
           </Card>
           
-          {/* App Information */}
           <Card className="md:col-span-1">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -167,7 +163,6 @@ const TeacherDashboard = () => {
             </CardFooter>
           </Card>
           
-          {/* Donation Card */}
           <Card className="md:col-span-1">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
