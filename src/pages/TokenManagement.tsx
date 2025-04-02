@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,7 +25,6 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
-// Mock data
 const mockTokens = [
   {
     id: "1",
@@ -75,15 +73,13 @@ const TokenManagement = () => {
   const [copied, setCopied] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Auto-refresh token timer
   useEffect(() => {
-    // Token refresh logic
     const refreshTimers = tokens
       .filter(t => t.isActive && t.autoRefresh)
       .map(token => {
         return setInterval(() => {
           refreshToken(token.id);
-        }, token.refreshInterval * 60 * 1000); // Convert minutes to milliseconds
+        }, token.refreshInterval * 60 * 1000);
       });
     
     return () => {
@@ -94,7 +90,6 @@ const TokenManagement = () => {
   const refreshToken = (tokenId: string) => {
     setTokens(prevTokens => prevTokens.map(t => {
       if (t.id === tokenId && t.isActive) {
-        // Generate a new token
         const characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
         let newTokenValue = "";
         for (let i = 0; i < 6; i++) {
@@ -117,7 +112,6 @@ const TokenManagement = () => {
   };
 
   const handleGenerateToken = () => {
-    // Generate a random token
     const characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     let generatedToken = "";
     for (let i = 0; i < 6; i++) {
@@ -129,7 +123,7 @@ const TokenManagement = () => {
       examId: newToken.examId,
       examTitle: newToken.examTitle,
       token: generatedToken,
-      expiresAt: new Date(Date.now() + 3600000).toISOString(), // Default 1 hour expiration
+      expiresAt: new Date(Date.now() + 3600000).toISOString(),
       isActive: true,
       autoRefresh: newToken.autoRefresh,
       refreshInterval: newToken.refreshInterval
@@ -212,7 +206,6 @@ const TokenManagement = () => {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  // Format date to readable format
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleString('id-ID', {
@@ -373,7 +366,7 @@ const TokenManagement = () => {
                           </TableCell>
                           <TableCell>
                             {token.autoRefresh ? (
-                              <Badge variant="success">Setiap {token.refreshInterval} menit</Badge>
+                              <Badge variant="secondary">Setiap {token.refreshInterval} menit</Badge>
                             ) : (
                               <Badge variant="outline">Tidak aktif</Badge>
                             )}

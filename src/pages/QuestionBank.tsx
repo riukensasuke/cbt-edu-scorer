@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -508,8 +507,8 @@ const QuestionBank = () => {
                                 </Badge>
                               </div>
                               <Badge variant={
-                                question.difficulty === "easy" ? "success" : 
-                                question.difficulty === "medium" ? "warning" : "destructive"
+                                question.difficulty === "easy" ? "secondary" : 
+                                question.difficulty === "medium" ? "default" : "destructive"
                               }>
                                 {difficultyOptions.find(d => d.value === question.difficulty)?.label}
                               </Badge>
@@ -905,8 +904,8 @@ const QuestionBank = () => {
                   {gradeOptions.find(g => g.value === previewQuestion.grade)?.label}
                 </Badge>
                 <Badge variant={
-                  previewQuestion.difficulty === "easy" ? "success" : 
-                  previewQuestion.difficulty === "medium" ? "warning" : "destructive"
+                  previewQuestion.difficulty === "easy" ? "secondary" : 
+                  previewQuestion.difficulty === "medium" ? "default" : "destructive"
                 }>
                   {difficultyOptions.find(d => d.value === previewQuestion.difficulty)?.label}
                 </Badge>
