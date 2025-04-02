@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Users, UserCheck, FileText, Book, School, BookOpen, Heart, Info, Settings } from "lucide-react";
@@ -138,8 +137,8 @@ const AdminDashboard = () => {
       <div className="space-y-6">
         {/* Welcome and Configuration Section */}
         <div className="grid gap-6 md:grid-cols-2">
-          {/* Welcome Card with friendly background */}
-          <Card className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-100">
+          {/* Welcome Card with enhanced friendly background */}
+          <Card className="bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 border-2 border-blue-200 shadow-md">
             <CardHeader>
               <CardTitle className="text-gradient-primary">Selamat Datang di Edu-Score</CardTitle>
               <CardDescription>
@@ -474,8 +473,8 @@ const AdminDashboard = () => {
             </CardContent>
           </Card>
           
-          {/* App Information - replacing donation card as requested */}
-          <Card className="md:col-span-2">
+          {/* App Information */}
+          <Card className="md:col-span-1">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Info className="h-5 w-5" /> Tentang Aplikasi
@@ -539,6 +538,79 @@ const AdminDashboard = () => {
                   </div>
                   <DialogFooter>
                     <Button>Tutup</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </CardFooter>
+          </Card>
+          
+          {/* Donation Card */}
+          <Card className="md:col-span-1">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Heart className="h-5 w-5 text-red-500" /> Berkenan Berdonasi
+              </CardTitle>
+              <CardDescription>
+                Dukung pengembangan aplikasi Edu-Score
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Aplikasi ini dikembangkan dengan penuh dedikasi untuk kemajuan pendidikan di Indonesia.
+                Dukungan Anda akan membantu kami meningkatkan fitur dan kualitas aplikasi.
+              </p>
+              <div>
+                <h3 className="text-sm font-semibold">Rekening Donasi:</h3>
+                <ul className="text-sm text-muted-foreground list-none space-y-1">
+                  <li>Bank BCA: 1234567890 (PT Edukasi Teknologi)</li>
+                  <li>Bank Mandiri: 0987654321 (PT Edukasi Teknologi)</li>
+                  <li>Bank BNI: 1122334455 (PT Edukasi Teknologi)</li>
+                </ul>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600">
+                    <Heart className="mr-2 h-4 w-4" /> Donasi Sekarang
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Cara Berdonasi</DialogTitle>
+                    <DialogDescription>
+                      Pilih metode donasi yang Anda inginkan
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="font-medium">Transfer Bank</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Silakan transfer ke salah satu rekening berikut:
+                      </p>
+                      <ul className="text-sm text-muted-foreground list-none space-y-1 mt-2">
+                        <li>Bank BCA: 1234567890 (PT Edukasi Teknologi)</li>
+                        <li>Bank Mandiri: 0987654321 (PT Edukasi Teknologi)</li>
+                        <li>Bank BNI: 1122334455 (PT Edukasi Teknologi)</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h3 className="font-medium">E-Wallet</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Scan QRIS di bawah ini untuk donasi melalui e-wallet:
+                      </p>
+                      <div className="flex justify-center my-4">
+                        <div className="bg-gray-100 h-32 w-32 flex items-center justify-center border">
+                          <span className="text-xs text-center text-muted-foreground">QRIS Code</span>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Setelah melakukan donasi, silakan kirim bukti transfer ke email: donasi@edu-score.id
+                    </p>
+                  </div>
+                  <DialogFooter>
+                    <Button>Terima Kasih</Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>

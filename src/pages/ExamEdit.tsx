@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
-// Mock exam data - this would be fetched from your API
+// Mock exam data - use the same extended data as in ExamDetails.tsx
 const mockExamData = {
   "exam-1": {
     id: "exam-1",
@@ -61,6 +61,26 @@ const mockExamData = {
   }
 };
 
+// Add more exams to match with ExamManagement
+for (let i = 4; i <= 10; i++) {
+  mockExamData[`exam-${i}`] = {
+    id: `exam-${i}`,
+    title: `Ujian Sample ${i}`,
+    subject: i % 3 === 0 ? "Matematika" : i % 3 === 1 ? "Bahasa Indonesia" : "IPA",
+    grade: `Kelas ${Math.floor(Math.random() * 6) + 1}`,
+    status: i % 4 === 0 ? "active" : i % 4 === 1 ? "scheduled" : i % 4 === 2 ? "completed" : "draft",
+    type: i % 3 === 0 ? "mid" : i % 3 === 1 ? "final" : "daily",
+    duration: 60 + (i * 10),
+    questions: 10 + i,
+    startDate: new Date(Date.now() + (i * 86400000)).toISOString(),
+    endDate: new Date(Date.now() + (i * 86400000) + 3600000).toISOString(),
+    createdBy: i % 2 === 0 ? "Ibu Siti" : "Bapak Ahmad",
+    description: `Deskripsi untuk ujian sample ${i}`,
+    instructions: `Petunjuk pengerjaan untuk ujian sample ${i}`,
+    passingScore: 60 + i,
+  };
+}
+
 const ExamEdit = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -89,6 +109,7 @@ const ExamEdit = () => {
         startDate: exam.startDate ? new Date(exam.startDate).toISOString().slice(0, 16) : "",
         endDate: exam.endDate ? new Date(exam.endDate).toISOString().slice(0, 16) : ""
       });
+      setLoading(false);
     } else if (id) {
       toast({
         title: "Error",
@@ -97,7 +118,6 @@ const ExamEdit = () => {
       });
       navigate("/exams");
     }
-    setLoading(false);
   }, [id, navigate, toast]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

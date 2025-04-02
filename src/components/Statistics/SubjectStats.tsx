@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Users, UserX, UserCheck, Clock } from "lucide-react";
+import { Users, UserX, UserCheck, Clock, BookOpen, FileText, Book, Calendar } from "lucide-react";
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 
@@ -17,6 +17,11 @@ const mockStatsData = {
     inProgress: 3,
     missed: 5,
     totalStudents: 48,
+    learningCount: 6,
+    subjectsTaught: 3,
+    activeQuestions: 85,
+    activeTests: 4,
+    upcomingTests: 2,
     chartData: [
       { name: "Belum Mengikuti", value: 12, color: "#9ca3af" },
       { name: "Sedang Mengerjakan", value: 3, color: "#60a5fa" },
@@ -30,6 +35,11 @@ const mockStatsData = {
     inProgress: 0,
     missed: 3,
     totalStudents: 48,
+    learningCount: 8,
+    subjectsTaught: 1,
+    activeQuestions: 72,
+    activeTests: 2,
+    upcomingTests: 1,
     chartData: [
       { name: "Belum Mengikuti", value: 15, color: "#9ca3af" },
       { name: "Sedang Mengerjakan", value: 0, color: "#60a5fa" },
@@ -43,6 +53,11 @@ const mockStatsData = {
     inProgress: 2,
     missed: 4,
     totalStudents: 48,
+    learningCount: 5,
+    subjectsTaught: 2,
+    activeQuestions: 64,
+    activeTests: 3,
+    upcomingTests: 2,
     chartData: [
       { name: "Belum Mengikuti", value: 20, color: "#9ca3af" },
       { name: "Sedang Mengerjakan", value: 2, color: "#60a5fa" },
@@ -133,6 +148,52 @@ const SubjectStats: React.FC<SubjectStatsProps> = ({ subject = "Matematika" }) =
                   </div>
                 </div>
                 <Progress value={missedPercentage} className="h-2" />
+              </div>
+
+              {/* Additional stats requested */}
+              <div className="pt-4">
+                <h3 className="font-medium mb-3">Informasi Tambahan</h3>
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <BookOpen className="h-4 w-4 mr-2 text-indigo-500" />
+                      <span className="text-sm">Jumlah pembelajaran</span>
+                    </div>
+                    <span className="text-sm font-medium">{stats.learningCount}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Book className="h-4 w-4 mr-2 text-teal-500" />
+                      <span className="text-sm">Pelajaran diampu</span>
+                    </div>
+                    <span className="text-sm font-medium">{stats.subjectsTaught}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <FileText className="h-4 w-4 mr-2 text-amber-500" />
+                      <span className="text-sm">Soal aktif</span>
+                    </div>
+                    <span className="text-sm font-medium">{stats.activeQuestions}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <FileText className="h-4 w-4 mr-2 text-violet-500" />
+                      <span className="text-sm">Tes aktif</span>
+                    </div>
+                    <span className="text-sm font-medium">{stats.activeTests}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Calendar className="h-4 w-4 mr-2 text-cyan-500" />
+                      <span className="text-sm">Ujian akan datang</span>
+                    </div>
+                    <span className="text-sm font-medium">{stats.upcomingTests}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

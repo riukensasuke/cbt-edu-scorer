@@ -10,7 +10,7 @@ import { Calendar, Clock, FileText, Users, School, GraduationCap } from "lucide-
 import { useToast } from "@/hooks/use-toast";
 import { getStatusBadge } from "@/utils/statusUtils";
 
-// Mock exam data (this would typically come from an API)
+// Extended mock exam data to include proper IDs from ExamManagement
 const mockExamData = {
   "exam-1": {
     id: "exam-1",
@@ -132,6 +132,41 @@ const mockExamData = {
     ]
   }
 };
+
+// Add more exams to match with ExamManagement
+for (let i = 4; i <= 10; i++) {
+  mockExamData[`exam-${i}`] = {
+    id: `exam-${i}`,
+    title: `Ujian Sample ${i}`,
+    subject: i % 3 === 0 ? "Matematika" : i % 3 === 1 ? "Bahasa Indonesia" : "IPA",
+    grade: `Kelas ${Math.floor(Math.random() * 6) + 1}`,
+    status: i % 4 === 0 ? "active" : i % 4 === 1 ? "scheduled" : i % 4 === 2 ? "completed" : "draft",
+    type: i % 3 === 0 ? "mid" : i % 3 === 1 ? "final" : "daily",
+    duration: 60 + (i * 10),
+    questions: 10 + i,
+    startDate: new Date(Date.now() + (i * 86400000)).toISOString(),
+    endDate: new Date(Date.now() + (i * 86400000) + 3600000).toISOString(),
+    createdBy: i % 2 === 0 ? "Ibu Siti" : "Bapak Ahmad",
+    description: `Deskripsi untuk ujian sample ${i}`,
+    instructions: `Petunjuk pengerjaan untuk ujian sample ${i}`,
+    passingScore: 60 + i,
+    questionDetails: [
+      {
+        id: `q1-exam${i}`,
+        type: "multiple_choice",
+        question: `Contoh pertanyaan 1 untuk ujian ${i}?`,
+        options: ["Pilihan A", "Pilihan B", "Pilihan C", "Pilihan D"],
+        answer: "Pilihan A"
+      },
+      {
+        id: `q2-exam${i}`,
+        type: "essay",
+        question: `Contoh pertanyaan essay untuk ujian ${i}?`,
+        answer: "Contoh jawaban"
+      }
+    ]
+  };
+}
 
 const ExamDetails = () => {
   const { id } = useParams<{ id: string }>();
