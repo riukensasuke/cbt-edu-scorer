@@ -11,11 +11,21 @@ import { useStudentDashboard } from "@/hooks/useStudentDashboard";
 
 const StudentDashboard = () => {
   const { upcomingExams, recentResults, missedExams, studentName } = useStudentDashboard();
+  
+  // School info would come from context or state in a real app
+  const schoolInfo = {
+    name: "SDN Contoh 1",
+    address: "Jl. Pendidikan No. 123, Jakarta",
+  };
 
   return (
     <DashboardLayout title="Dashboard Siswa">
       <div className="grid gap-6">
-        <WelcomeCard name={studentName} role="student" />
+        <WelcomeCard 
+          name={studentName} 
+          role="student"
+          schoolName={schoolInfo.name}
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <UpcomingExams 

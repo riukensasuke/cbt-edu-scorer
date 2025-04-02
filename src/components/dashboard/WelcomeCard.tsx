@@ -6,9 +6,10 @@ import { Card, CardContent } from "@/components/ui/card";
 interface WelcomeCardProps {
   name: string;
   role: string;
+  schoolName?: string;
 }
 
-const WelcomeCard = ({ name, role }: WelcomeCardProps) => {
+const WelcomeCard = ({ name, role, schoolName }: WelcomeCardProps) => {
   const welcomeMessage = role === "teacher" 
     ? "Selamat datang kembali di Edu-Score. Anda memiliki ujian yang terjadwal."
     : "Selamat datang kembali di Edu-Score. Ada ujian yang tersedia untuk kamu kerjakan.";
@@ -22,6 +23,9 @@ const WelcomeCard = ({ name, role }: WelcomeCardProps) => {
             <p className="text-muted-foreground">
               {welcomeMessage}
             </p>
+            {schoolName && (
+              <p className="text-blue-600 mt-2 font-medium">{schoolName}</p>
+            )}
           </div>
           <div className="flex items-center space-x-2 bg-white p-3 rounded-lg border shadow-sm">
             <Calendar className="h-5 w-5 text-primary" />

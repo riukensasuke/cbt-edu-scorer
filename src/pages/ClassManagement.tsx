@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,89 +44,48 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { exportToExcel, readExcelFile } from "@/utils/excelUtils";
 
+// Updated to show just grade levels
 const mockClasses = [
   {
     id: "1",
-    name: "1A",
+    name: "Kelas 1",
     teacher: "Ibu Siti",
-    studentCount: 25,
+    studentCount: 49,
     year: "2023/2024"
   },
   {
     id: "2",
-    name: "1B",
+    name: "Kelas 2",
     teacher: "Ibu Rini",
-    studentCount: 24,
+    studentCount: 50,
     year: "2023/2024"
   },
   {
     id: "3",
-    name: "2A",
+    name: "Kelas 3",
     teacher: "Bapak Ahmad",
-    studentCount: 26,
+    studentCount: 53,
     year: "2023/2024"
   },
   {
     id: "4",
-    name: "2B", 
+    name: "Kelas 4", 
     teacher: "Ibu Siti",
-    studentCount: 25,
+    studentCount: 55,
     year: "2023/2024"
   },
   {
     id: "5",
-    name: "3A",
-    teacher: "Ibu Rini",
-    studentCount: 27,
+    name: "Kelas 5",
+    teacher: "Bapak Eko",
+    studentCount: 52,
     year: "2023/2024"
   },
   {
     id: "6",
-    name: "3B",
-    teacher: "Bapak Ahmad",
-    studentCount: 26,
-    year: "2023/2024"
-  },
-  {
-    id: "7",
-    name: "4A",
-    teacher: "Ibu Siti",
-    studentCount: 28,
-    year: "2023/2024"
-  },
-  {
-    id: "8",
-    name: "4B",
-    teacher: "Bapak Ahmad",
-    studentCount: 27,
-    year: "2023/2024"
-  },
-  {
-    id: "9",
-    name: "5A",
-    teacher: "Ibu Rini",
-    studentCount: 25,
-    year: "2023/2024"
-  },
-  {
-    id: "10",
-    name: "5B",
-    teacher: "Bapak Ahmad",
-    studentCount: 24,
-    year: "2023/2024"
-  },
-  {
-    id: "11",
-    name: "6A",
-    teacher: "Ibu Siti",
-    studentCount: 28,
-    year: "2023/2024"
-  },
-  {
-    id: "12",
-    name: "6B",
-    teacher: "Ibu Rini",
-    studentCount: 27,
+    name: "Kelas 6",
+    teacher: "Bapak Agus",
+    studentCount: 55,
     year: "2023/2024"
   }
 ];
@@ -209,6 +169,9 @@ const ClassManagement = () => {
     nisn: "",
     gender: "Laki-laki"
   });
+  const [isEditStudentModalOpen, setIsEditStudentModalOpen] = useState(false);
+  const [editingStudent, setEditingStudent] = useState<typeof mockStudents[0] | null>(null);
+  
   const { toast } = useToast();
   
   const filteredClasses = mockClasses.filter(cls => 
@@ -237,7 +200,7 @@ const ClassManagement = () => {
     
     toast({
       title: "Data berhasil diekspor",
-      description: `Data siswa kelas ${classToExport.name} telah diekspor ke Excel`
+      description: `Data siswa ${classToExport.name} telah diekspor ke Excel`
     });
   };
   
@@ -258,7 +221,7 @@ const ClassManagement = () => {
           
           toast({
             title: "Data berhasil diimpor",
-            description: `${importedStudents.length} data siswa telah diimpor ke kelas ${classToImport.name}`
+            description: `${importedStudents.length} data siswa telah diimpor ke ${classToImport.name}`
           });
         } catch (error) {
           toast({
@@ -276,7 +239,7 @@ const ClassManagement = () => {
   const handleAddClass = () => {
     toast({
       title: "Kelas baru ditambahkan",
-      description: `Kelas ${newClass.name} dengan guru ${newClass.teacher} berhasil ditambahkan`
+      description: `${newClass.name} dengan guru ${newClass.teacher} berhasil ditambahkan`
     });
     
     setNewClass({
@@ -301,6 +264,23 @@ const ClassManagement = () => {
     });
     
     setIsAddStudentModalOpen(false);
+  };
+  
+  const handleEditStudent = () => {
+    if (!editingStudent) return;
+    
+    toast({
+      title: "Data siswa diperbarui",
+      description: `Data siswa ${editingStudent.name} berhasil diperbarui`
+    });
+    
+    setIsEditStudentModalOpen(false);
+    setEditingStudent(null);
+  };
+  
+  const openEditStudentModal = (student: typeof mockStudents[0]) => {
+    setEditingStudent({...student});
+    setIsEditStudentModalOpen(true);
   };
   
   const handleClassInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -329,6 +309,25 @@ const ClassManagement = () => {
   const handleStudentSelectChange = (name: string, value: string) => {
     setNewStudent({
       ...newStudent,
+      [name]: value
+    });
+  };
+  
+  const handleEditStudentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!editingStudent) return;
+    
+    const { name, value } = e.target;
+    setEditingStudent({
+      ...editingStudent,
+      [name]: value
+    });
+  };
+  
+  const handleEditStudentSelectChange = (name: string, value: string) => {
+    if (!editingStudent) return;
+    
+    setEditingStudent({
+      ...editingStudent,
       [name]: value
     });
   };
@@ -369,7 +368,7 @@ const ClassManagement = () => {
                     <Input 
                       id="name" 
                       name="name" 
-                      placeholder="Contoh: 6A" 
+                      placeholder="Contoh: Kelas 1" 
                       value={newClass.name} 
                       onChange={handleClassInputChange} 
                     />
@@ -389,6 +388,8 @@ const ClassManagement = () => {
                         <SelectItem value="Ibu Siti">Ibu Siti</SelectItem>
                         <SelectItem value="Bapak Ahmad">Bapak Ahmad</SelectItem>
                         <SelectItem value="Ibu Rini">Ibu Rini</SelectItem>
+                        <SelectItem value="Bapak Eko">Bapak Eko</SelectItem>
+                        <SelectItem value="Bapak Agus">Bapak Agus</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -425,7 +426,7 @@ const ClassManagement = () => {
             <Card key={cls.id} className="overflow-hidden">
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-center">
-                  <CardTitle className="text-xl">Kelas {cls.name}</CardTitle>
+                  <CardTitle className="text-xl">{cls.name}</CardTitle>
                   <Badge className="ml-2">{cls.year}</Badge>
                 </div>
                 <CardDescription>
@@ -475,7 +476,7 @@ const ClassManagement = () => {
             <DialogContent className="sm:max-w-[800px]">
               <DialogHeader>
                 <DialogTitle>
-                  Siswa Kelas {mockClasses.find(c => c.id === selectedClass)?.name}
+                  Siswa {mockClasses.find(c => c.id === selectedClass)?.name}
                 </DialogTitle>
                 <DialogDescription>
                   Daftar siswa dalam kelas ini
@@ -535,7 +536,12 @@ const ClassManagement = () => {
                         <TableCell>{student.gender}</TableCell>
                         <TableCell>
                           <div className="flex space-x-1">
-                            <Button variant="outline" size="icon" className="h-8 w-8">
+                            <Button 
+                              variant="outline" 
+                              size="icon" 
+                              className="h-8 w-8"
+                              onClick={() => openEditStudentModal(student)}
+                            >
                               <Edit className="h-4 w-4" />
                             </Button>
                             <Button variant="outline" size="icon" className="h-8 w-8 text-destructive">
@@ -558,12 +564,13 @@ const ClassManagement = () => {
           </Dialog>
         )}
         
+        {/* Add Student Modal */}
         <Dialog open={isAddStudentModalOpen} onOpenChange={setIsAddStudentModalOpen}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Tambah Siswa Baru</DialogTitle>
               <DialogDescription>
-                Masukkan informasi siswa baru untuk kelas {mockClasses.find(c => c.id === selectedClass)?.name}.
+                Masukkan informasi siswa baru untuk {mockClasses.find(c => c.id === selectedClass)?.name}.
               </DialogDescription>
             </DialogHeader>
             
@@ -611,6 +618,64 @@ const ClassManagement = () => {
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsAddStudentModalOpen(false)}>Batal</Button>
               <Button type="submit" onClick={handleAddStudent}>Simpan Siswa</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        {/* Edit Student Modal */}
+        <Dialog open={isEditStudentModalOpen} onOpenChange={setIsEditStudentModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Data Siswa</DialogTitle>
+              <DialogDescription>
+                Perbarui informasi siswa untuk {mockClasses.find(c => c.id === selectedClass)?.name}.
+              </DialogDescription>
+            </DialogHeader>
+            
+            {editingStudent && (
+              <div className="grid gap-4 py-4">
+                <div className="space-y-2">
+                  <label htmlFor="studentName" className="text-sm font-medium">Nama Siswa</label>
+                  <Input 
+                    id="name" 
+                    name="name" 
+                    value={editingStudent.name} 
+                    onChange={handleEditStudentChange} 
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="nisn" className="text-sm font-medium">NISN</label>
+                  <Input 
+                    id="nisn" 
+                    name="nisn" 
+                    value={editingStudent.nisn} 
+                    onChange={handleEditStudentChange} 
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="gender" className="text-sm font-medium">Jenis Kelamin</label>
+                  <Select 
+                    name="gender"
+                    value={editingStudent.gender}
+                    onValueChange={(value) => handleEditStudentSelectChange("gender", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih jenis kelamin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Laki-laki">Laki-laki</SelectItem>
+                      <SelectItem value="Perempuan">Perempuan</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+            
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsEditStudentModalOpen(false)}>Batal</Button>
+              <Button type="submit" onClick={handleEditStudent}>Simpan Perubahan</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

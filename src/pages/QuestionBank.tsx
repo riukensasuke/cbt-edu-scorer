@@ -5,799 +5,987 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
-import { exportToExcel, importExcelFile, readExcelFile } from "@/utils/excelUtils";
-import {
-  BookOpen,
-  Filter,
-  Plus,
-  Search,
-  Edit,
-  Trash2,
-  ImagePlus,
-  ListChecks,
-  FileText,
-  AlignLeft,
-  Upload,
-  Download
-} from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogClose
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/contexts/AuthContext";
+import {
+  Search,
+  Plus,
+  Filter,
+  FileText,
+  Check,
+  X,
+  Upload,
+  Image,
+  ListFilter,
+  CheckSquare
+} from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
 
-// Mock data for questions
-const mockQuestions = [
+// Sample question types
+const questionTypeOptions = [
+  { value: "multiple-choice", label: "Pilihan Ganda" },
+  { value: "multiple-choice-complex", label: "Pilihan Ganda Kompleks" },
+  { value: "true-false", label: "Benar/Salah" },
+  { value: "essay", label: "Uraian" },
+  { value: "matching", label: "Menjodohkan" }
+];
+
+// Sample difficulty levels
+const difficultyOptions = [
+  { value: "easy", label: "Mudah" },
+  { value: "medium", label: "Sedang" },
+  { value: "hard", label: "Sulit" }
+];
+
+// Sample subjects
+const subjectOptions = [
+  { value: "mathematics", label: "Matematika" },
+  { value: "indonesian", label: "Bahasa Indonesia" },
+  { value: "science", label: "IPA" },
+  { value: "social", label: "IPS" },
+  { value: "english", label: "Bahasa Inggris" },
+  { value: "religion", label: "Pendidikan Agama" },
+  { value: "civics", label: "PKn" }
+];
+
+// Sample grade levels
+const gradeOptions = [
+  { value: "1", label: "Kelas 1" },
+  { value: "2", label: "Kelas 2" },
+  { value: "3", label: "Kelas 3" },
+  { value: "4", label: "Kelas 4" },
+  { value: "5", label: "Kelas 5" },
+  { value: "6", label: "Kelas 6" }
+];
+
+// Sample questions
+const sampleQuestions = [
   {
     id: "1",
-    question: "Berapakah hasil dari 5 × 7?",
-    type: "multiple_choice",
-    subject: "Matematika",
-    grade: "Kelas 4",
-    options: ["25", "30", "35", "40"],
-    answer: "35",
-    creator: "Ibu Siti"
+    question: "Hasil dari 5 x 9 adalah...",
+    type: "multiple-choice",
+    subject: "mathematics",
+    grade: "3",
+    difficulty: "easy",
+    options: [
+      { id: "a", text: "40", isCorrect: false },
+      { id: "b", text: "45", isCorrect: true },
+      { id: "c", text: "50", isCorrect: false },
+      { id: "d", text: "54", isCorrect: false }
+    ],
+    explanation: "5 x 9 = 45",
+    tags: ["perkalian", "bilangan"]
   },
   {
     id: "2",
-    question: "Sebutkan 3 contoh hewan mamalia!",
-    type: "essay",
-    subject: "IPA",
-    grade: "Kelas 3",
-    answer: "Kucing, Anjing, Sapi, dll.",
-    creator: "Bapak Rudi"
+    question: "Siapakah presiden pertama Indonesia?",
+    type: "multiple-choice",
+    subject: "social",
+    grade: "5",
+    difficulty: "easy",
+    options: [
+      { id: "a", text: "Soekarno", isCorrect: true },
+      { id: "b", text: "Soeharto", isCorrect: false },
+      { id: "c", text: "Habibie", isCorrect: false },
+      { id: "d", text: "Megawati", isCorrect: false }
+    ],
+    explanation: "Ir. Soekarno adalah presiden pertama Indonesia yang menjabat pada periode 1945-1967.",
+    tags: ["sejarah", "indonesia", "presiden"]
   },
   {
     id: "3",
-    question: "Jodohkan nama provinsi dengan ibukotanya!",
-    type: "matching",
-    subject: "IPS",
-    grade: "Kelas 5",
-    options: [
-      { left: "Jawa Barat", right: "Bandung" },
-      { left: "Jawa Tengah", right: "Semarang" },
-      { left: "Jawa Timur", right: "Surabaya" }
-    ],
-    creator: "Ibu Ani"
+    question: "Tuliskan contoh teks deskriptif dengan tema 'Lingkungan Sekolahku'.",
+    type: "essay",
+    subject: "indonesian",
+    grade: "6",
+    difficulty: "medium",
+    answerKey: "Teks deskriptif tentang lingkungan sekolah yang menjelaskan suasana, fasilitas, dan keadaan sekolah secara detail.",
+    tags: ["teks deskriptif", "bahasa indonesia", "menulis"]
   },
   {
     id: "4",
-    question: "Apakah nama dari bagian tumbuhan pada gambar di atas?",
-    type: "image",
-    subject: "IPA",
-    grade: "Kelas 2",
-    imageUrl: "https://example.com/plant-parts.jpg",
-    options: ["Akar", "Batang", "Daun", "Bunga"],
-    answer: "Daun",
-    creator: "Ibu Rini"
+    question: "Jakarta adalah ibu kota Indonesia.",
+    type: "true-false",
+    subject: "social",
+    grade: "4",
+    difficulty: "easy",
+    isTrue: true,
+    explanation: "Jakarta merupakan ibu kota negara Indonesia yang terletak di pulau Jawa.",
+    tags: ["geografi", "indonesia", "ibu kota"]
   },
   {
     id: "5",
-    question: "Jelaskan proses fotosintesis!",
+    question: "Sebutkan dan jelaskan 3 bagian utama tumbuhan beserta fungsinya.",
     type: "essay",
-    subject: "IPA",
-    grade: "Kelas 6",
-    answer: "Fotosintesis adalah proses pembuatan makanan oleh tumbuhan hijau dengan bantuan cahaya matahari...",
-    creator: "Bapak Ahmad"
+    subject: "science",
+    grade: "5",
+    difficulty: "medium",
+    answerKey: "1. Akar - menyerap air dan nutrisi dari tanah, serta menopang tumbuhan\n2. Batang - mengalirkan air dan nutrisi dari akar ke seluruh bagian tumbuhan\n3. Daun - tempat terjadinya fotosintesis",
+    tags: ["tumbuhan", "biologi", "organ tumbuhan"]
   },
+  {
+    id: "6",
+    question: "Manakah di antara berikut ini yang termasuk hewan mamalia? (Pilih semua jawaban yang benar)",
+    type: "multiple-choice-complex",
+    subject: "science",
+    grade: "4",
+    difficulty: "medium",
+    options: [
+      { id: "a", text: "Kucing", isCorrect: true },
+      { id: "b", text: "Ayam", isCorrect: false },
+      { id: "c", text: "Lumba-lumba", isCorrect: true },
+      { id: "d", text: "Kadal", isCorrect: false },
+      { id: "e", text: "Kelelawar", isCorrect: true }
+    ],
+    explanation: "Kucing, lumba-lumba, dan kelelawar adalah hewan mamalia karena memiliki kelenjar susu, melahirkan anak, dan memiliki rambut/bulu.",
+    tags: ["hewan", "klasifikasi", "mamalia"]
+  },
+  {
+    id: "7",
+    question: "Air mengalir dari tempat yang lebih tinggi ke tempat yang lebih rendah.",
+    type: "true-false",
+    subject: "science",
+    grade: "3",
+    difficulty: "easy",
+    isTrue: true,
+    explanation: "Air selalu mengalir dari tempat yang lebih tinggi ke tempat yang lebih rendah karena pengaruh gaya gravitasi.",
+    tags: ["air", "fisika", "gravitasi"]
+  }
 ];
 
 const QuestionBank = () => {
-  const { user } = useAuth();
-  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredQuestions, setFilteredQuestions] = useState(mockQuestions);
-  const [selectedQuestionType, setSelectedQuestionType] = useState<string>("multiple_choice");
-  const [isAddQuestionDialogOpen, setIsAddQuestionDialogOpen] = useState(false);
-  const [isEditQuestionDialogOpen, setIsEditQuestionDialogOpen] = useState(false);
-  const [currentQuestion, setCurrentQuestion] = useState<any>(null);
+  const [selectedSubject, setSelectedSubject] = useState<string>("all");
+  const [selectedGrade, setSelectedGrade] = useState<string>("all");
+  const [selectedType, setSelectedType] = useState<string>("all");
+  const [isAddQuestionOpen, setIsAddQuestionOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [previewQuestion, setPreviewQuestion] = useState<any>(null);
+  const [newQuestionImage, setNewQuestionImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  
+  // New question form state
   const [newQuestion, setNewQuestion] = useState({
     question: "",
-    type: "multiple_choice",
+    type: "multiple-choice",
     subject: "",
     grade: "",
-    options: ["", "", "", ""],
-    answer: "",
-    creator: user?.name || ""
+    difficulty: "medium",
+    options: [
+      { id: "a", text: "", isCorrect: false },
+      { id: "b", text: "", isCorrect: false },
+      { id: "c", text: "", isCorrect: false },
+      { id: "d", text: "", isCorrect: false }
+    ],
+    isTrue: false,
+    answerKey: "",
+    explanation: "",
+    tags: ""
   });
   
-  // Filter function
-  const filterQuestions = (type: string, search: string) => {
-    let filtered = [...mockQuestions];
-    
-    // Filter by type if not "all"
-    if (type !== "all") {
-      filtered = filtered.filter(question => question.type === type);
-    }
-    
-    // Filter by search query
-    if (search) {
-      filtered = filtered.filter(question => 
-        question.question.toLowerCase().includes(search.toLowerCase()) ||
-        question.subject.toLowerCase().includes(search.toLowerCase()) ||
-        question.grade.toLowerCase().includes(search.toLowerCase())
-      );
-    }
-    
-    setFilteredQuestions(filtered);
-  };
+  const { toast } = useToast();
   
-  // Handle tab change
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    filterQuestions(value, searchQuery);
-  };
+  // Filter questions
+  const filteredQuestions = sampleQuestions.filter(q => {
+    // Search filter
+    const matchesSearch = q.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          q.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    // Subject filter
+    const matchesSubject = selectedSubject === "all" || q.subject === selectedSubject;
+    
+    // Grade filter
+    const matchesGrade = selectedGrade === "all" || q.grade === selectedGrade;
+    
+    // Type filter
+    const matchesType = selectedType === "all" || q.type === selectedType;
+    
+    // Tab filter
+    const matchesTab = activeTab === "all" || 
+                      (activeTab === "multiple-choice" && (q.type === "multiple-choice" || q.type === "multiple-choice-complex")) ||
+                      (activeTab === "true-false" && q.type === "true-false") ||
+                      (activeTab === "essay" && q.type === "essay") ||
+                      (activeTab === "matching" && q.type === "matching");
+    
+    return matchesSearch && matchesSubject && matchesGrade && matchesType && matchesTab;
+  });
   
-  // Handle search
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    filterQuestions(activeTab, query);
-  };
-
-  // Handle question form change
-  const handleQuestionFormChange = (field: string, value: any) => {
-    setNewQuestion(prev => ({ ...prev, [field]: value }));
-  };
-
-  // Handle option change for multiple choice
-  const handleOptionChange = (index: number, value: string) => {
-    const updatedOptions = [...newQuestion.options];
-    updatedOptions[index] = value;
-    setNewQuestion(prev => ({ ...prev, options: updatedOptions }));
-  };
-
-  // Save new question
-  const saveQuestion = () => {
-    // Validate form
-    if (!newQuestion.question || !newQuestion.subject || !newQuestion.grade) {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setNewQuestionImage(file);
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+      
       toast({
-        title: "Form tidak lengkap",
-        description: "Silakan lengkapi informasi soal",
-        variant: "destructive"
+        title: "Gambar diunggah",
+        description: `File ${file.name} berhasil diunggah.`
       });
-      return;
     }
+  };
 
-    // In a real app, this would save to a database
+  const handleAddOption = () => {
+    // Only add if we have less than 6 options
+    if (newQuestion.options.length < 6) {
+      const nextOptionId = String.fromCharCode(97 + newQuestion.options.length); // a, b, c, ...
+      setNewQuestion({
+        ...newQuestion,
+        options: [...newQuestion.options, { id: nextOptionId, text: "", isCorrect: false }]
+      });
+    }
+  };
+
+  const handleRemoveOption = (index: number) => {
+    if (newQuestion.options.length > 2) { // Keep at least 2 options
+      const newOptions = [...newQuestion.options];
+      newOptions.splice(index, 1);
+      setNewQuestion({
+        ...newQuestion,
+        options: newOptions
+      });
+    }
+  };
+
+  const handleOptionChange = (index: number, value: string) => {
+    const newOptions = [...newQuestion.options];
+    newOptions[index].text = value;
+    setNewQuestion({
+      ...newQuestion,
+      options: newOptions
+    });
+  };
+
+  const handleCorrectOption = (index: number, checked: boolean) => {
+    const newOptions = [...newQuestion.options];
+    
+    if (newQuestion.type === "multiple-choice") {
+      // For single choice, uncheck all first
+      newOptions.forEach(option => option.isCorrect = false);
+    }
+    
+    // Set the correct option
+    newOptions[index].isCorrect = checked;
+    
+    setNewQuestion({
+      ...newQuestion,
+      options: newOptions
+    });
+  };
+
+  const handleSubmit = () => {
+    // Validation would go here
+    
     toast({
       title: "Soal berhasil ditambahkan",
       description: "Soal baru telah ditambahkan ke bank soal"
     });
-
-    // Close dialog and reset form
-    setIsAddQuestionDialogOpen(false);
+    
+    // Reset form
     setNewQuestion({
       question: "",
-      type: "multiple_choice",
+      type: "multiple-choice",
       subject: "",
       grade: "",
-      options: ["", "", "", ""],
-      answer: "",
-      creator: user?.name || ""
-    });
-  };
-
-  // Edit question
-  const handleEditQuestion = (questionId: string) => {
-    const question = mockQuestions.find(q => q.id === questionId);
-    if (question) {
-      setCurrentQuestion(question);
-      setIsEditQuestionDialogOpen(true);
-    }
-  };
-
-  // Save edited question
-  const saveEditedQuestion = () => {
-    // In a real app, this would update the question in the database
-    toast({
-      title: "Soal berhasil diperbarui",
-      description: "Perubahan pada soal telah disimpan"
+      difficulty: "medium",
+      options: [
+        { id: "a", text: "", isCorrect: false },
+        { id: "b", text: "", isCorrect: false },
+        { id: "c", text: "", isCorrect: false },
+        { id: "d", text: "", isCorrect: false }
+      ],
+      isTrue: false,
+      answerKey: "",
+      explanation: "",
+      tags: ""
     });
     
-    setIsEditQuestionDialogOpen(false);
+    setNewQuestionImage(null);
+    setImagePreview(null);
+    setIsAddQuestionOpen(false);
   };
 
-  // Export questions to Excel
-  const handleExportToExcel = () => {
-    const dataToExport = filteredQuestions.map(question => ({
-      'Pertanyaan': question.question,
-      'Jenis Soal': question.type === 'multiple_choice' ? 'Pilihan Ganda' : 
-                   question.type === 'essay' ? 'Esai' : 
-                   question.type === 'matching' ? 'Menjodohkan' : 'Bergambar',
-      'Mata Pelajaran': question.subject,
-      'Kelas': question.grade,
-      'Pembuat': question.creator
-    }));
-    
-    exportToExcel(dataToExport, "Data_Soal", "Bank_Soal");
-    
-    toast({
-      title: "Data berhasil diexport",
-      description: "Data soal telah diexport ke Excel"
-    });
-  };
-  
-  // Import questions from Excel
-  const handleImportFromExcel = () => {
-    importExcelFile(async (file) => {
-      try {
-        const importedQuestions = await readExcelFile(file);
-        
-        toast({
-          title: "Data berhasil diimport",
-          description: `${importedQuestions.length} data soal telah diimport`
-        });
-        
-        // In a real app, this would process and save the imported questions
-      } catch (error) {
-        toast({
-          title: "Gagal import data",
-          description: "Format file tidak valid",
-          variant: "destructive"
-        });
-      }
-    });
-  };
-  
-  // Question type badge and icon
-  const getQuestionTypeBadge = (type: string) => {
-    switch (type) {
-      case "multiple_choice":
-        return (
-          <Badge className="bg-blue-500 flex items-center gap-1">
-            <ListChecks className="h-3 w-3" /> Pilihan Ganda
-          </Badge>
-        );
-      case "essay":
-        return (
-          <Badge className="bg-green-500 flex items-center gap-1">
-            <AlignLeft className="h-3 w-3" /> Esai
-          </Badge>
-        );
-      case "matching":
-        return (
-          <Badge className="bg-yellow-500 flex items-center gap-1">
-            <FileText className="h-3 w-3" /> Menjodohkan
-          </Badge>
-        );
-      case "image":
-        return (
-          <Badge className="bg-purple-500 flex items-center gap-1">
-            <ImagePlus className="h-3 w-3" /> Bergambar
-          </Badge>
-        );
-      default:
-        return (
-          <Badge variant="outline">Unknown</Badge>
-        );
-    }
-  };
-  
-  // Render question form based on type
-  const renderQuestionForm = () => {
-    switch (selectedQuestionType) {
-      case "multiple_choice":
-        return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="question">Pertanyaan</Label>
-              <Textarea id="question" placeholder="Tulis pertanyaan di sini..." />
-            </div>
-            
-            <div className="space-y-2">
-              <Label>Pilihan Jawaban</Label>
-              
-              {[...Array(4)].map((_, index) => (
-                <div key={index} className="flex items-center space-x-2 mt-2">
-                  <Input placeholder={`Pilihan ${index + 1}`} />
-                  {index === 0 && (
-                    <Badge className="bg-green-500">Jawaban Benar</Badge>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      
-      case "essay":
-        return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="question">Pertanyaan</Label>
-              <Textarea id="question" placeholder="Tulis pertanyaan di sini..." />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="answer">Kunci Jawaban (untuk referensi)</Label>
-              <Textarea id="answer" placeholder="Tulis jawaban yang diharapkan di sini..." />
-            </div>
-          </div>
-        );
-      
-      case "matching":
-        return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="question">Instruksi</Label>
-              <Textarea id="question" placeholder="Contoh: Jodohkan nama provinsi dengan ibukotanya" />
-            </div>
-            
-            <Label>Item untuk Dijodohkan</Label>
-            {[...Array(4)].map((_, index) => (
-              <div key={index} className="grid grid-cols-2 gap-2 mt-2">
-                <Input placeholder="Item Kiri" />
-                <Input placeholder="Item Kanan" />
-              </div>
-            ))}
-          </div>
-        );
-      
-      case "image":
-        return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="image">Gambar</Label>
-              <div className="border-2 border-dashed rounded-md p-6 text-center hover:bg-muted/50 transition-colors">
-                <ImagePlus className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground mb-2">Klik untuk mengunggah gambar</p>
-                <p className="text-xs text-muted-foreground">PNG, JPG, atau GIF (maks. 2MB)</p>
-                <Input id="image" type="file" accept="image/*" className="hidden" />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="question">Pertanyaan</Label>
-              <Textarea id="question" placeholder="Contoh: Apakah nama dari bagian tumbuhan pada gambar di atas?" />
-            </div>
-            
-            <div className="space-y-2">
-              <Label>Pilihan Jawaban</Label>
-              
-              {[...Array(4)].map((_, index) => (
-                <div key={index} className="flex items-center space-x-2 mt-2">
-                  <Input placeholder={`Pilihan ${index + 1}`} />
-                  {index === 0 && (
-                    <Badge className="bg-green-500">Jawaban Benar</Badge>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      
-      default:
-        return null;
-    }
+  const openPreview = (question: any) => {
+    setPreviewQuestion(question);
+    setIsPreviewOpen(true);
   };
 
   return (
     <DashboardLayout title="Bank Soal">
       <div className="space-y-6">
+        {/* Filters and search */}
         <div className="flex flex-col sm:flex-row justify-between gap-4">
-          <div className="flex items-center space-x-2">
-            <div className="relative w-full sm:w-64">
+          <div className="flex flex-col sm:flex-row gap-2 flex-1">
+            <div className="relative flex-1">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
                 placeholder="Cari soal..."
                 className="pl-8"
                 value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button variant="outline" size="icon">
-              <Filter className="h-4 w-4" />
-            </Button>
+            
+            <Select value={selectedSubject} onValueChange={setSelectedSubject}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Mata Pelajaran" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Mapel</SelectItem>
+                {subjectOptions.map(option => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Select value={selectedGrade} onValueChange={setSelectedGrade}>
+              <SelectTrigger className="w-full sm:w-[130px]">
+                <SelectValue placeholder="Kelas" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Kelas</SelectItem>
+                {gradeOptions.map(option => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Select value={selectedType} onValueChange={setSelectedType}>
+              <SelectTrigger className="w-full sm:w-[150px]">
+                <SelectValue placeholder="Tipe Soal" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Tipe</SelectItem>
+                {questionTypeOptions.map(option => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           
-          <div className="flex items-center space-x-2">
-            <Button variant="outline" onClick={handleImportFromExcel}>
-              <Upload className="h-4 w-4 mr-2" /> Impor
+          <div className="flex gap-2">
+            <Button onClick={() => setIsAddQuestionOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" /> Tambah Soal
             </Button>
-            <Button variant="outline" onClick={handleExportToExcel}>
-              <Download className="h-4 w-4 mr-2" /> Ekspor
-            </Button>
-            <Dialog open={isAddQuestionDialogOpen} onOpenChange={setIsAddQuestionDialogOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" /> Tambah Soal
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px]">
-                <DialogHeader>
-                  <DialogTitle>Tambah Soal Baru</DialogTitle>
-                  <DialogDescription>
-                    Isi informasi soal baru. Klik simpan ketika selesai.
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <div className="grid gap-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="questionType">Jenis Soal</Label>
-                    <Select 
-                      value={selectedQuestionType} 
-                      onValueChange={(value) => {
-                        setSelectedQuestionType(value);
-                        handleQuestionFormChange("type", value);
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Pilih jenis soal" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="multiple_choice">Pilihan Ganda</SelectItem>
-                        <SelectItem value="essay">Esai</SelectItem>
-                        <SelectItem value="matching">Menjodohkan</SelectItem>
-                        <SelectItem value="image">Bergambar</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="subject">Mata Pelajaran</Label>
-                      <Select onValueChange={(value) => handleQuestionFormChange("subject", value)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Pilih mata pelajaran" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="matematika">Matematika</SelectItem>
-                          <SelectItem value="bahasa-indonesia">Bahasa Indonesia</SelectItem>
-                          <SelectItem value="ipa">IPA</SelectItem>
-                          <SelectItem value="ips">IPS</SelectItem>
-                          <SelectItem value="bahasa-inggris">Bahasa Inggris</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="grade">Kelas</Label>
-                      <Select onValueChange={(value) => handleQuestionFormChange("grade", value)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Pilih kelas" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="kelas-1">Kelas 1</SelectItem>
-                          <SelectItem value="kelas-2">Kelas 2</SelectItem>
-                          <SelectItem value="kelas-3">Kelas 3</SelectItem>
-                          <SelectItem value="kelas-4">Kelas 4</SelectItem>
-                          <SelectItem value="kelas-5">Kelas 5</SelectItem>
-                          <SelectItem value="kelas-6">Kelas 6</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  
-                  {/* Question content based on type */}
-                  {selectedQuestionType === "multiple_choice" && (
-                    <>
-                      <div className="space-y-2">
-                        <Label htmlFor="question">Pertanyaan</Label>
-                        <Textarea 
-                          id="question" 
-                          placeholder="Tulis pertanyaan di sini..." 
-                          onChange={(e) => handleQuestionFormChange("question", e.target.value)}
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label>Pilihan Jawaban</Label>
-                        
-                        {newQuestion.options.map((option, index) => (
-                          <div key={index} className="flex items-center space-x-2 mt-2">
-                            <Input 
-                              placeholder={`Pilihan ${index + 1}`} 
-                              value={option}
-                              onChange={(e) => handleOptionChange(index, e.target.value)}
-                            />
-                            <Button 
-                              type="button" 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleQuestionFormChange("answer", option)}
-                            >
-                              {newQuestion.answer === option ? "✓ Jawaban Benar" : "Pilih Sebagai Jawaban"}
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                  
-                  {selectedQuestionType === "essay" && (
-                    <>
-                      <div className="space-y-2">
-                        <Label htmlFor="question">Pertanyaan</Label>
-                        <Textarea 
-                          id="question" 
-                          placeholder="Tulis pertanyaan di sini..." 
-                          onChange={(e) => handleQuestionFormChange("question", e.target.value)}
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="answer">Kunci Jawaban (untuk referensi)</Label>
-                        <Textarea 
-                          id="answer" 
-                          placeholder="Tulis jawaban yang diharapkan di sini..." 
-                          onChange={(e) => handleQuestionFormChange("answer", e.target.value)}
-                        />
-                      </div>
-                    </>
-                  )}
-                  
-                  {selectedQuestionType === "matching" && (
-                    <>
-                      <div className="space-y-2">
-                        <Label htmlFor="question">Instruksi</Label>
-                        <Textarea 
-                          id="question" 
-                          placeholder="Contoh: Jodohkan nama provinsi dengan ibukotanya" 
-                          onChange={(e) => handleQuestionFormChange("question", e.target.value)}
-                        />
-                      </div>
-                      
-                      <Label>Item untuk Dijodohkan</Label>
-                      {[...Array(4)].map((_, index) => (
-                        <div key={index} className="grid grid-cols-2 gap-2 mt-2">
-                          <Input placeholder="Item Kiri" />
-                          <Input placeholder="Item Kanan" />
-                        </div>
-                      ))}
-                    </>
-                  )}
-                  
-                  {selectedQuestionType === "image" && (
-                    <>
-                      <div className="space-y-2">
-                        <Label htmlFor="image">Gambar</Label>
-                        <div className="border-2 border-dashed rounded-md p-6 text-center hover:bg-muted/50 transition-colors cursor-pointer">
-                          <ImagePlus className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                          <p className="text-sm text-muted-foreground mb-2">Klik untuk mengunggah gambar</p>
-                          <p className="text-xs text-muted-foreground">PNG, JPG, atau GIF (maks. 2MB)</p>
-                          <Input id="image" type="file" accept="image/*" className="hidden" />
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="question">Pertanyaan</Label>
-                        <Textarea 
-                          id="question" 
-                          placeholder="Contoh: Apakah nama dari bagian tumbuhan pada gambar di atas?" 
-                          onChange={(e) => handleQuestionFormChange("question", e.target.value)}
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label>Pilihan Jawaban</Label>
-                        
-                        {newQuestion.options.map((option, index) => (
-                          <div key={index} className="flex items-center space-x-2 mt-2">
-                            <Input 
-                              placeholder={`Pilihan ${index + 1}`} 
-                              value={option}
-                              onChange={(e) => handleOptionChange(index, e.target.value)}
-                            />
-                            <Button 
-                              type="button" 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleQuestionFormChange("answer", option)}
-                            >
-                              {newQuestion.answer === option ? "✓ Jawaban Benar" : "Pilih Sebagai Jawaban"}
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
-                
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsAddQuestionDialogOpen(false)}>
-                    Batal
-                  </Button>
-                  <Button type="button" onClick={saveQuestion}>
-                    Simpan Soal
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
           </div>
         </div>
         
-        <Tabs defaultValue="all" onValueChange={handleTabChange}>
-          <TabsList className="grid w-full grid-cols-5">
+        {/* Question tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid grid-cols-2 sm:grid-cols-5 mb-4">
             <TabsTrigger value="all">Semua</TabsTrigger>
-            <TabsTrigger value="multiple_choice">Pilihan Ganda</TabsTrigger>
-            <TabsTrigger value="essay">Esai</TabsTrigger>
+            <TabsTrigger value="multiple-choice">Pilihan Ganda</TabsTrigger>
+            <TabsTrigger value="true-false">Benar/Salah</TabsTrigger>
+            <TabsTrigger value="essay">Uraian</TabsTrigger>
             <TabsTrigger value="matching">Menjodohkan</TabsTrigger>
-            <TabsTrigger value="image">Bergambar</TabsTrigger>
           </TabsList>
           
-          <TabsContent value={activeTab} className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Daftar Soal</CardTitle>
-                <CardDescription>
-                  Kelola semua soal yang telah dibuat
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {filteredQuestions.length > 0 ? (
-                    filteredQuestions.map((question) => (
-                      <div
-                        key={question.id}
-                        className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center space-x-2">
-                            <BookOpen className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm text-muted-foreground">
-                              {question.subject} • {question.grade}
-                            </span>
-                          </div>
-                          {getQuestionTypeBadge(question.type)}
-                        </div>
+          <TabsContent value={activeTab}>
+            {/* Example questions */}
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold">
+                Contoh Format Soal
+              </h3>
+              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+                {/* Pilihan Ganda */}
+                <Card className="bg-blue-50 border-blue-200">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center">
+                      <FileText className="mr-2 h-5 w-5" /> Pilihan Ganda
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-sm space-y-3">
+                      <p className="font-medium">Soal:</p>
+                      <p>Ibu kota Indonesia adalah...</p>
+                      <p className="font-medium">Pilihan:</p>
+                      <ul className="list-inside space-y-1">
+                        <li>A. Jakarta ✓</li>
+                        <li>B. Bandung</li>
+                        <li>C. Surabaya</li>
+                        <li>D. Yogyakarta</li>
+                      </ul>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                {/* Pilihan Ganda Kompleks */}
+                <Card className="bg-purple-50 border-purple-200">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center">
+                      <CheckSquare className="mr-2 h-5 w-5" /> Pilihan Ganda Kompleks
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-sm space-y-3">
+                      <p className="font-medium">Soal:</p>
+                      <p>Manakah yang termasuk buah-buahan? (Pilih semua yang benar)</p>
+                      <p className="font-medium">Pilihan:</p>
+                      <ul className="list-inside space-y-1">
+                        <li>A. Apel ✓</li>
+                        <li>B. Wortel</li>
+                        <li>C. Mangga ✓</li>
+                        <li>D. Kentang</li>
+                        <li>E. Jeruk ✓</li>
+                      </ul>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                {/* Benar/Salah */}
+                <Card className="bg-green-50 border-green-200">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center">
+                      <Check className="mr-2 h-5 w-5" /> Benar/Salah
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-sm space-y-3">
+                      <p className="font-medium">Soal:</p>
+                      <p>Bumi mengelilingi matahari.</p>
+                      <p className="font-medium">Jawaban:</p>
+                      <p><span className="bg-green-200 px-2 py-0.5 rounded">Benar</span></p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            
+              {/* Question list */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">
+                  Daftar Soal 
+                  <span className="ml-2 text-sm font-normal text-muted-foreground">
+                    ({filteredQuestions.length} soal)
+                  </span>
+                </h3>
+                
+                {filteredQuestions.length > 0 ? (
+                  filteredQuestions.map((question) => (
+                    <Card key={question.id} className="overflow-hidden">
+                      <div className="flex">
+                        {/* Question Type Indicator */}
+                        <div className={`w-2 ${
+                          question.type === "multiple-choice" || question.type === "multiple-choice-complex" 
+                            ? "bg-blue-500" 
+                            : question.type === "true-false" 
+                            ? "bg-green-500" 
+                            : question.type === "essay" 
+                            ? "bg-amber-500"
+                            : "bg-purple-500"
+                        }`}></div>
                         
-                        <p className="mb-4 font-medium">
-                          {question.question}
-                        </p>
-                        
-                        {question.type === "multiple_choice" && (
-                          <div className="ml-4 space-y-1 mb-4">
-                            {question.options.map((option, idx) => (
-                              <div key={idx} className="flex items-center space-x-2">
-                                <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${option === question.answer ? "bg-primary border-primary text-white" : "border-gray-300"}`}>
-                                  {option === question.answer && "✓"}
-                                </div>
-                                <span>{option}</span>
+                        <div className="flex-1">
+                          <CardHeader className="pb-2">
+                            <div className="flex justify-between">
+                              <div className="flex gap-2 items-center">
+                                {question.type === "multiple-choice" && <Badge>Pilihan Ganda</Badge>}
+                                {question.type === "multiple-choice-complex" && <Badge>Pilihan Ganda Kompleks</Badge>}
+                                {question.type === "true-false" && <Badge>Benar/Salah</Badge>}
+                                {question.type === "essay" && <Badge>Uraian</Badge>}
+                                {question.type === "matching" && <Badge>Menjodohkan</Badge>}
+                                
+                                <Badge variant="outline">
+                                  {subjectOptions.find(s => s.value === question.subject)?.label}
+                                </Badge>
+                                <Badge variant="outline">
+                                  {gradeOptions.find(g => g.value === question.grade)?.label}
+                                </Badge>
                               </div>
-                            ))}
-                          </div>
-                        )}
-                        
-                        {question.type === "essay" && (
-                          <div className="ml-4 mb-4">
-                            <p className="text-sm text-muted-foreground">Kunci jawaban: {question.answer}</p>
-                          </div>
-                        )}
-                        
-                        {question.type === "matching" && (
-                          <div className="ml-4 space-y-1 mb-4">
-                            {question.options.map((item, idx) => (
-                              <div key={idx} className="flex items-center space-x-2">
-                                <span className="font-medium">{item.left}</span>
-                                <span>→</span>
-                                <span>{item.right}</span>
+                              <Badge variant={
+                                question.difficulty === "easy" ? "success" : 
+                                question.difficulty === "medium" ? "warning" : "destructive"
+                              }>
+                                {difficultyOptions.find(d => d.value === question.difficulty)?.label}
+                              </Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-4">
+                              <div>
+                                <h4 className="font-medium mb-1">Pertanyaan:</h4>
+                                <p className="text-sm">{question.question}</p>
                               </div>
-                            ))}
-                          </div>
-                        )}
-                        
-                        {question.type === "image" && (
-                          <div className="ml-4 space-y-2 mb-4">
-                            <div className="bg-gray-100 h-24 flex items-center justify-center rounded-md mb-2">
-                              <ImagePlus className="h-8 w-8 text-muted-foreground" />
-                            </div>
-                            <div className="space-y-1">
-                              {question.options.map((option, idx) => (
-                                <div key={idx} className="flex items-center space-x-2">
-                                  <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${option === question.answer ? "bg-primary border-primary text-white" : "border-gray-300"}`}>
-                                    {option === question.answer && "✓"}
-                                  </div>
-                                  <span>{option}</span>
+                              
+                              {(question.type === "multiple-choice" || question.type === "multiple-choice-complex") && (
+                                <div>
+                                  <h4 className="font-medium mb-1">Pilihan:</h4>
+                                  <ul className="text-sm grid grid-cols-1 sm:grid-cols-2 gap-1">
+                                    {question.options.map((option) => (
+                                      <li key={option.id} className="flex items-start gap-2">
+                                        <span>{option.id.toUpperCase()}.</span>
+                                        <span>{option.text}</span>
+                                        {option.isCorrect && (
+                                          <span className="text-green-600 ml-auto">✓</span>
+                                        )}
+                                      </li>
+                                    ))}
+                                  </ul>
                                 </div>
-                              ))}
+                              )}
+                              
+                              {question.type === "true-false" && (
+                                <div>
+                                  <h4 className="font-medium mb-1">Jawaban:</h4>
+                                  <p className="text-sm">
+                                    {question.isTrue ? (
+                                      <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded">Benar</span>
+                                    ) : (
+                                      <span className="bg-red-100 text-red-800 px-2 py-0.5 rounded">Salah</span>
+                                    )}
+                                  </p>
+                                </div>
+                              )}
+                              
+                              {question.type === "essay" && (
+                                <div>
+                                  <h4 className="font-medium mb-1">Kunci Jawaban:</h4>
+                                  <p className="text-sm">{question.answerKey}</p>
+                                </div>
+                              )}
+                              
+                              <div>
+                                <h4 className="font-medium mb-1">Tag:</h4>
+                                <div className="flex flex-wrap gap-2">
+                                  {question.tags.map((tag, index) => (
+                                    <span 
+                                      key={index} 
+                                      className="text-xs bg-muted px-2 py-1 rounded-full"
+                                    >
+                                      {tag}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                              
+                              <div className="flex justify-end pt-2">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => openPreview(question)}
+                                >
+                                  Lihat Detail
+                                </Button>
+                              </div>
                             </div>
-                          </div>
-                        )}
-                        
-                        <div className="flex items-center justify-between">
-                          <div className="text-sm text-muted-foreground">
-                            Dibuat oleh: {question.creator}
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Button 
-                              variant="outline" 
-                              size="icon"
-                              onClick={() => handleEditQuestion(question.id)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="outline" size="icon" className="text-destructive hover:text-destructive">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
+                          </CardContent>
                         </div>
                       </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-10">
-                      <p className="text-muted-foreground">Tidak ada soal ditemukan</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="text-center py-10 bg-muted/20 rounded-lg">
+                    <p className="text-muted-foreground">Tidak ada soal ditemukan</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
-
-      {/* Edit Question Dialog */}
-      <Dialog open={isEditQuestionDialogOpen} onOpenChange={setIsEditQuestionDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+      
+      {/* Add Question Dialog */}
+      <Dialog open={isAddQuestionOpen} onOpenChange={setIsAddQuestionOpen}>
+        <DialogContent className="sm:max-w-[700px]">
           <DialogHeader>
-            <DialogTitle>Edit Soal</DialogTitle>
+            <DialogTitle>Tambah Soal Baru</DialogTitle>
             <DialogDescription>
-              Edit informasi soal. Klik simpan ketika selesai.
+              Buat soal baru untuk bank soal. Isi semua informasi yang diperlukan.
             </DialogDescription>
           </DialogHeader>
           
-          <div className="grid gap-4 py-4">
-            {currentQuestion && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-question">Pertanyaan</Label>
-                  <Textarea 
-                    id="edit-question" 
-                    defaultValue={currentQuestion.question}
+          <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="subject">Mata Pelajaran</Label>
+                <Select 
+                  value={newQuestion.subject}
+                  onValueChange={(value) => setNewQuestion({...newQuestion, subject: value})}
+                >
+                  <SelectTrigger id="subject">
+                    <SelectValue placeholder="Pilih mata pelajaran" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subjectOptions.map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="grade">Kelas</Label>
+                <Select 
+                  value={newQuestion.grade}
+                  onValueChange={(value) => setNewQuestion({...newQuestion, grade: value})}
+                >
+                  <SelectTrigger id="grade">
+                    <SelectValue placeholder="Pilih kelas" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {gradeOptions.map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="type">Tipe Soal</Label>
+                <Select 
+                  value={newQuestion.type}
+                  onValueChange={(value: string) => setNewQuestion({...newQuestion, type: value})}
+                >
+                  <SelectTrigger id="type">
+                    <SelectValue placeholder="Pilih tipe soal" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {questionTypeOptions.map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="difficulty">Tingkat Kesulitan</Label>
+                <Select 
+                  value={newQuestion.difficulty}
+                  onValueChange={(value) => setNewQuestion({...newQuestion, difficulty: value})}
+                >
+                  <SelectTrigger id="difficulty">
+                    <SelectValue placeholder="Pilih tingkat kesulitan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {difficultyOptions.map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="question">Pertanyaan</Label>
+              <Textarea 
+                id="question"
+                placeholder="Tulis pertanyaan di sini"
+                className="min-h-[100px]"
+                value={newQuestion.question}
+                onChange={(e) => setNewQuestion({...newQuestion, question: e.target.value})}
+              />
+            </div>
+            
+            {/* Image Upload */}
+            <div className="space-y-2">
+              <Label htmlFor="image">Gambar Soal (opsional)</Label>
+              <div className="flex items-center gap-3">
+                <Button 
+                  variant="outline" 
+                  onClick={() => document.getElementById('image-upload')?.click()}
+                  type="button"
+                >
+                  <Image className="mr-2 h-4 w-4" /> Pilih Gambar
+                </Button>
+                <Input
+                  id="image-upload"
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                />
+                <span className="text-sm text-muted-foreground">
+                  {newQuestionImage ? newQuestionImage.name : 'Belum ada gambar dipilih'}
+                </span>
+              </div>
+              
+              {imagePreview && (
+                <div className="mt-3">
+                  <img 
+                    src={imagePreview} 
+                    alt="Preview" 
+                    className="max-h-[200px] object-contain rounded-md border"
                   />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-2"
+                    onClick={() => {
+                      setNewQuestionImage(null);
+                      setImagePreview(null);
+                    }}
+                  >
+                    Hapus Gambar
+                  </Button>
+                </div>
+              )}
+            </div>
+            
+            {/* Options for multiple choice */}
+            {(newQuestion.type === "multiple-choice" || newQuestion.type === "multiple-choice-complex") && (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <Label>Pilihan Jawaban</Label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    type="button"
+                    onClick={handleAddOption}
+                    disabled={newQuestion.options.length >= 6}
+                  >
+                    <Plus className="mr-2 h-3 w-3" /> Tambah Pilihan
+                  </Button>
                 </div>
                 
-                {currentQuestion.type === "multiple_choice" && (
-                  <div className="space-y-2">
-                    <Label>Pilihan Jawaban</Label>
-                    {currentQuestion.options.map((option: string, index: number) => (
-                      <div key={index} className="flex items-center space-x-2 mt-2">
-                        <Input defaultValue={option} />
-                        <Badge className={option === currentQuestion.answer ? "bg-green-500" : ""}>
-                          {option === currentQuestion.answer ? "Jawaban Benar" : "Opsi"}
-                        </Badge>
-                      </div>
-                    ))}
+                {newQuestion.options.map((option, index) => (
+                  <div key={index} className="flex items-start gap-3">
+                    <div className="pt-3 font-semibold">
+                      {option.id.toUpperCase()}.
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <Textarea
+                        placeholder={`Teks pilihan ${option.id.toUpperCase()}`}
+                        className="min-h-[60px]"
+                        value={option.text}
+                        onChange={(e) => handleOptionChange(index, e.target.value)}
+                      />
+                    </div>
+                    <div className="flex flex-col items-center gap-1 pt-3">
+                      <Checkbox
+                        checked={option.isCorrect}
+                        onCheckedChange={(checked) => 
+                          handleCorrectOption(index, checked as boolean)
+                        }
+                        id={`correct-${index}`}
+                      />
+                      <Label htmlFor={`correct-${index}`} className="text-xs">
+                        {newQuestion.type === "multiple-choice" ? "Benar" : "Pilih"}
+                      </Label>
+                    </div>
+                    {index > 1 && ( // Keep at least 2 options
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        type="button"
+                        onClick={() => handleRemoveOption(index)}
+                        className="self-center"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
-                )}
+                ))}
                 
-                {currentQuestion.type === "essay" && (
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-answer">Kunci Jawaban (untuk referensi)</Label>
-                    <Textarea 
-                      id="edit-answer" 
-                      defaultValue={currentQuestion.answer}
-                    />
-                  </div>
-                )}
-              </>
+                <div className="bg-muted/30 p-2 rounded-md text-sm text-muted-foreground">
+                  {newQuestion.type === "multiple-choice" ? (
+                    "Pilih satu jawaban yang benar dengan mencentang kotak di samping pilihan."
+                  ) : (
+                    "Pilih satu atau lebih jawaban yang benar dengan mencentang kotak di samping pilihan."
+                  )}
+                </div>
+              </div>
             )}
+            
+            {/* True/False answer */}
+            {newQuestion.type === "true-false" && (
+              <div className="space-y-2">
+                <Label htmlFor="isTrue">Jawaban</Label>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      id="true"
+                      name="isTrue"
+                      checked={newQuestion.isTrue === true}
+                      onChange={() => setNewQuestion({...newQuestion, isTrue: true})}
+                      className="h-4 w-4 border-muted-foreground/30 focus:ring-primary"
+                    />
+                    <Label htmlFor="true" className="text-sm">Benar</Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      id="false"
+                      name="isTrue"
+                      checked={newQuestion.isTrue === false}
+                      onChange={() => setNewQuestion({...newQuestion, isTrue: false})}
+                      className="h-4 w-4 border-muted-foreground/30 focus:ring-primary"
+                    />
+                    <Label htmlFor="false" className="text-sm">Salah</Label>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Essay answer */}
+            {newQuestion.type === "essay" && (
+              <div className="space-y-2">
+                <Label htmlFor="answerKey">Kunci Jawaban</Label>
+                <Textarea 
+                  id="answerKey"
+                  placeholder="Tulis kunci jawaban atau pedoman penilaian di sini"
+                  className="min-h-[100px]"
+                  value={newQuestion.answerKey}
+                  onChange={(e) => setNewQuestion({...newQuestion, answerKey: e.target.value})}
+                />
+              </div>
+            )}
+            
+            {/* Explanation */}
+            <div className="space-y-2">
+              <Label htmlFor="explanation">Penjelasan (opsional)</Label>
+              <Textarea 
+                id="explanation"
+                placeholder="Berikan penjelasan tentang jawaban yang benar"
+                className="min-h-[80px]"
+                value={newQuestion.explanation}
+                onChange={(e) => setNewQuestion({...newQuestion, explanation: e.target.value})}
+              />
+            </div>
+            
+            {/* Tags */}
+            <div className="space-y-2">
+              <Label htmlFor="tags">Tag (pisahkan dengan koma)</Label>
+              <Input 
+                id="tags"
+                placeholder="Contoh: aljabar, persamaan, matematika"
+                value={newQuestion.tags}
+                onChange={(e) => setNewQuestion({...newQuestion, tags: e.target.value})}
+              />
+            </div>
           </div>
           
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditQuestionDialogOpen(false)}>
-              Batal
-            </Button>
-            <Button type="button" onClick={saveEditedQuestion}>
-              Simpan Perubahan
-            </Button>
+            <Button variant="outline" onClick={() => setIsAddQuestionOpen(false)}>Batal</Button>
+            <Button onClick={handleSubmit}>Simpan Soal</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Question Preview Dialog */}
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Detail Soal</DialogTitle>
+          </DialogHeader>
+          
+          {previewQuestion && (
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Badge>
+                  {questionTypeOptions.find(t => t.value === previewQuestion.type)?.label}
+                </Badge>
+                <Badge variant="outline">
+                  {subjectOptions.find(s => s.value === previewQuestion.subject)?.label}
+                </Badge>
+                <Badge variant="outline">
+                  {gradeOptions.find(g => g.value === previewQuestion.grade)?.label}
+                </Badge>
+                <Badge variant={
+                  previewQuestion.difficulty === "easy" ? "success" : 
+                  previewQuestion.difficulty === "medium" ? "warning" : "destructive"
+                }>
+                  {difficultyOptions.find(d => d.value === previewQuestion.difficulty)?.label}
+                </Badge>
+              </div>
+              
+              <div className="border-t pt-4">
+                <h3 className="font-medium mb-2">Pertanyaan:</h3>
+                <p>{previewQuestion.question}</p>
+              </div>
+              
+              {(previewQuestion.type === "multiple-choice" || previewQuestion.type === "multiple-choice-complex") && (
+                <div>
+                  <h3 className="font-medium mb-2">Pilihan:</h3>
+                  <ul className="space-y-2">
+                    {previewQuestion.options.map((option: any) => (
+                      <li 
+                        key={option.id} 
+                        className={`flex gap-2 p-2 rounded-md ${option.isCorrect ? 'bg-green-50 border border-green-200' : ''}`}
+                      >
+                        <span>{option.id.toUpperCase()}.</span>
+                        <span>{option.text}</span>
+                        {option.isCorrect && (
+                          <span className="text-green-600 ml-auto">✓</span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {previewQuestion.type === "true-false" && (
+                <div>
+                  <h3 className="font-medium mb-2">Jawaban:</h3>
+                  <p>
+                    {previewQuestion.isTrue ? (
+                      <span className="bg-green-100 text-green-800 px-3 py-1 rounded">Benar</span>
+                    ) : (
+                      <span className="bg-red-100 text-red-800 px-3 py-1 rounded">Salah</span>
+                    )}
+                  </p>
+                </div>
+              )}
+              
+              {previewQuestion.type === "essay" && (
+                <div>
+                  <h3 className="font-medium mb-2">Kunci Jawaban:</h3>
+                  <div className="bg-blue-50 p-3 rounded-md">
+                    <p>{previewQuestion.answerKey}</p>
+                  </div>
+                </div>
+              )}
+              
+              {previewQuestion.explanation && (
+                <div>
+                  <h3 className="font-medium mb-2">Penjelasan:</h3>
+                  <div className="bg-amber-50 p-3 rounded-md">
+                    <p>{previewQuestion.explanation}</p>
+                  </div>
+                </div>
+              )}
+              
+              <div>
+                <h3 className="font-medium mb-2">Tag:</h3>
+                <div className="flex flex-wrap gap-2">
+                  {previewQuestion.tags.map((tag: string, index: number) => (
+                    <span 
+                      key={index} 
+                      className="text-xs bg-muted px-2 py-1 rounded-full"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button onClick={() => setIsPreviewOpen(false)}>Tutup</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

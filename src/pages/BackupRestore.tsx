@@ -89,6 +89,9 @@ const BackupRestore = () => {
           const now = new Date();
           const filename = `backup_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}.zip`;
           
+          // Generate mock data for download
+          generateBackupFile(filename);
+          
           toast({
             title: "Backup berhasil",
             description: `Data berhasil dibackup dengan nama file ${filename}`,
@@ -98,6 +101,30 @@ const BackupRestore = () => {
         return prev + 10;
       });
     }, 500);
+  };
+
+  const generateBackupFile = (filename: string) => {
+    // Create mock data
+    const mockData = {
+      backupDate: new Date().toISOString(),
+      backupVersion: "2.5.1",
+      items: {
+        users: 120,
+        students: 95,
+        teachers: 15,
+        admins: 10,
+        classes: 12,
+        subjects: 8,
+        questions: 250,
+        exams: 18,
+      }
+    };
+    
+    // Convert to JSON blob
+    const blob = new Blob([JSON.stringify(mockData, null, 2)], { type: "application/json" });
+    
+    // Download file
+    saveAs(blob, filename);
   };
 
   const handleRestore = (backupId: string) => {
@@ -252,7 +279,7 @@ const BackupRestore = () => {
                   type="file"
                   id="restore-file"
                   className="hidden"
-                  accept=".zip,.sql,.backup"
+                  accept=".zip,.sql,.backup,.json"
                   onChange={handleFileUpload}
                 />
                 <label

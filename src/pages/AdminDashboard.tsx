@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Users, UserCheck, FileText, Book, School, BookOpen, Heart, Info, Settings } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -34,10 +34,58 @@ const AdminDashboard = () => {
     key: "ABC123XYZ456",
     npsn: "20123456",
   });
+
+  // School info from Dapodik
+  const [schoolInfo, setSchoolInfo] = useState({
+    name: "",
+    address: "",
+    phone: "",
+    email: ""
+  });
   
   const [isEditingConfig, setIsEditingConfig] = useState(false);
   const [editedConfig, setEditedConfig] = useState({...dapodikConfig});
   const { toast } = useToast();
+
+  // Mock function to fetch data from Dapodik
+  const fetchDapodikData = () => {
+    // This would be an actual API call in production
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          name: "SDN Contoh 1",
+          address: "Jl. Pendidikan No. 123, Jakarta",
+          phone: "021-5552525",
+          email: "sdn.contoh1@edu.id"
+        });
+      }, 1000);
+    });
+  };
+
+  useEffect(() => {
+    // When configuration changes, fetch school data
+    const getSchoolData = async () => {
+      try {
+        const data = await fetchDapodikData();
+        setSchoolInfo(data as any);
+        toast({
+          title: "Data berhasil disinkronkan",
+          description: "Data sekolah berhasil diambil dari Dapodik"
+        });
+      } catch (error) {
+        toast({
+          title: "Gagal mengambil data",
+          description: "Terjadi kesalahan saat mengambil data dari Dapodik",
+          variant: "destructive"
+        });
+      }
+    };
+
+    // Only fetch if we have NPSN and API key set
+    if (dapodikConfig.npsn && dapodikConfig.key) {
+      getSchoolData();
+    }
+  }, [dapodikConfig, toast]);
 
   const handleConfigChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -47,13 +95,25 @@ const AdminDashboard = () => {
     });
   };
 
-  const saveConfig = () => {
+  const saveConfig = async () => {
     setDapodikConfig(editedConfig);
     setIsEditingConfig(false);
-    toast({
-      title: "Konfigurasi disimpan",
-      description: "Konfigurasi Dapodik berhasil diperbarui"
-    });
+    
+    // Fetch updated school info after saving config
+    try {
+      const data = await fetchDapodikData();
+      setSchoolInfo(data as any);
+      toast({
+        title: "Konfigurasi disimpan",
+        description: "Konfigurasi Dapodik berhasil diperbarui dan data sekolah telah disinkronkan"
+      });
+    } catch (error) {
+      toast({
+        title: "Konfigurasi disimpan",
+        description: "Konfigurasi Dapodik berhasil diperbarui namun gagal mengambil data sekolah",
+        variant: "destructive"
+      });
+    }
   };
 
   // Card background colors based on type
@@ -78,10 +138,10 @@ const AdminDashboard = () => {
       <div className="space-y-6">
         {/* Welcome and Configuration Section */}
         <div className="grid gap-6 md:grid-cols-2">
-          {/* Welcome Card */}
-          <Card>
+          {/* Welcome Card with friendly background */}
+          <Card className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-100">
             <CardHeader>
-              <CardTitle>Selamat Datang di Edu-Score</CardTitle>
+              <CardTitle className="text-gradient-primary">Selamat Datang di Edu-Score</CardTitle>
               <CardDescription>
                 Sistem Ujian Sekolah Dasar
               </CardDescription>
@@ -90,6 +150,12 @@ const AdminDashboard = () => {
               <p className="text-muted-foreground">
                 Kelola ujian, soal, dan pengguna dengan mudah melalui dashboard admin.
               </p>
+              {schoolInfo.name && (
+                <div className="mt-4 p-3 bg-blue-50 rounded-md">
+                  <p className="font-semibold text-blue-700">{schoolInfo.name}</p>
+                  <p className="text-sm text-blue-600">{schoolInfo.address}</p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -170,6 +236,12 @@ const AdminDashboard = () => {
                       <span className="text-sm font-medium">NPSN Sekolah:</span>
                       <span className="text-sm">{dapodikConfig.npsn}</span>
                     </div>
+                    {schoolInfo.name && (
+                      <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-md">
+                        <p className="text-sm text-green-700 mb-1 font-medium">Status: Tersinkronisasi ✓</p>
+                        <p className="text-xs text-green-600">{schoolInfo.name}</p>
+                      </div>
+                    )}
                   </div>
                 )}
                 <div className="pt-2">
@@ -179,7 +251,7 @@ const AdminDashboard = () => {
                         Batal
                       </Button>
                       <Button className="w-1/2" onClick={saveConfig}>
-                        Simpan
+                        Simpan & Sinkronkan
                       </Button>
                     </div>
                   ) : (
@@ -402,39 +474,8 @@ const AdminDashboard = () => {
             </CardContent>
           </Card>
           
-          {/* Donation Information */}
-          <Card className="md:col-span-1">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Heart className="h-5 w-5 text-red-500" /> Donasi
-              </CardTitle>
-              <CardDescription>
-                Dukung pengembangan aplikasi
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm">
-                Aplikasi ini dikembangkan untuk membantu sistem pendidikan Indonesia. 
-                Dukungan Anda sangat berarti bagi pengembangan aplikasi ini lebih lanjut.
-              </p>
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold">Rekening Bank:</h3>
-                <div className="text-sm text-muted-foreground">
-                  <p>Bank Mandiri: 123-456-7890</p>
-                  <p>Bank BCA: 098-765-4321</p>
-                  <p>Bank BNI: 111-222-3333</p>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button className="w-full bg-red-500 hover:bg-red-600">
-                <Heart className="mr-2 h-4 w-4" /> Donasi Sekarang
-              </Button>
-            </CardFooter>
-          </Card>
-          
-          {/* App Information */}
-          <Card className="md:col-span-1">
+          {/* App Information - replacing donation card as requested */}
+          <Card className="md:col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Info className="h-5 w-5" /> Tentang Aplikasi

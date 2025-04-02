@@ -32,33 +32,15 @@ interface DashboardLayoutProps {
   title: string;
 }
 
-// Organized class teachers by grade level
-const classTeachersByGrade = {
-  "1": [
-    { class: "1A", teacher: "Nurjannah" },
-    { class: "1B", teacher: "Maemunah" }
-  ],
-  "2": [
-    { class: "2A", teacher: "Erniwati" },
-    { class: "2B", teacher: "Sulastri" }
-  ],
-  "3": [
-    { class: "3A", teacher: "Rahmawati" },
-    { class: "3B", teacher: "Haryanto" }
-  ],
-  "4": [
-    { class: "4A", teacher: "Supardi" },
-    { class: "4B", teacher: "Sumarno" }
-  ],
-  "5": [
-    { class: "5A", teacher: "Supriyanto" },
-    { class: "5B", teacher: "Sutarman" }
-  ],
-  "6": [
-    { class: "6A", teacher: "Joko" },
-    { class: "6B", teacher: "Budiman" }
-  ]
-};
+// Updated class structure for grades only, not class subdivisions
+const grades = [
+  { id: "1", name: "Kelas 1" },
+  { id: "2", name: "Kelas 2" },
+  { id: "3", name: "Kelas 3" },
+  { id: "4", name: "Kelas 4" },
+  { id: "5", name: "Kelas 5" },
+  { id: "6", name: "Kelas 6" }
+];
 
 const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
   const { user, logout } = useAuth();
@@ -67,6 +49,12 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
   const [classMenuOpen, setClassMenuOpen] = useState(false);
   const [learningMenuOpen, setLearningMenuOpen] = useState(false);
   const [expandedGrades, setExpandedGrades] = useState<Record<string, boolean>>({});
+  
+  // School info (would come from context or state management in a real app)
+  const schoolInfo = {
+    name: "SDN Contoh 1",
+    address: "Jl. Pendidikan No. 123, Jakarta",
+  };
 
   const handleLogout = () => {
     logout();
@@ -210,6 +198,14 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
               <X size={20} />
             </Button>
           </div>
+          
+          {/* School Name (visible when connected to Dapodik) */}
+          {schoolInfo.name && (
+            <div className="px-6 py-2 bg-sidebar-accent/20 border-b border-sidebar-border">
+              <p className="text-white font-medium text-sm">{schoolInfo.name}</p>
+              <p className="text-white/70 text-xs">{schoolInfo.address}</p>
+            </div>
+          )}
 
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto py-4 px-3">
@@ -250,34 +246,14 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
                       </button>
                     </CollapsibleTrigger>
                     <CollapsibleContent className="pl-9">
-                      {Object.entries(classTeachersByGrade).map(([grade, classes]) => (
-                        <div key={grade} className="mb-2">
-                          <button
-                            onClick={() => toggleGradeExpanded(grade)}
-                            className="flex items-center justify-between w-full px-3 py-1 text-sidebar-foreground hover:bg-sidebar-accent group transition-colors text-sm"
+                      {grades.map((grade) => (
+                        <div key={grade.id} className="mb-2">
+                          <Link
+                            to={`/admin/classes/${grade.id}`}
+                            className="flex items-center justify-between px-3 py-1 text-sidebar-foreground rounded-md hover:bg-sidebar-accent group transition-colors text-sm"
                           >
-                            <span>Kelas {grade}</span>
-                            {expandedGrades[grade] ? (
-                              <ChevronDown className="h-3 w-3" />
-                            ) : (
-                              <ChevronRight className="h-3 w-3" />
-                            )}
-                          </button>
-                          
-                          {expandedGrades[grade] && (
-                            <div className="pl-4 space-y-1 mt-1">
-                              {classes.map((item) => (
-                                <Link
-                                  key={item.class}
-                                  to={`/admin/classes/${item.class}`}
-                                  className="flex items-center justify-between px-3 py-1 text-sidebar-foreground rounded-md hover:bg-sidebar-accent group transition-colors text-sm"
-                                >
-                                  <span>Kelas {item.class}</span>
-                                  <span className="text-xs text-sidebar-foreground/70">{item.teacher}</span>
-                                </Link>
-                              ))}
-                            </div>
-                          )}
+                            <span>{grade.name}</span>
+                          </Link>
                         </div>
                       ))}
                     </CollapsibleContent>
@@ -351,7 +327,12 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
         {/* Page Header */}
         <header className="sticky top-0 z-30 bg-white border-b p-4">
           <div className="container mx-auto flex items-center justify-between">
-            <h1 className="text-2xl font-bold">{title}</h1>
+            <div>
+              <h1 className="text-2xl font-bold">{title}</h1>
+              {schoolInfo.name && (
+                <p className="text-muted-foreground text-sm">{schoolInfo.name}</p>
+              )}
+            </div>
             <div className="flex items-center space-x-4">
               <div className="text-sm font-medium text-right">
                 <div>{user?.name}</div>
@@ -372,6 +353,7 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
         <footer className="border-t py-4">
           <div className="container mx-auto text-center text-sm text-muted-foreground">
             © {new Date().getFullYear()} Edu-Score - Sistem Ujian Sekolah Dasar
+            {schoolInfo.name && ` | ${schoolInfo.name}`}
           </div>
         </footer>
       </div>
