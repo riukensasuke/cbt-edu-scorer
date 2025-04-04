@@ -1,6 +1,5 @@
 
 import React from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, FileText, Eye, Edit, Copy, Trash2 } from "lucide-react";
@@ -22,18 +21,33 @@ interface ExamItemProps {
     createdBy: string;
   };
   onDelete?: (examId: string) => void;
+  onView?: (examId: string) => void;
+  onEdit?: (examId: string) => void;
 }
 
-const ExamListItem = ({ exam, onDelete }: ExamItemProps) => {
-  const navigate = useNavigate();
+const ExamListItem = ({ exam, onDelete, onView, onEdit }: ExamItemProps) => {
   const { toast } = useToast();
 
   const handleView = () => {
-    navigate(`/exams/${exam.id}`);
+    if (onView) {
+      onView(exam.id);
+    } else {
+      toast({
+        title: "Lihat ujian",
+        description: `Melihat detail ujian ${exam.title}`,
+      });
+    }
   };
 
   const handleEdit = () => {
-    navigate(`/exams/edit/${exam.id}`);
+    if (onEdit) {
+      onEdit(exam.id);
+    } else {
+      toast({
+        title: "Edit ujian",
+        description: `Mengedit ujian ${exam.title}`,
+      });
+    }
   };
 
   const handleCopy = () => {

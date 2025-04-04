@@ -81,7 +81,7 @@ const QuestionListItem: React.FC<QuestionListItemProps> = ({
   };
 
   return (
-    <Card className="p-4 hover:shadow-md transition-all duration-200">
+    <Card className="p-4 hover:shadow-md transition-all duration-200 border-l-4 border-l-blue-500">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <div className="flex items-center">
@@ -95,8 +95,8 @@ const QuestionListItem: React.FC<QuestionListItemProps> = ({
         {getDifficultyBadge(question.difficulty)}
       </div>
 
-      <div className="mb-3">
-        <p className="font-medium text-sm line-clamp-2">{question.question}</p>
+      <div className="mb-3 bg-slate-50 p-3 rounded-md shadow-inner">
+        <p className="font-medium text-base">{question.question}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-muted-foreground mb-4">

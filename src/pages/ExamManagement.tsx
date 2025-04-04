@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,9 +15,20 @@ import { Plus } from "lucide-react";
 
 const ExamManagement = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { activeTab, searchQuery, filteredExams, handleTabChange, handleSearch, deleteExam } = useExamManagement();
   const [isNewExamDialogOpen, setIsNewExamDialogOpen] = useState(false);
   const { examsList } = useExamData(); // Get exam data from the hook
+
+  // Handle view exam
+  const handleViewExam = (examId) => {
+    navigate(`/exams/${examId}`);
+  };
+
+  // Handle edit exam
+  const handleEditExam = (examId) => {
+    navigate(`/exams/edit/${examId}`);
+  };
 
   return (
     <DashboardLayout title="Manajemen Ujian">
@@ -57,7 +69,9 @@ const ExamManagement = () => {
                       <ExamListItem 
                         key={exam.id} 
                         exam={exam} 
-                        onDelete={deleteExam} 
+                        onDelete={deleteExam}
+                        onView={handleViewExam}
+                        onEdit={handleEditExam} 
                       />
                     ))
                   ) : (

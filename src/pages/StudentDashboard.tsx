@@ -5,7 +5,6 @@ import WelcomeCard from "@/components/dashboard/WelcomeCard";
 import UpcomingExams from "@/components/dashboard/UpcomingExams";
 import RecentResults from "@/components/dashboard/RecentResults";
 import MissedExams from "@/components/dashboard/MissedExams";
-import Announcements from "@/components/dashboard/Announcements";
 import { getStatusBadge, getScoreBadgeColor } from "@/utils/statusUtils";
 import { useStudentDashboard } from "@/hooks/useStudentDashboard";
 
@@ -42,8 +41,6 @@ const StudentDashboard = () => {
           exams={missedExams} 
           getBadgeForStatus={getStatusBadge} 
         />
-
-        <Announcements />
       </div>
     </DashboardLayout>
   );
