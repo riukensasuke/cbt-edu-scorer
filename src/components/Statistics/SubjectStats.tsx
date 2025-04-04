@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 import { Users, UserX, UserCheck, Clock, BookOpen, FileText, Book, Calendar } from "lucide-react";
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -279,8 +279,11 @@ const SubjectStats: React.FC<SubjectStatsProps> = ({ subject = "Matematika" }) =
                     name="Jumlah Siswa" 
                     fill="#8884d8" 
                     radius={[4, 4, 0, 0]}
-                    colorKey="color" 
-                  />
+                  >
+                    {stats.chartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -302,8 +305,11 @@ const SubjectStats: React.FC<SubjectStatsProps> = ({ subject = "Matematika" }) =
                     name="Jumlah" 
                     fill="#8884d8" 
                     radius={[4, 4, 0, 0]}
-                    colorKey="color" 
-                  />
+                  >
+                    {stats.additionalChartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
