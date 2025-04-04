@@ -101,14 +101,21 @@ export const useExamData = () => {
   const [exams, setExams] = useState<Record<string, Exam>>(initialExams);
   
   const getExam = (id: string): Exam | null => {
-    return exams[id] || null;
+    // Fix: Convert numbers to strings to handle different id formats
+    if (id && id.startsWith('exam-')) {
+      return exams[id] || null;
+    }
+    // Try finding by numeric ID (convert to exam-N format)
+    const examId = `exam-${id}`;
+    return exams[examId] || null;
   };
   
   const updateExam = (id: string, data: Partial<Exam>): void => {
+    const examId = id.startsWith('exam-') ? id : `exam-${id}`;
     setExams(prev => ({
       ...prev,
-      [id]: {
-        ...prev[id],
+      [examId]: {
+        ...prev[examId],
         ...data
       }
     }));
@@ -122,8 +129,9 @@ export const useExamData = () => {
   };
   
   const deleteExam = (id: string): void => {
+    const examId = id.startsWith('exam-') ? id : `exam-${id}`;
     const newExams = { ...exams };
-    delete newExams[id];
+    delete newExams[examId];
     setExams(newExams);
   };
   

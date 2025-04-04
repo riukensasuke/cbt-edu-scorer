@@ -7,19 +7,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, FileText, User, Users, Info, Edit, Trash2, Copy, CheckCircle2, AlertTriangle } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-
-// Ensure we get the mock data from the global window object
-const getExamData = (id: string) => {
-  // @ts-ignore
-  const mockExamData = window.mockExamData || {};
-  return mockExamData[id];
-};
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useExamData } from '@/hooks/useExamData';
 
 const ExamDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { getExam } = useExamData();
   const [exam, setExam] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -28,7 +23,7 @@ const ExamDetails = () => {
     // Simulate loading exam data with a small delay
     const timer = setTimeout(() => {
       if (id) {
-        const examData = getExamData(id);
+        const examData = getExam(id);
         if (examData) {
           setExam(examData);
           setLoading(false);
@@ -44,7 +39,7 @@ const ExamDetails = () => {
     }, 500); // Simulate API delay
 
     return () => clearTimeout(timer);
-  }, [id, navigate, toast]);
+  }, [id, navigate, toast, getExam]);
 
   // Handle delete confirmation
   const handleDelete = () => {
@@ -232,7 +227,7 @@ const ExamDetails = () => {
                 </table>
               </div>
               <div className="mt-4">
-                <Button variant="outline" disabled>
+                <Button variant="outline">
                   Kelola Soal
                 </Button>
               </div>

@@ -17,12 +17,14 @@ import {
   Upload,
   Image,
   ListFilter,
-  CheckSquare
+  CheckSquare,
+  Edit
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import QuestionListItem from "@/components/question/QuestionListItem";
 
 // Sample question types
 const questionTypeOptions = [
@@ -61,98 +63,106 @@ const gradeOptions = [
   { value: "6", label: "Kelas 6" }
 ];
 
-// Sample questions
-const sampleQuestions = [
+// Transform sample questions to the format expected by QuestionListItem
+const transformedQuestions = [
   {
     id: "1",
     question: "Hasil dari 5 x 9 adalah...",
-    type: "multiple-choice",
-    subject: "mathematics",
-    grade: "3",
+    type: "multiple_choice",
+    subject: "Matematika",
+    grade: "Kelas 3",
     difficulty: "easy",
-    options: [
-      { id: "a", text: "40", isCorrect: false },
-      { id: "b", text: "45", isCorrect: true },
-      { id: "c", text: "50", isCorrect: false },
-      { id: "d", text: "54", isCorrect: false }
-    ],
+    options: ["40", "45", "50", "54"],
+    correctAnswer: "45",
     explanation: "5 x 9 = 45",
-    tags: ["perkalian", "bilangan"]
+    createdBy: "Ibu Siti",
+    createdAt: "2023-10-01",
+    tags: ["perkalian", "bilangan"],
+    isImage: false
   },
   {
     id: "2",
     question: "Siapakah presiden pertama Indonesia?",
-    type: "multiple-choice",
-    subject: "social",
-    grade: "5",
+    type: "multiple_choice",
+    subject: "IPS",
+    grade: "Kelas 5",
     difficulty: "easy",
-    options: [
-      { id: "a", text: "Soekarno", isCorrect: true },
-      { id: "b", text: "Soeharto", isCorrect: false },
-      { id: "c", text: "Habibie", isCorrect: false },
-      { id: "d", text: "Megawati", isCorrect: false }
-    ],
+    options: ["Soekarno", "Soeharto", "Habibie", "Megawati"],
+    correctAnswer: "Soekarno",
     explanation: "Ir. Soekarno adalah presiden pertama Indonesia yang menjabat pada periode 1945-1967.",
-    tags: ["sejarah", "indonesia", "presiden"]
+    createdBy: "Bapak Ahmad",
+    createdAt: "2023-10-02",
+    tags: ["sejarah", "indonesia", "presiden"],
+    isImage: false
   },
   {
     id: "3",
     question: "Tuliskan contoh teks deskriptif dengan tema 'Lingkungan Sekolahku'.",
     type: "essay",
-    subject: "indonesian",
-    grade: "6",
+    subject: "Bahasa Indonesia",
+    grade: "Kelas 6",
     difficulty: "medium",
-    answerKey: "Teks deskriptif tentang lingkungan sekolah yang menjelaskan suasana, fasilitas, dan keadaan sekolah secara detail.",
-    tags: ["teks deskriptif", "bahasa indonesia", "menulis"]
+    correctAnswer: "Teks deskriptif tentang lingkungan sekolah yang menjelaskan suasana, fasilitas, dan keadaan sekolah secara detail.",
+    createdBy: "Ibu Rini",
+    createdAt: "2023-10-03",
+    tags: ["teks deskriptif", "bahasa indonesia", "menulis"],
+    isImage: false
   },
   {
     id: "4",
     question: "Jakarta adalah ibu kota Indonesia.",
-    type: "true-false",
-    subject: "social",
-    grade: "4",
+    type: "true_false",
+    subject: "IPS",
+    grade: "Kelas 4",
     difficulty: "easy",
-    isTrue: true,
+    correctAnswer: "Benar",
     explanation: "Jakarta merupakan ibu kota negara Indonesia yang terletak di pulau Jawa.",
-    tags: ["geografi", "indonesia", "ibu kota"]
+    createdBy: "Bapak Tono",
+    createdAt: "2023-10-04",
+    tags: ["geografi", "indonesia", "ibu kota"],
+    isImage: false
   },
   {
     id: "5",
     question: "Sebutkan dan jelaskan 3 bagian utama tumbuhan beserta fungsinya.",
     type: "essay",
-    subject: "science",
-    grade: "5",
+    subject: "IPA",
+    grade: "Kelas 5",
     difficulty: "medium",
-    answerKey: "1. Akar - menyerap air dan nutrisi dari tanah, serta menopang tumbuhan\n2. Batang - mengalirkan air dan nutrisi dari akar ke seluruh bagian tumbuhan\n3. Daun - tempat terjadinya fotosintesis",
-    tags: ["tumbuhan", "biologi", "organ tumbuhan"]
+    correctAnswer: "1. Akar - menyerap air dan nutrisi dari tanah, serta menopang tumbuhan\n2. Batang - mengalirkan air dan nutrisi dari akar ke seluruh bagian tumbuhan\n3. Daun - tempat terjadinya fotosintesis",
+    createdBy: "Ibu Dewi",
+    createdAt: "2023-10-05",
+    tags: ["tumbuhan", "biologi", "organ tumbuhan"],
+    isImage: false
   },
   {
     id: "6",
     question: "Manakah di antara berikut ini yang termasuk hewan mamalia? (Pilih semua jawaban yang benar)",
-    type: "multiple-choice-complex",
-    subject: "science",
-    grade: "4",
+    type: "multiple_choice_complex",
+    subject: "IPA",
+    grade: "Kelas 4",
     difficulty: "medium",
-    options: [
-      { id: "a", text: "Kucing", isCorrect: true },
-      { id: "b", text: "Ayam", isCorrect: false },
-      { id: "c", text: "Lumba-lumba", isCorrect: true },
-      { id: "d", text: "Kadal", isCorrect: false },
-      { id: "e", text: "Kelelawar", isCorrect: true }
-    ],
+    options: ["Kucing", "Ayam", "Lumba-lumba", "Kadal", "Kelelawar"],
+    correctAnswer: "Kucing, Lumba-lumba, Kelelawar",
     explanation: "Kucing, lumba-lumba, dan kelelawar adalah hewan mamalia karena memiliki kelenjar susu, melahirkan anak, dan memiliki rambut/bulu.",
-    tags: ["hewan", "klasifikasi", "mamalia"]
+    createdBy: "Bapak Agus",
+    createdAt: "2023-10-06",
+    tags: ["hewan", "klasifikasi", "mamalia"],
+    isImage: false
   },
   {
     id: "7",
     question: "Air mengalir dari tempat yang lebih tinggi ke tempat yang lebih rendah.",
-    type: "true-false",
-    subject: "science",
-    grade: "3",
+    type: "true_false",
+    subject: "IPA",
+    grade: "Kelas 3",
     difficulty: "easy",
-    isTrue: true,
+    correctAnswer: "Benar",
     explanation: "Air selalu mengalir dari tempat yang lebih tinggi ke tempat yang lebih rendah karena pengaruh gaya gravitasi.",
-    tags: ["air", "fisika", "gravitasi"]
+    createdBy: "Ibu Maya",
+    createdAt: "2023-10-07",
+    tags: ["air", "fisika", "gravitasi"],
+    isImage: false
   }
 ];
 
@@ -163,7 +173,9 @@ const QuestionBank = () => {
   const [selectedGrade, setSelectedGrade] = useState<string>("all");
   const [selectedType, setSelectedType] = useState<string>("all");
   const [isAddQuestionOpen, setIsAddQuestionOpen] = useState(false);
+  const [isEditQuestionOpen, setIsEditQuestionOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [selectedQuestion, setSelectedQuestion] = useState<any>(null);
   const [previewQuestion, setPreviewQuestion] = useState<any>(null);
   const [newQuestionImage, setNewQuestionImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -190,24 +202,27 @@ const QuestionBank = () => {
   const { toast } = useToast();
   
   // Filter questions
-  const filteredQuestions = sampleQuestions.filter(q => {
+  const filteredQuestions = transformedQuestions.filter(q => {
     // Search filter
     const matchesSearch = q.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           q.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
     
     // Subject filter
-    const matchesSubject = selectedSubject === "all" || q.subject === selectedSubject;
+    const matchesSubject = selectedSubject === "all" || 
+                          q.subject.toLowerCase() === selectedSubject;
     
     // Grade filter
-    const matchesGrade = selectedGrade === "all" || q.grade === selectedGrade;
+    const matchesGrade = selectedGrade === "all" || 
+                        q.grade.toLowerCase().includes(selectedGrade.toLowerCase());
     
     // Type filter
-    const matchesType = selectedType === "all" || q.type === selectedType;
+    const matchesType = selectedType === "all" || 
+                      q.type.toLowerCase().includes(selectedType.toLowerCase());
     
     // Tab filter
     const matchesTab = activeTab === "all" || 
-                      (activeTab === "multiple-choice" && (q.type === "multiple-choice" || q.type === "multiple-choice-complex")) ||
-                      (activeTab === "true-false" && q.type === "true-false") ||
+                      (activeTab === "multiple-choice" && (q.type === "multiple_choice" || q.type === "multiple_choice_complex")) ||
+                      (activeTab === "true-false" && q.type === "true_false") ||
                       (activeTab === "essay" && q.type === "essay") ||
                       (activeTab === "matching" && q.type === "matching");
     
@@ -311,11 +326,48 @@ const QuestionBank = () => {
     setNewQuestionImage(null);
     setImagePreview(null);
     setIsAddQuestionOpen(false);
+    setIsEditQuestionOpen(false);
   };
 
-  const openPreview = (question: any) => {
+  const handlePreviewQuestion = (question: any) => {
     setPreviewQuestion(question);
     setIsPreviewOpen(true);
+  };
+
+  const handleEditQuestion = (question: any) => {
+    // Set selected question and transform data to match the form structure
+    setSelectedQuestion(question);
+    
+    // Initialize form with selected question data
+    setNewQuestion({
+      question: question.question,
+      type: question.type === "multiple_choice" ? "multiple-choice" : 
+            question.type === "multiple_choice_complex" ? "multiple-choice-complex" :
+            question.type === "true_false" ? "true-false" : "essay",
+      subject: question.subject.toLowerCase(),
+      grade: question.grade.toLowerCase().replace("kelas ", ""),
+      difficulty: question.difficulty,
+      options: question.options ? question.options.map((opt: string, idx: number) => ({
+        id: String.fromCharCode(97 + idx), // a, b, c, ...
+        text: opt,
+        isCorrect: question.correctAnswer.includes(opt)
+      })) : [],
+      isTrue: question.correctAnswer === "Benar",
+      answerKey: question.correctAnswer,
+      explanation: question.explanation || "",
+      tags: question.tags.join(", ")
+    });
+    
+    setIsEditQuestionOpen(true);
+  };
+
+  const handleDeleteQuestion = (id: string) => {
+    toast({
+      title: "Soal dihapus",
+      description: `Soal dengan ID ${id} berhasil dihapus`,
+      variant: "destructive"
+    });
+    // In a real app, this would delete from the database
   };
 
   return (
@@ -475,118 +527,17 @@ const QuestionBank = () => {
                 </h3>
                 
                 {filteredQuestions.length > 0 ? (
-                  filteredQuestions.map((question) => (
-                    <Card key={question.id} className="overflow-hidden">
-                      <div className="flex">
-                        {/* Question Type Indicator */}
-                        <div className={`w-2 ${
-                          question.type === "multiple-choice" || question.type === "multiple-choice-complex" 
-                            ? "bg-blue-500" 
-                            : question.type === "true-false" 
-                            ? "bg-green-500" 
-                            : question.type === "essay" 
-                            ? "bg-amber-500"
-                            : "bg-purple-500"
-                        }`}></div>
-                        
-                        <div className="flex-1">
-                          <CardHeader className="pb-2">
-                            <div className="flex justify-between">
-                              <div className="flex gap-2 items-center">
-                                {question.type === "multiple-choice" && <Badge>Pilihan Ganda</Badge>}
-                                {question.type === "multiple-choice-complex" && <Badge>Pilihan Ganda Kompleks</Badge>}
-                                {question.type === "true-false" && <Badge>Benar/Salah</Badge>}
-                                {question.type === "essay" && <Badge>Uraian</Badge>}
-                                {question.type === "matching" && <Badge>Menjodohkan</Badge>}
-                                
-                                <Badge variant="outline">
-                                  {subjectOptions.find(s => s.value === question.subject)?.label}
-                                </Badge>
-                                <Badge variant="outline">
-                                  {gradeOptions.find(g => g.value === question.grade)?.label}
-                                </Badge>
-                              </div>
-                              <Badge variant={
-                                question.difficulty === "easy" ? "secondary" : 
-                                question.difficulty === "medium" ? "default" : "destructive"
-                              }>
-                                {difficultyOptions.find(d => d.value === question.difficulty)?.label}
-                              </Badge>
-                            </div>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="space-y-4">
-                              <div>
-                                <h4 className="font-medium mb-1">Pertanyaan:</h4>
-                                <p className="text-sm">{question.question}</p>
-                              </div>
-                              
-                              {(question.type === "multiple-choice" || question.type === "multiple-choice-complex") && (
-                                <div>
-                                  <h4 className="font-medium mb-1">Pilihan:</h4>
-                                  <ul className="text-sm grid grid-cols-1 sm:grid-cols-2 gap-1">
-                                    {question.options.map((option) => (
-                                      <li key={option.id} className="flex items-start gap-2">
-                                        <span>{option.id.toUpperCase()}.</span>
-                                        <span>{option.text}</span>
-                                        {option.isCorrect && (
-                                          <span className="text-green-600 ml-auto">✓</span>
-                                        )}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                              
-                              {question.type === "true-false" && (
-                                <div>
-                                  <h4 className="font-medium mb-1">Jawaban:</h4>
-                                  <p className="text-sm">
-                                    {question.isTrue ? (
-                                      <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded">Benar</span>
-                                    ) : (
-                                      <span className="bg-red-100 text-red-800 px-2 py-0.5 rounded">Salah</span>
-                                    )}
-                                  </p>
-                                </div>
-                              )}
-                              
-                              {question.type === "essay" && (
-                                <div>
-                                  <h4 className="font-medium mb-1">Kunci Jawaban:</h4>
-                                  <p className="text-sm">{question.answerKey}</p>
-                                </div>
-                              )}
-                              
-                              <div>
-                                <h4 className="font-medium mb-1">Tag:</h4>
-                                <div className="flex flex-wrap gap-2">
-                                  {question.tags.map((tag, index) => (
-                                    <span 
-                                      key={index} 
-                                      className="text-xs bg-muted px-2 py-1 rounded-full"
-                                    >
-                                      {tag}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-                              
-                              <div className="flex justify-end pt-2">
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => openPreview(question)}
-                                >
-                                  Lihat Detail
-                                </Button>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </div>
-                      </div>
-                    </Card>
-                  ))
+                  <div className="space-y-4">
+                    {filteredQuestions.map((question) => (
+                      <QuestionListItem
+                        key={question.id}
+                        question={question}
+                        onEdit={handleEditQuestion}
+                        onPreview={handlePreviewQuestion}
+                        onDelete={handleDeleteQuestion}
+                      />
+                    ))}
+                  </div>
                 ) : (
                   <div className="text-center py-10 bg-muted/20 rounded-lg">
                     <p className="text-muted-foreground">Tidak ada soal ditemukan</p>
@@ -598,17 +549,31 @@ const QuestionBank = () => {
         </Tabs>
       </div>
       
-      {/* Add Question Dialog */}
-      <Dialog open={isAddQuestionOpen} onOpenChange={setIsAddQuestionOpen}>
+      {/* Question Form Dialog - Used for both Add and Edit */}
+      <Dialog 
+        open={isAddQuestionOpen || isEditQuestionOpen} 
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsAddQuestionOpen(false);
+            setIsEditQuestionOpen(false);
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-[700px]">
           <DialogHeader>
-            <DialogTitle>Tambah Soal Baru</DialogTitle>
+            <DialogTitle>
+              {isEditQuestionOpen ? "Edit Soal" : "Tambah Soal Baru"}
+            </DialogTitle>
             <DialogDescription>
-              Buat soal baru untuk bank soal. Isi semua informasi yang diperlukan.
+              {isEditQuestionOpen 
+                ? "Edit soal yang sudah ada. Pastikan semua informasi sudah benar."
+                : "Buat soal baru untuk bank soal. Isi semua informasi yang diperlukan."
+              }
             </DialogDescription>
           </DialogHeader>
           
           <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-2">
+            {/* Form fields - keep existing code */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="subject">Mata Pelajaran</Label>
@@ -878,8 +843,18 @@ const QuestionBank = () => {
           </div>
           
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddQuestionOpen(false)}>Batal</Button>
-            <Button onClick={handleSubmit}>Simpan Soal</Button>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setIsAddQuestionOpen(false);
+                setIsEditQuestionOpen(false);
+              }}
+            >
+              Batal
+            </Button>
+            <Button onClick={handleSubmit}>
+              {isEditQuestionOpen ? "Simpan Perubahan" : "Simpan Soal"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -984,7 +959,18 @@ const QuestionBank = () => {
           )}
           
           <DialogFooter>
-            <Button onClick={() => setIsPreviewOpen(false)}>Tutup</Button>
+            <Button variant="outline" onClick={() => setIsPreviewOpen(false)}>Tutup</Button>
+            <Button 
+              onClick={() => {
+                setIsPreviewOpen(false);
+                if (previewQuestion) {
+                  handleEditQuestion(previewQuestion);
+                }
+              }}
+            >
+              <Edit className="mr-2 h-4 w-4" />
+              Edit Soal
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
