@@ -101,12 +101,13 @@ export const useExamData = () => {
   const [exams, setExams] = useState<Record<string, Exam>>(initialExams);
   
   const getExam = (id: string): Exam | null => {
-    // Fix: Convert numbers to strings to handle different id formats
-    if (id && id.startsWith('exam-')) {
-      return exams[id] || null;
+    // First try directly with the provided ID
+    if (exams[id]) {
+      return exams[id];
     }
-    // Try finding by numeric ID (convert to exam-N format)
-    const examId = `exam-${id}`;
+    
+    // If that doesn't work, try with the 'exam-' prefix
+    const examId = id.startsWith('exam-') ? id : `exam-${id}`;
     return exams[examId] || null;
   };
   

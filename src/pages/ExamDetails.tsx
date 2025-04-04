@@ -14,7 +14,7 @@ const ExamDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { getExam } = useExamData();
+  const { getExam, deleteExam } = useExamData();
   const [exam, setExam] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -23,11 +23,14 @@ const ExamDetails = () => {
     // Simulate loading exam data with a small delay
     const timer = setTimeout(() => {
       if (id) {
+        console.log("Looking for exam with ID:", id);
         const examData = getExam(id);
         if (examData) {
+          console.log("Found exam:", examData);
           setExam(examData);
           setLoading(false);
         } else {
+          console.log("Exam not found for ID:", id);
           toast({
             title: "Error",
             description: "Ujian tidak ditemukan",
@@ -43,12 +46,15 @@ const ExamDetails = () => {
 
   // Handle delete confirmation
   const handleDelete = () => {
-    setIsDeleteDialogOpen(false);
-    toast({
-      title: "Ujian Dihapus",
-      description: `Ujian ${exam.title} berhasil dihapus`,
-    });
-    navigate("/exams");
+    if (id) {
+      deleteExam(id);
+      setIsDeleteDialogOpen(false);
+      toast({
+        title: "Ujian Dihapus",
+        description: `Ujian ${exam.title} berhasil dihapus`,
+      });
+      navigate("/exams");
+    }
   };
 
   // Handle duplicate exam

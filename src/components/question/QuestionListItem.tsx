@@ -114,11 +114,11 @@ const QuestionListItem: React.FC<QuestionListItemProps> = ({
       <div className="flex items-center justify-end space-x-2">
         <Button variant="outline" size="sm" onClick={() => onPreview(question)} className="bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800" title="Lihat">
           <Eye className="h-4 w-4 mr-1" />
-          <span>Lihat</span>
+          <span>Lihat Detail</span>
         </Button>
         <Button variant="outline" size="sm" onClick={() => onEdit(question)} className="bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800" title="Edit">
           <Edit className="h-4 w-4 mr-1" />
-          <span>Edit</span>
+          <span>Edit Soal</span>
         </Button>
         <Button variant="outline" size="sm" onClick={handleCopy} className="bg-purple-50 text-purple-700 hover:bg-purple-100 hover:text-purple-800" title="Duplikasi">
           <Copy className="h-4 w-4 mr-1" />

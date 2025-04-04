@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,6 +48,16 @@ const Settings = () => {
   
   const handleSaveSecuritySettings = () => {
     toast.success("Pengaturan keamanan berhasil disimpan");
+  };
+  
+  const handleBackupData = () => {
+    toast.success("Proses backup data dimulai");
+    window.location.href = "/backup";
+  };
+
+  const handleRestoreData = () => {
+    toast.success("Proses restore data dimulai");
+    window.location.href = "/backup";
   };
 
   return (
@@ -362,10 +371,10 @@ const Settings = () => {
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <Button variant="outline">
+                <Button variant="outline" onClick={handleBackupData}>
                   Backup Data
                 </Button>
-                <Button variant="outline">
+                <Button variant="outline" onClick={handleRestoreData}>
                   Restore Data
                 </Button>
               </div>
