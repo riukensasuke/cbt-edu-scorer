@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -21,7 +20,6 @@ import {
   SelectValue
 } from "@/components/ui/select";
 
-// Mock data for results
 const mockResultDetails = {
   id: "1",
   examTitle: "UTS Matematika Kelas 6",
@@ -82,11 +80,9 @@ const mockResultDetails = {
   ]
 };
 
-// Mock data for class and subject filters
 const mockClasses = ["Kelas 4A", "Kelas 5A", "Kelas 6A"];
 const mockSubjects = ["Matematika", "Bahasa Indonesia", "IPA", "IPS", "Bahasa Inggris"];
 
-// Score badge color based on score
 const getScoreBadgeColor = (score: number) => {
   if (score >= 90) return "bg-green-500";
   if (score >= 80) return "bg-blue-500";
@@ -104,14 +100,11 @@ const ExamResults = () => {
   const [selectedClass, setSelectedClass] = useState<string>("Kelas 6A");
   const [selectedSubject, setSelectedSubject] = useState<string>("Matematika");
   
-  // Filter students based on search query
   const filteredStudents = mockResultDetails.students.filter(student => 
     student.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
-  // Handle export to Excel
   const handleExportToExcel = () => {
-    // Prepare data for export
     const dataToExport = filteredStudents.map((student, index) => ({
       'No': index + 1,
       'Nama Siswa': student.name,
@@ -122,7 +115,6 @@ const ExamResults = () => {
       'Status': student.status === 'pass' ? 'Lulus' : 'Tidak Lulus',
     }));
     
-    // Add summary data
     const summaryData = [
       { 
         'No': '', 
@@ -162,10 +154,8 @@ const ExamResults = () => {
       }
     ];
     
-    // Combine student data with summary
     const allData = [...dataToExport, ...summaryData];
     
-    // Export to Excel
     const filename = `Hasil_Ujian_${selectedSubject}_${selectedClass}`;
     exportToExcel(allData, filename);
     
@@ -175,7 +165,6 @@ const ExamResults = () => {
     });
   };
 
-  // Mock student detailed result
   const studentDetailedResult = {
     student: mockResultDetails.students[0],
     examTitle: mockResultDetails.examTitle,
@@ -222,7 +211,6 @@ const ExamResults = () => {
     ]
   };
 
-  // View for admin and teachers
   const renderTeacherView = () => {
     return (
       <div className="space-y-6">
@@ -253,10 +241,7 @@ const ExamResults = () => {
               </div>
             </div>
             
-            {/* Score distribution graph would go here */}
-            <div className="h-60 mb-6 border rounded-lg flex items-center justify-center bg-muted/20">
-              <p className="text-muted-foreground">Grafik distribusi nilai akan ditampilkan di sini</p>
-            </div>
+            <ScoreDistribution examId={id} examTitle={mockResultDetails.examTitle} />
             
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
               <h3 className="font-medium">Daftar Nilai Siswa</h3>
@@ -354,7 +339,6 @@ const ExamResults = () => {
           </CardFooter>
         </Card>
         
-        {/* Student Detail Dialog */}
         {selectedStudentId && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-auto">
@@ -469,8 +453,7 @@ const ExamResults = () => {
       </div>
     );
   };
-  
-  // View for students
+
   const renderStudentView = () => {
     return (
       <div className="space-y-6">
@@ -490,7 +473,6 @@ const ExamResults = () => {
               
               <TabsContent value="recent">
                 <div className="space-y-4">
-                  {/* Student's Recent Result */}
                   <Card>
                     <CardHeader className="pb-2">
                       <div className="flex items-center justify-between">
@@ -567,7 +549,6 @@ const ExamResults = () => {
               
               <TabsContent value="all">
                 <div className="space-y-4">
-                  {/* Latihan Matematika Result */}
                   <div className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
                     <div className="flex items-center justify-between mb-2">
                       <div>
@@ -583,7 +564,6 @@ const ExamResults = () => {
                     </div>
                   </div>
                   
-                  {/* The current result */}
                   <div className="border rounded-lg p-4 bg-primary/5 border-primary/20 hover:bg-muted/50 transition-colors">
                     <div className="flex items-center justify-between mb-2">
                       <div>
@@ -609,7 +589,6 @@ const ExamResults = () => {
                     </div>
                   </div>
                   
-                  {/* Latihan Bahasa Indonesia Result */}
                   <div className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
                     <div className="flex items-center justify-between mb-2">
                       <div>
@@ -630,7 +609,6 @@ const ExamResults = () => {
           </CardContent>
         </Card>
         
-        {/* Student Detail Dialog */}
         {selectedStudentId && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-auto">

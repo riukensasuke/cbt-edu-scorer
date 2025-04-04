@@ -27,6 +27,13 @@ const mockStatsData = {
       { name: "Sedang Mengerjakan", value: 3, color: "#60a5fa" },
       { name: "Selesai", value: 28, color: "#10b981" },
       { name: "Tidak Mengikuti", value: 5, color: "#f87171" }
+    ],
+    additionalChartData: [
+      { name: "Pembelajaran", value: 6, color: "#8b5cf6" },
+      { name: "Diampu", value: 3, color: "#14b8a6" },
+      { name: "Soal Aktif", value: 85, color: "#f59e0b" },
+      { name: "Tes Aktif", value: 4, color: "#8b5cf6" },
+      { name: "Ujian Mendatang", value: 2, color: "#0ea5e9" }
     ]
   },
   "Bahasa Indonesia": {
@@ -45,6 +52,13 @@ const mockStatsData = {
       { name: "Sedang Mengerjakan", value: 0, color: "#60a5fa" },
       { name: "Selesai", value: 30, color: "#10b981" },
       { name: "Tidak Mengikuti", value: 3, color: "#f87171" }
+    ],
+    additionalChartData: [
+      { name: "Pembelajaran", value: 8, color: "#8b5cf6" },
+      { name: "Diampu", value: 1, color: "#14b8a6" },
+      { name: "Soal Aktif", value: 72, color: "#f59e0b" },
+      { name: "Tes Aktif", value: 2, color: "#8b5cf6" },
+      { name: "Ujian Mendatang", value: 1, color: "#0ea5e9" }
     ]
   },
   "IPA": {
@@ -63,6 +77,13 @@ const mockStatsData = {
       { name: "Sedang Mengerjakan", value: 2, color: "#60a5fa" },
       { name: "Selesai", value: 22, color: "#10b981" },
       { name: "Tidak Mengikuti", value: 4, color: "#f87171" }
+    ],
+    additionalChartData: [
+      { name: "Pembelajaran", value: 5, color: "#8b5cf6" },
+      { name: "Diampu", value: 2, color: "#14b8a6" },
+      { name: "Soal Aktif", value: 64, color: "#f59e0b" },
+      { name: "Tes Aktif", value: 3, color: "#8b5cf6" },
+      { name: "Ujian Mendatang", value: 2, color: "#0ea5e9" }
     ]
   }
 };
@@ -75,6 +96,21 @@ const SubjectStats: React.FC<SubjectStatsProps> = ({ subject = "Matematika" }) =
   const inProgressPercentage = Math.round((stats.inProgress / stats.totalStudents) * 100);
   const notTakenPercentage = Math.round((stats.notTaken / stats.totalStudents) * 100);
   const missedPercentage = Math.round((stats.missed / stats.totalStudents) * 100);
+  
+  // Calculate additional stats percentages
+  const maxAdditionalValue = Math.max(
+    stats.learningCount, 
+    stats.subjectsTaught, 
+    stats.activeQuestions / 10, // Scale down for better visualization
+    stats.activeTests, 
+    stats.upcomingTests
+  );
+  
+  const learningPercentage = Math.round((stats.learningCount / maxAdditionalValue) * 100);
+  const taughtPercentage = Math.round((stats.subjectsTaught / maxAdditionalValue) * 100);
+  const activeQuestionsPercentage = Math.round(((stats.activeQuestions / 10) / maxAdditionalValue) * 100);
+  const activeTestsPercentage = Math.round((stats.activeTests / maxAdditionalValue) * 100);
+  const upcomingTestsPercentage = Math.round((stats.upcomingTests / maxAdditionalValue) * 100);
   
   return (
     <Card>
@@ -150,57 +186,84 @@ const SubjectStats: React.FC<SubjectStatsProps> = ({ subject = "Matematika" }) =
                 <Progress value={missedPercentage} className="h-2" />
               </div>
 
-              {/* Additional stats requested */}
-              <div className="pt-4">
-                <h3 className="font-medium mb-3">Informasi Tambahan</h3>
-                <div className="grid grid-cols-1 gap-3">
+              <h3 className="font-medium mb-3 mt-6">Informasi Tambahan</h3>
+              <div className="space-y-3">
+                <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <BookOpen className="h-4 w-4 mr-2 text-indigo-500" />
                       <span className="text-sm">Jumlah pembelajaran</span>
                     </div>
-                    <span className="text-sm font-medium">{stats.learningCount}</span>
+                    <div className="flex items-center">
+                      <span className="text-sm font-medium">{stats.learningCount}</span>
+                      <span className="text-xs text-muted-foreground ml-1">({learningPercentage}%)</span>
+                    </div>
                   </div>
-                  
+                  <Progress value={learningPercentage} className="h-2 bg-muted" />
+                </div>
+                
+                <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <Book className="h-4 w-4 mr-2 text-teal-500" />
                       <span className="text-sm">Pelajaran diampu</span>
                     </div>
-                    <span className="text-sm font-medium">{stats.subjectsTaught}</span>
+                    <div className="flex items-center">
+                      <span className="text-sm font-medium">{stats.subjectsTaught}</span>
+                      <span className="text-xs text-muted-foreground ml-1">({taughtPercentage}%)</span>
+                    </div>
                   </div>
-                  
+                  <Progress value={taughtPercentage} className="h-2 bg-muted" />
+                </div>
+                
+                <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <FileText className="h-4 w-4 mr-2 text-amber-500" />
                       <span className="text-sm">Soal aktif</span>
                     </div>
-                    <span className="text-sm font-medium">{stats.activeQuestions}</span>
+                    <div className="flex items-center">
+                      <span className="text-sm font-medium">{stats.activeQuestions}</span>
+                      <span className="text-xs text-muted-foreground ml-1">({activeQuestionsPercentage}%)</span>
+                    </div>
                   </div>
-                  
+                  <Progress value={activeQuestionsPercentage} className="h-2 bg-muted" />
+                </div>
+                
+                <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <FileText className="h-4 w-4 mr-2 text-violet-500" />
                       <span className="text-sm">Tes aktif</span>
                     </div>
-                    <span className="text-sm font-medium">{stats.activeTests}</span>
+                    <div className="flex items-center">
+                      <span className="text-sm font-medium">{stats.activeTests}</span>
+                      <span className="text-xs text-muted-foreground ml-1">({activeTestsPercentage}%)</span>
+                    </div>
                   </div>
-                  
+                  <Progress value={activeTestsPercentage} className="h-2 bg-muted" />
+                </div>
+                
+                <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <Calendar className="h-4 w-4 mr-2 text-cyan-500" />
                       <span className="text-sm">Ujian akan datang</span>
                     </div>
-                    <span className="text-sm font-medium">{stats.upcomingTests}</span>
+                    <div className="flex items-center">
+                      <span className="text-sm font-medium">{stats.upcomingTests}</span>
+                      <span className="text-xs text-muted-foreground ml-1">({upcomingTestsPercentage}%)</span>
+                    </div>
                   </div>
+                  <Progress value={upcomingTestsPercentage} className="h-2 bg-muted" />
                 </div>
               </div>
             </div>
           </div>
           
           <div>
-            <h3 className="font-medium mb-4">Visualisasi Data</h3>
-            <div className="h-64">
+            <h3 className="font-medium mb-4">Status Siswa Visualization</h3>
+            <div className="h-64 mb-8">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={stats.chartData}
@@ -211,7 +274,36 @@ const SubjectStats: React.FC<SubjectStatsProps> = ({ subject = "Matematika" }) =
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="value" name="Jumlah Siswa" fill="#8884d8" />
+                  <Bar 
+                    dataKey="value" 
+                    name="Jumlah Siswa" 
+                    fill="#8884d8" 
+                    radius={[4, 4, 0, 0]}
+                    colorKey="color" 
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            <h3 className="font-medium mb-4">Informasi Tambahan Visualization</h3>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={stats.additionalChartData}
+                  margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" fontSize={12} />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar 
+                    dataKey="value" 
+                    name="Jumlah" 
+                    fill="#8884d8" 
+                    radius={[4, 4, 0, 0]}
+                    colorKey="color" 
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>

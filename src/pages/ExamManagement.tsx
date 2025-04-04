@@ -1,44 +1,22 @@
+
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { useExamManagement } from "@/hooks/useExamManagement";
+import { useExamData } from "@/hooks/useExamData";
 import ExamFilters from "@/components/exam/ExamFilters";
 import ExamListItem from "@/components/exam/ExamListItem";
 import NewExamDialog from "@/components/exam/NewExamDialog";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
-const mockExamData = {
-  "exam-1": {
-    id: "exam-1",
-    title: "UTS Matematika Semester 1",
-    subject: "Matematika",
-    grade: "Kelas 6A",
-    status: "active",
-    type: "mid",
-    duration: 90,
-    questions: 25,
-    startDate: "2023-10-10T08:00:00",
-    endDate: "2023-10-10T09:30:00",
-    createdBy: "Ibu Siti",
-    description: "Ujian Tengah Semester untuk mata pelajaran Matematika kelas 6A",
-    instructions: "Kerjakan soal dengan teliti. Baca setiap pertanyaan dengan seksama sebelum menjawab.",
-    passingScore: 70,
-  },
-  // Other exams would be defined here
-};
-
-if (typeof window !== 'undefined') {
-  // @ts-ignore
-  window.mockExamData = mockExamData;
-}
-
 const ExamManagement = () => {
   const { user } = useAuth();
   const { activeTab, searchQuery, filteredExams, handleTabChange, handleSearch, deleteExam } = useExamManagement();
   const [isNewExamDialogOpen, setIsNewExamDialogOpen] = useState(false);
+  const { examsList } = useExamData(); // Get exam data from the hook
 
   return (
     <DashboardLayout title="Manajemen Ujian">

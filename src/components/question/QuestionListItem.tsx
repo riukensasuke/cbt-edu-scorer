@@ -2,8 +2,9 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Edit, Copy, Trash2 } from "lucide-react";
+import { Eye, Edit, Copy, Trash2, CheckCircle, HelpCircle, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Card } from "@/components/ui/card";
 
 interface QuestionType {
   id: string;
@@ -45,26 +46,51 @@ const QuestionListItem: React.FC<QuestionListItemProps> = ({
   const getDifficultyBadge = (difficulty: string) => {
     switch (difficulty) {
       case "easy": 
-        return <Badge variant="secondary">Mudah</Badge>;
+        return <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-200">Mudah</Badge>;
       case "medium": 
-        return <Badge variant="default">Sedang</Badge>;
+        return <Badge variant="default" className="bg-yellow-100 text-yellow-700 hover:bg-yellow-200">Sedang</Badge>;
       case "hard": 
-        return <Badge variant="destructive">Sulit</Badge>;
+        return <Badge variant="destructive" className="bg-red-100 text-red-700 hover:bg-red-200">Sulit</Badge>;
       default: 
         return <Badge variant="outline">Lainnya</Badge>;
     }
   };
 
+  const getQuestionTypeIcon = (type: string) => {
+    switch (type) {
+      case "multiple_choice":
+        return <CheckCircle className="h-4 w-4 text-blue-500" />;
+      case "true_false":
+        return <AlertCircle className="h-4 w-4 text-green-500" />;
+      default:
+        return <HelpCircle className="h-4 w-4 text-purple-500" />;
+    }
+  };
+
+  const getQuestionTypeLabel = (type: string) => {
+    switch (type) {
+      case "multiple_choice":
+        return "Pilihan Ganda";
+      case "true_false":
+        return "Benar/Salah";
+      case "multiple_choice_complex":
+        return "PG Kompleks";
+      default:
+        return "Essay";
+    }
+  };
+
   return (
-    <div className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
-      <div className="flex items-center justify-between mb-2">
+    <Card className="p-4 hover:shadow-md transition-all duration-200">
+      <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Badge variant="outline">
-            {question.type === "multiple_choice" ? "Pilihan Ganda" : 
-             question.type === "true_false" ? "Benar/Salah" : 
-             question.type === "multiple_choice_complex" ? "PG Kompleks" : "Essay"}
-          </Badge>
-          {question.isImage && <Badge variant="outline">Bergambar</Badge>}
+          <div className="flex items-center">
+            {getQuestionTypeIcon(question.type)}
+            <Badge variant="outline" className="ml-2">
+              {getQuestionTypeLabel(question.type)}
+            </Badge>
+          </div>
+          {question.isImage && <Badge variant="outline" className="bg-blue-50 text-blue-700">Bergambar</Badge>}
         </div>
         {getDifficultyBadge(question.difficulty)}
       </div>
@@ -73,31 +99,37 @@ const QuestionListItem: React.FC<QuestionListItemProps> = ({
         <p className="font-medium text-sm line-clamp-2">{question.question}</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-muted-foreground mb-3">
-        <div>Mata Pelajaran: {question.subject}</div>
-        <div>Kelas: {question.grade}</div>
-        <div>Pembuat: {question.createdBy}</div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-muted-foreground mb-4">
+        <div className="flex items-center">
+          <span className="font-medium text-gray-600 mr-1">Mata Pelajaran:</span> {question.subject}
+        </div>
+        <div className="flex items-center">
+          <span className="font-medium text-gray-600 mr-1">Kelas:</span> {question.grade}
+        </div>
+        <div className="flex items-center">
+          <span className="font-medium text-gray-600 mr-1">Pembuat:</span> {question.createdBy}
+        </div>
       </div>
 
       <div className="flex items-center justify-end space-x-2">
-        <Button variant="outline" size="sm" onClick={() => onPreview(question)} title="Lihat">
+        <Button variant="outline" size="sm" onClick={() => onPreview(question)} className="bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800" title="Lihat">
           <Eye className="h-4 w-4 mr-1" />
           <span>Lihat</span>
         </Button>
-        <Button variant="outline" size="sm" onClick={() => onEdit(question)} title="Edit">
+        <Button variant="outline" size="sm" onClick={() => onEdit(question)} className="bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800" title="Edit">
           <Edit className="h-4 w-4 mr-1" />
           <span>Edit</span>
         </Button>
-        <Button variant="outline" size="sm" onClick={handleCopy} title="Duplikasi">
+        <Button variant="outline" size="sm" onClick={handleCopy} className="bg-purple-50 text-purple-700 hover:bg-purple-100 hover:text-purple-800" title="Duplikasi">
           <Copy className="h-4 w-4 mr-1" />
           <span>Duplikasi</span>
         </Button>
-        <Button variant="outline" size="sm" onClick={() => onDelete(question.id)} className="text-destructive hover:text-destructive" title="Hapus">
+        <Button variant="outline" size="sm" onClick={() => onDelete(question.id)} className="bg-red-50 text-red-700 hover:bg-red-100 hover:text-red-800" title="Hapus">
           <Trash2 className="h-4 w-4 mr-1" />
           <span>Hapus</span>
         </Button>
       </div>
-    </div>
+    </Card>
   );
 };
 

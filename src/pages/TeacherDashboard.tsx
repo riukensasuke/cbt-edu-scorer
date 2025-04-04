@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -10,6 +11,7 @@ import { useTeacherDashboard } from "@/hooks/useTeacherDashboard";
 import { Heart, Info } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import TeacherTokenButton from "@/components/teacher/TeacherTokenButton";
 
 const TeacherDashboard = () => {
   const { user, upcomingExams, recentResults, getBadgeForStatus, getScoreBadgeColor } = useTeacherDashboard();
@@ -20,10 +22,13 @@ const TeacherDashboard = () => {
   return (
     <DashboardLayout title="Dashboard">
       <div className="space-y-6">
-        <WelcomeCard 
-          name={user?.name || "Guru"} 
-          role="teacher"
-        />
+        <div className="flex justify-between items-center">
+          <WelcomeCard 
+            name={user?.name || "Guru"} 
+            role="teacher"
+          />
+          <TeacherTokenButton />
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="col-span-1 md:col-span-3 space-y-6">
@@ -91,6 +96,11 @@ const TeacherDashboard = () => {
                 </ul>
               </div>
             </CardContent>
+            <CardFooter>
+              <Button variant="outline" className="w-full">
+                Hubungi Kami
+              </Button>
+            </CardFooter>
           </Card>
           
           <Card className="md:col-span-1">
