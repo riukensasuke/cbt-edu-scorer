@@ -8,6 +8,7 @@ import { useTeacherDashboard } from "@/hooks/useTeacherDashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Users, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getScoreBadgeColor } from "@/utils/statusUtils";
 
 const TeacherDashboard = () => {
   const { user, upcomingExams, recentResults, getBadgeForStatus } = useTeacherDashboard();
