@@ -1,248 +1,126 @@
 
-import React, { useState } from 'react';
+import React from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import WelcomeCard from "@/components/dashboard/WelcomeCard";
 import UpcomingExams from "@/components/dashboard/UpcomingExams";
 import RecentResults from "@/components/dashboard/RecentResults";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import SubjectStats from "@/components/Statistics/SubjectStats";
 import { useTeacherDashboard } from "@/hooks/useTeacherDashboard";
-import { Heart, Info } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { getStatusBadge, getScoreBadgeColor } from "@/utils/statusUtils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar, Users, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import TeacherTokenButton from "@/components/teacher/TeacherTokenButton";
 
 const TeacherDashboard = () => {
-  const { user, upcomingExams, recentResults, getBadgeForStatus, getScoreBadgeColor } = useTeacherDashboard();
-  const [selectedSubject, setSelectedSubject] = useState<string>("Matematika");
+  const { user, upcomingExams, recentResults, getBadgeForStatus } = useTeacherDashboard();
   
-  const subjects = ["Matematika", "Bahasa Indonesia", "IPA"];
+  const stats = [
+    { title: "Total Siswa", value: 120, icon: <Users className="h-5 w-5" /> },
+    { title: "Total Kelas", value: 4, icon: <BookOpen className="h-5 w-5" /> },
+    { title: "Jadwal Hari Ini", value: 3, icon: <Calendar className="h-5 w-5" /> }
+  ];
 
   return (
-    <DashboardLayout title="Dashboard">
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <WelcomeCard 
-            name={user?.name || "Guru"} 
-            role="teacher"
-          />
-          <TeacherTokenButton />
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="col-span-1 md:col-span-3 space-y-6">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Statistik Mata Pelajaran</CardTitle>
-                    <CardDescription>Status siswa pada ujian yang dibuat</CardDescription>
-                  </div>
-                  <Select 
-                    value={selectedSubject}
-                    onValueChange={setSelectedSubject}
-                  >
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Pilih mata pelajaran" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {subjects.map((subject) => (
-                        <SelectItem key={subject} value={subject}>
-                          {subject}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+    <DashboardLayout title="Dashboard Guru">
+      <div className="grid gap-6">
+        <WelcomeCard 
+          name={user?.name || "Ibu/Bapak Guru"} 
+          role="teacher"
+          schoolName="SDN Contoh 1"
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {stats.map((stat, index) => (
+            <Card key={index}>
+              <CardContent className="flex items-center p-6">
+                <div className="bg-primary/10 p-3 rounded-full mr-4">
+                  {stat.icon}
                 </div>
-              </CardHeader>
-              <CardContent>
-                <SubjectStats subject={selectedSubject} />
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {stat.title}
+                  </p>
+                  <h3 className="text-2xl font-bold">{stat.value}</h3>
+                </div>
               </CardContent>
             </Card>
-            
-            <UpcomingExams exams={upcomingExams} getBadgeForStatus={getBadgeForStatus} />
-            <RecentResults results={recentResults} getScoreBadgeColor={getScoreBadgeColor} />
-          </div>
+          ))}
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3">
-          <Card className="md:col-span-1">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="md:col-span-2">
+            <UpcomingExams 
+              exams={upcomingExams} 
+              getBadgeForStatus={getBadgeForStatus} 
+            />
+          </div>
+          <div>
+            <RecentResults 
+              results={recentResults} 
+              getScoreBadgeColor={getScoreBadgeColor} 
+            />
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Info className="h-5 w-5" /> Pengembang Aplikasi
-              </CardTitle>
-              <CardDescription>
-                Informasi tentang pengembang
-              </CardDescription>
+              <CardTitle>Aktivitas Terakhir</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h3 className="text-base font-semibold mb-1">PT Edukasi Teknologi Indonesia</h3>
-                <p className="text-sm text-muted-foreground">
-                  Jl. Pendidikan No.123<br/>
-                  Jakarta Pusat, Indonesia<br/>
-                  info@edu-score.id<br/>
-                  +62 21 5552525
-                </p>
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold">Tim Pengembang:</h3>
-                <ul className="text-sm text-muted-foreground list-disc list-inside">
-                  <li>Budi Santoso (Project Manager)</li>
-                  <li>Siti Aminah (Lead Developer)</li>
-                  <li>Joko Widodo (UI/UX Designer)</li>
-                  <li>Dewi Lestari (Quality Assurance)</li>
-                </ul>
-              </div>
+            <CardContent>
+              <ul className="space-y-4">
+                <li className="border-b pb-2">
+                  <div className="text-sm">Membuat ujian Matematika Kelas 6A</div>
+                  <div className="text-xs text-muted-foreground">Hari ini, 08:30</div>
+                </li>
+                <li className="border-b pb-2">
+                  <div className="text-sm">Mengunduh hasil ujian Bahasa Indonesia</div>
+                  <div className="text-xs text-muted-foreground">Kemarin, 14:15</div>
+                </li>
+                <li>
+                  <div className="text-sm">Menambahkan 5 soal pada bank soal</div>
+                  <div className="text-xs text-muted-foreground">2 hari lalu, 10:20</div>
+                </li>
+              </ul>
             </CardContent>
-            <CardFooter>
-              <Button variant="outline" className="w-full">
-                Hubungi Kami
-              </Button>
-            </CardFooter>
           </Card>
           
-          <Card className="md:col-span-1">
+          <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Info className="h-5 w-5" /> Tentang Aplikasi
-              </CardTitle>
-              <CardDescription>
-                Informasi detail aplikasi
-              </CardDescription>
+              <CardTitle>Info Profil Guru</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h3 className="text-sm font-semibold">Versi Aplikasi:</h3>
-                <p className="text-sm text-muted-foreground">Edu-Score v2.5.1</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold">Deskripsi:</h3>
-                <p className="text-sm text-muted-foreground">
-                  Edu-Score adalah sistem ujian online yang dirancang khusus untuk sekolah dasar di Indonesia.
-                  Sistem ini membantu guru untuk membuat, mengelola, dan mengevaluasi ujian dengan mudah dan efisien.
-                </p>
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold">Fitur Utama:</h3>
-                <ul className="text-sm text-muted-foreground list-disc list-inside">
-                  <li>Ujian online dengan keamanan token</li>
-                  <li>Bank soal terintegrasi</li>
-                  <li>Analisis hasil ujian</li>
-                  <li>Manajemen kelas dan siswa</li>
-                  <li>Integrasi dengan Dapodik</li>
-                </ul>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="grid grid-cols-3 gap-1">
+                  <p className="text-sm font-medium">Nama:</p>
+                  <p className="text-sm col-span-2">{user?.name || "Guru"}</p>
+                </div>
+                <div className="grid grid-cols-3 gap-1">
+                  <p className="text-sm font-medium">NIP:</p>
+                  <p className="text-sm col-span-2">198304152005012003</p>
+                </div>
+                <div className="grid grid-cols-3 gap-1">
+                  <p className="text-sm font-medium">Wali Kelas:</p>
+                  <p className="text-sm col-span-2">6A</p>
+                </div>
+                <div className="grid grid-cols-3 gap-1">
+                  <p className="text-sm font-medium">Email:</p>
+                  <p className="text-sm col-span-2">{user?.email || "guru@sekolah.sch.id"}</p>
+                </div>
+                <div className="grid grid-cols-3 gap-1">
+                  <p className="text-sm font-medium">Status:</p>
+                  <p className="text-sm col-span-2">PNS</p>
+                </div>
+                <div className="grid grid-cols-3 gap-1">
+                  <p className="text-sm font-medium">Mengajar:</p>
+                  <p className="text-sm col-span-2">Matematika, IPA</p>
+                </div>
+                <div className="mt-3">
+                  <Button variant="outline" size="sm" className="w-full">
+                    Lihat Profil Lengkap
+                  </Button>
+                </div>
               </div>
             </CardContent>
-            <CardFooter>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="w-full">
-                    <Info className="mr-2 h-4 w-4" /> Lihat Lisensi
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Informasi Lisensi</DialogTitle>
-                    <DialogDescription>
-                      Detail lisensi aplikasi Edu-Score
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="font-medium">Edu-Score</h3>
-                      <p className="text-sm text-muted-foreground">
-                        © 2024 PT Edukasi Teknologi Indonesia
-                      </p>
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Lisensi Pengguna</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Aplikasi ini dilisensikan untuk digunakan oleh institusi pendidikan.
-                        Dilarang menyalin, mendistribusikan, atau memodifikasi aplikasi ini
-                        tanpa izin tertulis dari PT Edukasi Teknologi Indonesia.
-                      </p>
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button>Tutup</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </CardFooter>
-          </Card>
-          
-          <Card className="md:col-span-1">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Heart className="h-5 w-5 text-red-500" /> Berkenan Berdonasi
-              </CardTitle>
-              <CardDescription>
-                Dukung pengembangan aplikasi Edu-Score
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Aplikasi ini dikembangkan dengan penuh dedikasi untuk kemajuan pendidikan di Indonesia.
-                Dukungan Anda akan membantu kami meningkatkan fitur dan kualitas aplikasi.
-              </p>
-              <div>
-                <h3 className="text-sm font-semibold">Rekening Donasi:</h3>
-                <ul className="text-sm text-muted-foreground list-none space-y-1">
-                  <li>Bank BCA: 1234567890 (PT Edukasi Teknologi)</li>
-                  <li>Bank Mandiri: 0987654321 (PT Edukasi Teknologi)</li>
-                  <li>Bank BNI: 1122334455 (PT Edukasi Teknologi)</li>
-                </ul>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600">
-                    <Heart className="mr-2 h-4 w-4" /> Donasi Sekarang
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Cara Berdonasi</DialogTitle>
-                    <DialogDescription>
-                      Pilih metode donasi yang Anda inginkan
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="font-medium">Transfer Bank</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Silakan transfer ke salah satu rekening berikut:
-                      </p>
-                      <ul className="text-sm text-muted-foreground list-none space-y-1 mt-2">
-                        <li>Bank BCA: 1234567890 (PT Edukasi Teknologi)</li>
-                        <li>Bank Mandiri: 0987654321 (PT Edukasi Teknologi)</li>
-                        <li>Bank BNI: 1122334455 (PT Edukasi Teknologi)</li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h3 className="font-medium">E-Wallet</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Scan QRIS di bawah ini untuk donasi melalui e-wallet:
-                      </p>
-                      <div className="flex justify-center my-4">
-                        <div className="bg-gray-100 h-32 w-32 flex items-center justify-center border">
-                          <span className="text-xs text-center text-muted-foreground">QRIS Code</span>
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Setelah melakukan donasi, silakan kirim bukti transfer ke email: donasi@edu-score.id
-                    </p>
-                  </div>
-                  <DialogFooter>
-                    <Button>Terima Kasih</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </CardFooter>
           </Card>
         </div>
       </div>

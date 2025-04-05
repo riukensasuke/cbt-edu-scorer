@@ -23,12 +23,14 @@ const ExamManagement = () => {
 
   // Handle view exam
   const handleViewExam = (examId: string) => {
+    if (!examId) return;
     console.log("Viewing exam with ID:", examId);
     navigate(`/exams/${examId}`);
   };
 
   // Handle edit exam
   const handleEditExam = (examId: string) => {
+    if (!examId) return;
     console.log("Editing exam with ID:", examId);
     navigate(`/exams/edit/${examId}`);
   };

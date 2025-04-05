@@ -1,420 +1,160 @@
 
-import { useState } from "react";
+import React, { useState } from 'react';
 import DashboardLayout from "@/components/DashboardLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Search, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { exportToExcel, importExcelFile, readExcelFile } from "@/utils/excelUtils";
-import { 
-  Search, 
-  Filter, 
-  Download, 
-  Upload, 
-  Edit, 
-  Trash2,
-  Users,
-  PlusCircle
-} from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from "@/components/ui/select";
+import AddStudentDialog from "@/components/student/AddStudentDialog";
 
-// Mock data for students by class
-const mockStudentsByClass = {
-  "4A": [
-    {
-      id: "student-3",
-      name: "Budi Santoso",
-      nisn: "0076543210",
-      class: "4A",
-      status: "active",
-    },
-    {
-      id: "student-4",
-      name: "Dewi Putri",
-      nisn: "0076543211",
-      class: "4A",
-      status: "active",
-    },
-    {
-      id: "student-5",
-      name: "Eko Prasetyo",
-      nisn: "0076543212",
-      class: "4A",
-      status: "active",
-    },
-  ],
-  "5A": [
-    {
-      id: "student-2",
-      name: "Siti Aminah",
-      nisn: "0087654321",
-      class: "5A",
-      status: "active",
-    },
-    {
-      id: "student-6",
-      name: "Fajar Ramadhan",
-      nisn: "0087654322",
-      class: "5A",
-      status: "active",
-    },
-    {
-      id: "student-7",
-      name: "Gita Nirmala",
-      nisn: "0087654323",
-      class: "5A",
-      status: "active",
-    },
-  ],
-  "6A": [
-    {
-      id: "student-1",
-      name: "Muhammad Andi",
-      nisn: "0098765432",
-      class: "6A",
-      status: "active",
-    },
-    {
-      id: "student-8",
-      name: "Hendra Wijaya",
-      nisn: "0098765433",
-      class: "6A",
-      status: "active",
-    },
-    {
-      id: "student-9",
-      name: "Indah Permata",
-      nisn: "0098765434",
-      class: "6A",
-      status: "active",
-    },
-  ],
-};
+// Mock student data
+const initialStudents = [
+  {
+    id: "student-1",
+    name: "Ahmad Fadillah",
+    nisn: "0056781234",
+    gender: "male",
+    classId: "class-1",
+    className: "Kelas 6A",
+    address: "Jl. Merdeka No. 123",
+    parentName: "Budi Santoso",
+    phoneNumber: "081234567890"
+  },
+  {
+    id: "student-2",
+    name: "Siti Nuraini",
+    nisn: "0056782345",
+    gender: "female",
+    classId: "class-1",
+    className: "Kelas 6A",
+    address: "Jl. Pahlawan No. 45",
+    parentName: "Ahmad Hidayat",
+    phoneNumber: "081234567891"
+  },
+  {
+    id: "student-3",
+    name: "Budi Pratama",
+    nisn: "0056783456",
+    gender: "male",
+    classId: "class-1",
+    className: "Kelas 6A",
+    address: "Jl. Sudirman No. 78",
+    parentName: "Dodi Santoso",
+    phoneNumber: "081234567892"
+  },
+  {
+    id: "student-4",
+    name: "Dina Maharani",
+    nisn: "0056784567",
+    gender: "female",
+    classId: "class-1",
+    className: "Kelas 6A",
+    address: "Jl. Gatot Subroto No. 12",
+    parentName: "Eko Prasetyo",
+    phoneNumber: "081234567893"
+  }
+];
 
 const TeacherStudents = () => {
-  const [activeTab, setActiveTab] = useState("4A");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filteredStudents, setFilteredStudents] = useState(mockStudentsByClass["4A"]);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [currentStudent, setCurrentStudent] = useState<any>(null);
   const { toast } = useToast();
+  const [students, setStudents] = useState(initialStudents);
+  const [searchQuery, setSearchQuery] = useState("");
   
-  // Filter function
-  const filterStudents = (className: string, search: string) => {
-    let filtered = [...(mockStudentsByClass[className as keyof typeof mockStudentsByClass] || [])];
-    
-    // Filter by search query
-    if (search) {
-      filtered = filtered.filter(student => 
-        student.name.toLowerCase().includes(search.toLowerCase()) ||
-        student.nisn.includes(search)
-      );
-    }
-    
-    setFilteredStudents(filtered);
+  // Filter students based on search
+  const filteredStudents = students.filter(student => 
+    student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    student.nisn.includes(searchQuery) ||
+    student.className.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
   };
   
-  // Handle tab change
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    filterStudents(value, searchQuery);
+  const handleAddStudent = (newStudent: any) => {
+    setStudents(prev => [...prev, newStudent]);
   };
   
-  // Handle search
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    filterStudents(activeTab, query);
-  };
-  
-  // Export students to Excel
-  const handleExportToExcel = () => {
-    const dataToExport = filteredStudents.map(student => ({
-      Nama: student.name,
-      NISN: student.nisn,
-      Kelas: student.class,
-      Status: student.status === 'active' ? 'Aktif' : 'Tidak Aktif'
-    }));
-    
-    exportToExcel(dataToExport, `Data_Siswa_${activeTab}`, `Siswa ${activeTab}`);
-    
+  const handleDownloadData = () => {
     toast({
-      title: "Data berhasil diexport",
-      description: `Data siswa kelas ${activeTab} telah diexport ke Excel`
+      title: "Data siswa diunduh",
+      description: "Data siswa telah berhasil diunduh dalam format Excel"
     });
-  };
-  
-  // Import students from Excel
-  const handleImportFromExcel = () => {
-    importExcelFile(async (file) => {
-      try {
-        const importedStudents = await readExcelFile(file);
-        
-        toast({
-          title: "Data berhasil diimport",
-          description: `${importedStudents.length} data siswa telah diimport ke kelas ${activeTab}`
-        });
-        
-        // In a real app, this would process and save the imported students
-      } catch (error) {
-        toast({
-          title: "Gagal import data",
-          description: "Format file tidak valid",
-          variant: "destructive"
-        });
-      }
-    });
-  };
-
-  // Handle edit student
-  const handleEditStudent = (studentId: string) => {
-    const student = filteredStudents.find(s => s.id === studentId);
-    
-    if (student) {
-      setCurrentStudent({...student});
-      setIsEditModalOpen(true);
-    }
-  };
-  
-  // Handle student form submission
-  const handleStudentFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // In a real app, this would update the student data
-    setFilteredStudents(prev => 
-      prev.map(s => s.id === currentStudent.id ? {...currentStudent} : s)
-    );
-    
-    toast({
-      title: "Data siswa diperbarui",
-      description: `Data siswa ${currentStudent.name} telah berhasil diperbarui.`,
-    });
-    
-    setIsEditModalOpen(false);
-  };
-  
-  // Handle input changes for the student form
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setCurrentStudent({
-      ...currentStudent,
-      [name]: value
-    });
-  };
-  
-  // Handle delete student
-  const handleDeleteStudent = (studentId: string) => {
-    const student = filteredStudents.find(s => s.id === studentId);
-    
-    toast({
-      title: "Hapus siswa",
-      description: `Siswa ${student?.name} telah dihapus dari kelas ${activeTab}`,
-      variant: "destructive"
-    });
-    
-    // In a real app, this would delete the student from the database
   };
 
   return (
     <DashboardLayout title="Data Siswa">
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between gap-4">
-          <div className="flex items-center space-x-2">
-            <div className="relative w-full sm:w-64">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Cari siswa..."
-                className="pl-8"
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-              />
-            </div>
-            <Button variant="outline" size="icon">
-              <Filter className="h-4 w-4" />
-            </Button>
+        <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Cari siswa..."
+              className="pl-8"
+              value={searchQuery}
+              onChange={handleSearch}
+            />
           </div>
-          
-          <div className="flex flex-wrap sm:flex-nowrap gap-2">
-            <Button onClick={() => toast({ title: "Fitur dalam pengembangan", description: "Fitur tambah siswa akan segera tersedia" })}>
-              <PlusCircle className="mr-2 h-4 w-4" /> Tambah Siswa
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={handleDownloadData}>
+              <Download className="mr-2 h-4 w-4" />
+              Unduh Data
             </Button>
-            
-            <Button variant="secondary" onClick={handleExportToExcel}>
-              <Download className="mr-2 h-4 w-4" /> Export
-            </Button>
-            
-            <Button variant="outline" onClick={handleImportFromExcel}>
-              <Upload className="mr-2 h-4 w-4" /> Import
-            </Button>
+            <AddStudentDialog onAddStudent={handleAddStudent} />
           </div>
         </div>
         
-        <Tabs defaultValue="4A" onValueChange={handleTabChange}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="4A">Kelas 4A</TabsTrigger>
-            <TabsTrigger value="5A">Kelas 5A</TabsTrigger>
-            <TabsTrigger value="6A">Kelas 6A</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value={activeTab} className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Daftar Siswa {activeTab}</CardTitle>
-                <CardDescription>
-                  Kelola data siswa di kelas {activeTab}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {filteredStudents.length > 0 ? (
-                    filteredStudents.map((student) => (
-                      <div
-                        key={student.id}
-                        className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-3">
-                            <Users className="h-5 w-5 text-green-500" />
-                            <h3 className="font-medium">{student.name}</h3>
-                          </div>
-                          <Badge 
-                            className={student.status === "active" ? "bg-green-500" : "bg-gray-500"}
-                          >
-                            {student.status === "active" ? "Aktif" : "Tidak Aktif"}
-                          </Badge>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm mb-4">
-                          <div>
-                            <span className="text-muted-foreground">NISN:</span>{" "}
-                            {student.nisn}
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Kelas:</span>{" "}
-                            {student.class}
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center justify-end space-x-2">
-                          <Button variant="outline" size="sm" onClick={() => handleEditStudent(student.id)}>
-                            <Edit className="h-4 w-4 mr-1" /> Edit
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="text-destructive hover:text-destructive"
-                            onClick={() => handleDeleteStudent(student.id)}
-                          >
-                            <Trash2 className="h-4 w-4 mr-1" /> Hapus
-                          </Button>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-10">
-                      <p className="text-muted-foreground">Tidak ada siswa ditemukan</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-        
-        {/* Edit Student Modal */}
-        <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>Edit Data Siswa</DialogTitle>
-              <DialogDescription>
-                Ubah informasi siswa di bawah ini.
-              </DialogDescription>
-            </DialogHeader>
-            {currentStudent && (
-              <form onSubmit={handleStudentFormSubmit}>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <label htmlFor="name" className="text-right">
-                      Nama
-                    </label>
-                    <Input
-                      id="name"
-                      name="name"
-                      value={currentStudent.name}
-                      onChange={handleInputChange}
-                      className="col-span-3"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <label htmlFor="nisn" className="text-right">
-                      NISN
-                    </label>
-                    <Input
-                      id="nisn"
-                      name="nisn"
-                      value={currentStudent.nisn}
-                      onChange={handleInputChange}
-                      className="col-span-3"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <label htmlFor="class" className="text-right">
-                      Kelas
-                    </label>
-                    <Select
-                      name="class"
-                      defaultValue={currentStudent.class}
-                      onValueChange={(value) => handleInputChange({
-                        target: { name: "class", value }
-                      } as any)}
-                    >
-                      <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="Pilih kelas" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="4A">Kelas 4A</SelectItem>
-                        <SelectItem value="5A">Kelas 5A</SelectItem>
-                        <SelectItem value="6A">Kelas 6A</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <label htmlFor="status" className="text-right">
-                      Status
-                    </label>
-                    <Select
-                      name="status"
-                      defaultValue={currentStudent.status}
-                      onValueChange={(value) => handleInputChange({
-                        target: { name: "status", value }
-                      } as any)}
-                    >
-                      <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="Pilih status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="active">Aktif</SelectItem>
-                        <SelectItem value="inactive">Tidak Aktif</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button type="submit">Simpan Perubahan</Button>
-                </DialogFooter>
-              </form>
-            )}
-          </DialogContent>
-        </Dialog>
+        <Card>
+          <CardHeader>
+            <CardTitle>Daftar Siswa</CardTitle>
+            <CardDescription>
+              Menampilkan data siswa yang berada di kelas yang diajar
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nama Siswa</TableHead>
+                  <TableHead>NISN</TableHead>
+                  <TableHead>Kelas</TableHead>
+                  <TableHead>Jenis Kelamin</TableHead>
+                  <TableHead>Nama Wali</TableHead>
+                  <TableHead>Telepon</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredStudents.length > 0 ? (
+                  filteredStudents.map((student) => (
+                    <TableRow key={student.id}>
+                      <TableCell className="font-medium">{student.name}</TableCell>
+                      <TableCell>{student.nisn}</TableCell>
+                      <TableCell>{student.className}</TableCell>
+                      <TableCell>
+                        {student.gender === 'male' ? (
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Laki-laki</Badge>
+                        ) : (
+                          <Badge variant="outline" className="bg-pink-50 text-pink-700 border-pink-200">Perempuan</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>{student.parentName}</TableCell>
+                      <TableCell>{student.phoneNumber}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-4">
+                      Tidak ada siswa ditemukan
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       </div>
     </DashboardLayout>
   );
