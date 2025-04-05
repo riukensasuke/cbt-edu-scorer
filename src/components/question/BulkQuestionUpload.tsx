@@ -1,10 +1,11 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload, FileSpreadsheet, X } from "lucide-react";
+import { Upload, FileSpreadsheet, X, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BulkQuestionUploadTemplate from './BulkQuestionUploadTemplate';
 
@@ -101,8 +102,7 @@ const BulkQuestionUpload = () => {
           
           <BulkQuestionUploadTemplate />
           
-          <div className="border-2 border-dashed rounded-lg p-8 text-center" {...getRootProps()}>
-            <input {...getInputProps()} />
+          <div className="border-2 border-dashed rounded-lg p-8 text-center">
             <div className="flex flex-col items-center justify-center">
               <Upload className="h-8 w-8 text-muted-foreground mb-2" />
               <p className="mb-1">Seret file atau klik untuk memilih</p>
