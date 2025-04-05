@@ -5,7 +5,6 @@ import WelcomeCard from "@/components/dashboard/WelcomeCard";
 import UpcomingExams from "@/components/dashboard/UpcomingExams";
 import RecentResults from "@/components/dashboard/RecentResults";
 import { useTeacherDashboard } from "@/hooks/useTeacherDashboard";
-import { getStatusBadge, getScoreBadgeColor } from "@/utils/statusUtils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Users, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -104,7 +103,7 @@ const TeacherDashboard = () => {
                 </div>
                 <div className="grid grid-cols-3 gap-1">
                   <p className="text-sm font-medium">Email:</p>
-                  <p className="text-sm col-span-2">{user?.email || "guru@sekolah.sch.id"}</p>
+                  <p className="text-sm col-span-2">guru@sekolah.sch.id</p>
                 </div>
                 <div className="grid grid-cols-3 gap-1">
                   <p className="text-sm font-medium">Status:</p>

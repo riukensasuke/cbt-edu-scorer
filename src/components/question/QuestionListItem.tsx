@@ -6,7 +6,7 @@ import { Eye, Edit, Copy, Trash2, CheckCircle, HelpCircle, AlertCircle } from "l
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
 
-interface QuestionType {
+export interface QuestionType {
   id: string;
   type: string;
   subject: string;

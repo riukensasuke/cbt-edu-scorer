@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +13,7 @@ import { Trash2, Plus, Image } from "lucide-react";
 interface QuestionFormProps {
   initialValues?: any;
   isEditing?: boolean;
+  isViewOnly?: boolean;
   onSubmit: (data: any) => void;
   onCancel: () => void;
 }
@@ -31,6 +31,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
     isImage: false
   }, 
   isEditing = false,
+  isViewOnly = false,
   onSubmit,
   onCancel
 }) => {
@@ -47,7 +48,6 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
     if (name === 'type') {
       setOptionType(value);
       
-      // Reset options based on question type
       if (value === 'multiple_choice') {
         setFormValues((prev: any) => ({ 
           ...prev, 
@@ -131,7 +131,6 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
             <TabsTrigger value="content">Konten Soal</TabsTrigger>
           </TabsList>
           
-          {/* Basic Information Tab */}
           <TabsContent value="basic" className="space-y-4 mt-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -139,6 +138,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
                 <Select
                   value={formValues.subject}
                   onValueChange={(value) => handleSelectChange("subject", value)}
+                  disabled={isViewOnly}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Pilih mata pelajaran" />
@@ -158,6 +158,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
                 <Select
                   value={formValues.grade}
                   onValueChange={(value) => handleSelectChange("grade", value)}
+                  disabled={isViewOnly}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Pilih kelas" />
@@ -179,6 +180,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
                 <Select
                   value={formValues.type}
                   onValueChange={(value) => handleSelectChange("type", value)}
+                  disabled={isViewOnly}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -197,6 +199,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
                 <Select
                   value={formValues.difficulty}
                   onValueChange={(value) => handleSelectChange("difficulty", value)}
+                  disabled={isViewOnly}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -217,6 +220,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
                 id="isImage" 
                 checked={formValues.isImage}
                 onCheckedChange={toggleImageQuestion}
+                disabled={isViewOnly}
               />
               <Label htmlFor="isImage">Soal mengandung gambar</Label>
             </div>
@@ -226,14 +230,13 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
                 <Image className="h-8 w-8 text-muted-foreground mb-2" />
                 <p className="text-sm font-medium">Unggah gambar untuk soal ini</p>
                 <p className="text-xs text-muted-foreground mb-4">PNG, JPG, atau GIF hingga 5MB</p>
-                <Button type="button" size="sm" variant="outline">
+                <Button type="button" size="sm" variant="outline" disabled={isViewOnly}>
                   Pilih File
                 </Button>
               </div>
             )}
           </TabsContent>
           
-          {/* Question Content Tab */}
           <TabsContent value="content" className="space-y-4 mt-4">
             <div className="space-y-2">
               <Label htmlFor="question">Pertanyaan*</Label>
@@ -245,6 +248,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
                 placeholder="Masukkan pertanyaan di sini..."
                 rows={3}
                 required
+                disabled={isViewOnly}
               />
             </div>
             
@@ -257,10 +261,10 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
                       value={option}
                       onChange={(e) => handleOptionChange(index, e.target.value)}
                       placeholder={`Pilihan ${String.fromCharCode(65 + index)}`}
-                      disabled={optionType === "true_false"}
+                      disabled={optionType === "true_false" || isViewOnly}
                       required
                     />
-                    {optionType !== "true_false" && index > 1 && (
+                    {optionType !== "true_false" && index > 1 && !isViewOnly && (
                       <Button 
                         type="button" 
                         variant="outline" 
@@ -273,7 +277,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
                   </div>
                 ))}
                 
-                {(optionType === "multiple_choice" || optionType === "multiple_choice_complex") && (
+                {(optionType === "multiple_choice" || optionType === "multiple_choice_complex") && !isViewOnly && (
                   <Button
                     type="button"
                     variant="outline"
@@ -293,6 +297,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
                       value={formValues.correctAnswer}
                       onValueChange={(value) => handleSelectChange("correctAnswer", value)}
                       className="flex space-x-4"
+                      disabled={isViewOnly}
                     >
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="Benar" id="true" />
@@ -308,6 +313,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
                       value={formValues.correctAnswer}
                       onValueChange={(value) => handleSelectChange("correctAnswer", value)}
                       className="flex flex-col space-y-2"
+                      disabled={isViewOnly}
                     >
                       {formValues.options?.map((option: string, index: number) => (
                         <div key={index} className="flex items-center space-x-2">
@@ -327,6 +333,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
                         value={formValues.correctAnswer}
                         onChange={handleChange}
                         placeholder="Contoh: A,C,D"
+                        disabled={isViewOnly}
                       />
                     </div>
                   ) : (
@@ -337,6 +344,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
                       onChange={handleChange}
                       placeholder="Masukkan jawaban benar untuk essay"
                       rows={2}
+                      disabled={isViewOnly}
                     />
                   )}
                 </div>
@@ -354,6 +362,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
                   placeholder="Masukkan kunci jawaban untuk soal essay"
                   rows={3}
                   required
+                  disabled={isViewOnly}
                 />
               </div>
             )}
@@ -367,6 +376,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
                 onChange={handleChange}
                 placeholder="Masukkan pembahasan jawaban (opsional)"
                 rows={3}
+                disabled={isViewOnly}
               />
             </div>
           </TabsContent>
@@ -375,11 +385,13 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
       
       <DialogFooter className="mt-6">
         <Button type="button" variant="outline" onClick={onCancel}>
-          Batal
+          {isViewOnly ? "Kembali" : "Batal"}
         </Button>
-        <Button type="submit">
-          {isEditing ? "Simpan Perubahan" : "Tambah Soal"}
-        </Button>
+        {!isViewOnly && (
+          <Button type="submit">
+            {isEditing ? "Simpan Perubahan" : "Tambah Soal"}
+          </Button>
+        )}
       </DialogFooter>
     </form>
   );
