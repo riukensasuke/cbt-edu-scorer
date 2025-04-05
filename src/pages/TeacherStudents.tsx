@@ -1,91 +1,54 @@
+
 import React, { useState } from 'react';
 import DashboardLayout from "@/components/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Download } from "lucide-react";
+import { Search, Download, UserPlus, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import AddStudentDialog from "@/components/student/AddStudentDialog";
-import { downloadStudentData } from "@/utils/studentDataDownload";
-
-const initialStudents = [
-  {
-    id: "student-1",
-    name: "Ahmad Fadillah",
-    nisn: "0056781234",
-    gender: "male",
-    classId: "class-1",
-    className: "Kelas 6A",
-    address: "Jl. Merdeka No. 123",
-    parentName: "Budi Santoso",
-    phoneNumber: "081234567890"
-  },
-  {
-    id: "student-2",
-    name: "Siti Nuraini",
-    nisn: "0056782345",
-    gender: "female",
-    classId: "class-1",
-    className: "Kelas 6A",
-    address: "Jl. Pahlawan No. 45",
-    parentName: "Ahmad Hidayat",
-    phoneNumber: "081234567891"
-  },
-  {
-    id: "student-3",
-    name: "Budi Pratama",
-    nisn: "0056783456",
-    gender: "male",
-    classId: "class-1",
-    className: "Kelas 6A",
-    address: "Jl. Sudirman No. 78",
-    parentName: "Dodi Santoso",
-    phoneNumber: "081234567892"
-  },
-  {
-    id: "student-4",
-    name: "Dina Maharani",
-    nisn: "0056784567",
-    gender: "female",
-    classId: "class-1",
-    className: "Kelas 6A",
-    address: "Jl. Gatot Subroto No. 12",
-    parentName: "Eko Prasetyo",
-    phoneNumber: "081234567893"
-  }
-];
+import { useAuth } from "@/contexts/AuthContext";
+import { downloadStudentData, generateSampleStudentData, StudentData } from "@/utils/studentDataDownload";
 
 const TeacherStudents = () => {
   const { toast } = useToast();
-  const [students, setStudents] = useState(initialStudents);
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedClass, setSelectedClass] = useState(null);
-
-  const filteredStudents = students.filter(student => 
-    student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    student.nisn.includes(searchQuery) ||
-    student.className.toLowerCase().includes(searchQuery.toLowerCase())
+  const [activeTab, setActiveTab] = useState("6A");
+  
+  // Sample student data
+  const classGroups = ["6A", "6B", "5A", "5B"];
+  
+  // Generate sample data for all classes
+  const studentsByClass = {
+    "6A": generateSampleStudentData(15, "6A"),
+    "6B": generateSampleStudentData(14, "6B"),
+    "5A": generateSampleStudentData(16, "5A"),
+    "5B": generateSampleStudentData(13, "5B"),
+  };
+  
+  // Filter students based on search query and active tab
+  const filteredStudents = studentsByClass[activeTab as keyof typeof studentsByClass].filter(
+    (student) => student.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
+  
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
-
-  const handleAddStudent = (newStudent: any) => {
-    setStudents(prev => [...prev, newStudent]);
+  
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
   };
-
-  const handleDownloadStudentData = () => {
-    const success = downloadStudentData(selectedClass?.id, selectedClass?.name);
+  
+  const handleDownloadData = () => {
+    // Download data for the active class
+    const success = downloadStudentData(studentsByClass[activeTab as keyof typeof studentsByClass], activeTab);
     
     if (success) {
       toast({
-        title: "Data siswa berhasil diunduh",
-        description: selectedClass 
-          ? `Data siswa ${selectedClass.name} telah diunduh`
-          : "Data semua siswa telah diunduh"
+        title: "Data berhasil diunduh",
+        description: `Data siswa kelas ${activeTab} telah diunduh`,
       });
     } else {
       toast({
@@ -95,12 +58,26 @@ const TeacherStudents = () => {
       });
     }
   };
-
+  
+  const handleAddStudent = () => {
+    toast({
+      title: "Tambah Siswa",
+      description: "Fitur tambah siswa akan segera tersedia",
+    });
+  };
+  
+  const handleExportReport = () => {
+    toast({
+      title: "Ekspor Laporan",
+      description: "Fitur ekspor laporan akan segera tersedia",
+    });
+  };
+  
   return (
     <DashboardLayout title="Data Siswa">
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
-          <div className="relative w-full sm:w-64">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="relative w-full md:w-64">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Cari siswa..."
@@ -109,63 +86,76 @@ const TeacherStudents = () => {
               onChange={handleSearch}
             />
           </div>
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={handleDownloadStudentData}>
-              <Download className="mr-2 h-4 w-4" />
+          <div className="flex gap-3 w-full md:w-auto">
+            <Button onClick={handleDownloadData} variant="outline" className="flex items-center gap-2">
+              <Download className="h-4 w-4" />
               Unduh Data
             </Button>
-            <AddStudentDialog onAddStudent={handleAddStudent} />
+            <Button onClick={handleAddStudent} variant="outline" className="flex items-center gap-2">
+              <UserPlus className="h-4 w-4" />
+              Tambah Siswa
+            </Button>
+            <Button onClick={handleExportReport} variant="outline" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Ekspor Laporan
+            </Button>
           </div>
         </div>
         
-        <Card>
-          <CardHeader>
-            <CardTitle>Daftar Siswa</CardTitle>
-            <CardDescription>
-              Menampilkan data siswa yang berada di kelas yang diajar
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nama Siswa</TableHead>
-                  <TableHead>NISN</TableHead>
-                  <TableHead>Kelas</TableHead>
-                  <TableHead>Jenis Kelamin</TableHead>
-                  <TableHead>Nama Wali</TableHead>
-                  <TableHead>Telepon</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredStudents.length > 0 ? (
-                  filteredStudents.map((student) => (
-                    <TableRow key={student.id}>
-                      <TableCell className="font-medium">{student.name}</TableCell>
-                      <TableCell>{student.nisn}</TableCell>
-                      <TableCell>{student.className}</TableCell>
-                      <TableCell>
-                        {student.gender === 'male' ? (
-                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Laki-laki</Badge>
-                        ) : (
-                          <Badge variant="outline" className="bg-pink-50 text-pink-700 border-pink-200">Perempuan</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>{student.parentName}</TableCell>
-                      <TableCell>{student.phoneNumber}</TableCell>
+        <Tabs defaultValue="6A" value={activeTab} onValueChange={handleTabChange}>
+          <TabsList className="grid grid-cols-4">
+            {classGroups.map((classGroup) => (
+              <TabsTrigger key={classGroup} value={classGroup}>
+                Kelas {classGroup}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          
+          <TabsContent value={activeTab} className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Daftar Siswa Kelas {activeTab}</CardTitle>
+                <CardDescription>
+                  Total siswa: {filteredStudents.length}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>No.</TableHead>
+                      <TableHead>Nama</TableHead>
+                      <TableHead>NISN</TableHead>
+                      <TableHead>Jenis Kelamin</TableHead>
+                      <TableHead>Nama Orang Tua</TableHead>
+                      <TableHead>Telepon</TableHead>
+                      <TableHead>Alamat</TableHead>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-4">
-                      Tidak ada siswa ditemukan
-                    </TableCell>
-                  </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredStudents.map((student, index) => (
+                      <TableRow key={student.id}>
+                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>{student.name}</TableCell>
+                        <TableCell>{student.nisn}</TableCell>
+                        <TableCell>{student.gender}</TableCell>
+                        <TableCell>{student.parentName}</TableCell>
+                        <TableCell>{student.phone}</TableCell>
+                        <TableCell className="max-w-xs truncate">{student.address}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                
+                {filteredStudents.length === 0 && (
+                  <div className="text-center py-10">
+                    <p className="text-muted-foreground">Tidak ada siswa ditemukan</p>
+                  </div>
                 )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
   );

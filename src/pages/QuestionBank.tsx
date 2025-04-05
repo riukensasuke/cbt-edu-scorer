@@ -99,12 +99,24 @@ const QuestionBank = () => {
     setSelectedQuestion(question);
     setIsEditing(true);
     setIsAddingQuestion(true);
+    
+    // Add toast for feedback
+    toast({
+      title: "Edit Soal",
+      description: `Mengedit soal: ${question.question.substring(0, 30)}...`,
+    });
   };
 
   const handleViewQuestion = (question: QuestionType) => {
     setSelectedQuestion(question);
     setIsEditing(false);
     setIsAddingQuestion(true);
+    
+    // Add toast for feedback
+    toast({
+      title: "Lihat Soal",
+      description: `Melihat detail soal: ${question.question.substring(0, 30)}...`,
+    });
   };
 
   const handleSaveQuestion = (questionData: any) => {

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, FileText, Eye, Edit, Copy, Trash2 } from "lucide-react";
 import { getStatusBadge } from "@/utils/statusUtils";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface ExamItemProps {
   exam: {
@@ -27,6 +28,7 @@ interface ExamItemProps {
 
 const ExamListItem = ({ exam, onDelete, onView, onEdit }: ExamItemProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleView = () => {
     if (onView) {
@@ -36,6 +38,7 @@ const ExamListItem = ({ exam, onDelete, onView, onEdit }: ExamItemProps) => {
         title: "Lihat ujian",
         description: `Melihat detail ujian ${exam.title}`,
       });
+      navigate(`/exams/${exam.id}`);
     }
   };
 
@@ -47,6 +50,7 @@ const ExamListItem = ({ exam, onDelete, onView, onEdit }: ExamItemProps) => {
         title: "Edit ujian",
         description: `Mengedit ujian ${exam.title}`,
       });
+      navigate(`/exams/edit/${exam.id}`);
     }
   };
 
