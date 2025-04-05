@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -9,8 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Search, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AddStudentDialog from "@/components/student/AddStudentDialog";
+import { downloadStudentData } from "@/utils/studentDataDownload";
 
-// Mock student data
 const initialStudents = [
   {
     id: "student-1",
@@ -62,27 +61,39 @@ const TeacherStudents = () => {
   const { toast } = useToast();
   const [students, setStudents] = useState(initialStudents);
   const [searchQuery, setSearchQuery] = useState("");
-  
-  // Filter students based on search
+  const [selectedClass, setSelectedClass] = useState(null);
+
   const filteredStudents = students.filter(student => 
     student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     student.nisn.includes(searchQuery) ||
     student.className.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  
+
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
-  
+
   const handleAddStudent = (newStudent: any) => {
     setStudents(prev => [...prev, newStudent]);
   };
-  
-  const handleDownloadData = () => {
-    toast({
-      title: "Data siswa diunduh",
-      description: "Data siswa telah berhasil diunduh dalam format Excel"
-    });
+
+  const handleDownloadStudentData = () => {
+    const success = downloadStudentData(selectedClass?.id, selectedClass?.name);
+    
+    if (success) {
+      toast({
+        title: "Data siswa berhasil diunduh",
+        description: selectedClass 
+          ? `Data siswa ${selectedClass.name} telah diunduh`
+          : "Data semua siswa telah diunduh"
+      });
+    } else {
+      toast({
+        title: "Gagal mengunduh data",
+        description: "Terjadi kesalahan saat mengunduh data siswa",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -99,7 +110,7 @@ const TeacherStudents = () => {
             />
           </div>
           <div className="flex gap-3">
-            <Button variant="outline" onClick={handleDownloadData}>
+            <Button variant="outline" onClick={handleDownloadStudentData}>
               <Download className="mr-2 h-4 w-4" />
               Unduh Data
             </Button>

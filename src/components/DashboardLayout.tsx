@@ -18,7 +18,8 @@ import {
   ChevronRight,
   Database,
   Key,
-  BookOpenCheck
+  BookOpenCheck,
+  RefreshCw
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -120,6 +121,11 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
     } else if (user?.role === "teacher") {
       return [
         ...baseItems,
+        {
+          label: "Token Gratis",
+          icon: <RefreshCw size={20} />,
+          path: "/token",
+        },
         {
           label: "Bank Soal",
           icon: <BookOpen size={20} />,

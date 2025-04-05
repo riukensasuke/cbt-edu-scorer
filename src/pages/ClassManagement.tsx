@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Edit, User, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ClassCard from "@/components/class/ClassCard";
 
-// Mock data for classes
+// Mock data for classes with colors
 const initialClasses = [
   {
     id: "class-1",
@@ -19,7 +19,8 @@ const initialClasses = [
     students: 25,
     teacher: "Ibu Siti",
     year: "2023/2024",
-    isActive: true
+    isActive: true,
+    color: "bg-blue-100 border-blue-300"
   },
   {
     id: "class-2",
@@ -28,7 +29,8 @@ const initialClasses = [
     students: 24,
     teacher: "Bapak Ahmad",
     year: "2023/2024",
-    isActive: true
+    isActive: true,
+    color: "bg-green-100 border-green-300"
   },
   {
     id: "class-3",
@@ -37,7 +39,8 @@ const initialClasses = [
     students: 26,
     teacher: "Ibu Rini",
     year: "2023/2024",
-    isActive: true
+    isActive: true,
+    color: "bg-purple-100 border-purple-300"
   },
   {
     id: "class-4",
@@ -46,7 +49,8 @@ const initialClasses = [
     students: 23,
     teacher: "Bapak Tono",
     year: "2023/2024",
-    isActive: true
+    isActive: true,
+    color: "bg-amber-100 border-amber-300"
   },
   {
     id: "class-5",
@@ -55,7 +59,8 @@ const initialClasses = [
     students: 28,
     teacher: "Ibu Maya",
     year: "2023/2024",
-    isActive: true
+    isActive: true,
+    color: "bg-pink-100 border-pink-300"
   },
   {
     id: "class-6",
@@ -64,8 +69,19 @@ const initialClasses = [
     students: 27,
     teacher: "Bapak Dodi",
     year: "2023/2024",
-    isActive: true
+    isActive: true,
+    color: "bg-cyan-100 border-cyan-300"
   }
+];
+
+// Mock student data
+const mockStudents = [
+  { id: "1", name: "Ahmad Rizki", nisn: "0123456789", gender: "L" },
+  { id: "2", name: "Budi Santoso", nisn: "0123456790", gender: "L" },
+  { id: "3", name: "Cindy Aulia", nisn: "0123456791", gender: "P" },
+  { id: "4", name: "Dina Fitriani", nisn: "0123456792", gender: "P" },
+  { id: "5", name: "Eko Prasetyo", nisn: "0123456793", gender: "L" },
+  { id: "6", name: "Fani Wijaya", nisn: "0123456794", gender: "P" },
 ];
 
 const ClassManagement = () => {
@@ -76,6 +92,11 @@ const ClassManagement = () => {
   const [newClassName, setNewClassName] = useState("");
   const [newClassTeacher, setNewClassTeacher] = useState("");
   const [newClassLevel, setNewClassLevel] = useState("");
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [currentEditClass, setCurrentEditClass] = useState<any>(null);
+  const [isManageStudentsDialogOpen, setIsManageStudentsDialogOpen] = useState(false);
+  const [currentManageClass, setCurrentManageClass] = useState<any>(null);
+  const [classStudents, setClassStudents] = useState(mockStudents);
   
   // Filter classes based on search
   const filteredClasses = classes.filter(cls => 
@@ -97,6 +118,20 @@ const ClassManagement = () => {
       return;
     }
     
+    // Array of possible colors
+    const colors = [
+      "bg-blue-100 border-blue-300",
+      "bg-green-100 border-green-300",
+      "bg-purple-100 border-purple-300",
+      "bg-amber-100 border-amber-300",
+      "bg-pink-100 border-pink-300",
+      "bg-cyan-100 border-cyan-300",
+      "bg-indigo-100 border-indigo-300",
+      "bg-red-100 border-red-300"
+    ];
+    
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+    
     const newClass = {
       id: `class-${classes.length + 1}`,
       name: newClassName,
@@ -104,7 +139,8 @@ const ClassManagement = () => {
       students: 0,
       teacher: newClassTeacher,
       year: "2023/2024",
-      isActive: true
+      isActive: true,
+      color: randomColor
     };
     
     setClasses(prev => [...prev, newClass]);
@@ -121,10 +157,27 @@ const ClassManagement = () => {
   };
   
   const handleEditClass = (id: string) => {
-    toast({
-      title: "Edit kelas",
-      description: `Edit kelas dengan ID: ${id}`
-    });
+    const classToEdit = classes.find(c => c.id === id);
+    if (classToEdit) {
+      setCurrentEditClass(classToEdit);
+      setIsEditDialogOpen(true);
+    }
+  };
+  
+  const handleSaveEdit = () => {
+    if (currentEditClass) {
+      setClasses(prev => prev.map(cls => 
+        cls.id === currentEditClass.id ? currentEditClass : cls
+      ));
+      
+      toast({
+        title: "Kelas berhasil diperbarui",
+        description: `${currentEditClass.name} telah diperbarui`
+      });
+      
+      setIsEditDialogOpen(false);
+      setCurrentEditClass(null);
+    }
   };
   
   const handleDeleteClass = (id: string) => {
@@ -137,9 +190,26 @@ const ClassManagement = () => {
   };
   
   const handleManageStudents = (id: string) => {
+    const classToManage = classes.find(c => c.id === id);
+    if (classToManage) {
+      setCurrentManageClass(classToManage);
+      setIsManageStudentsDialogOpen(true);
+    }
+  };
+  
+  const handleAddStudent = () => {
     toast({
-      title: "Kelola siswa",
-      description: `Kelola siswa untuk kelas dengan ID: ${id}`
+      title: "Siswa ditambahkan",
+      description: "Siswa baru telah ditambahkan ke kelas"
+    });
+  };
+
+  const handleRemoveStudent = (studentId: string) => {
+    setClassStudents(prev => prev.filter(student => student.id !== studentId));
+    
+    toast({
+      title: "Siswa dihapus",
+      description: "Siswa telah dihapus dari kelas"
     });
   };
 
@@ -174,9 +244,9 @@ const ClassManagement = () => {
                     key={cls.id}
                     classData={cls}
                     colorIndex={index}
-                    onEdit={handleEditClass}
-                    onDelete={handleDeleteClass}
-                    onManageStudents={handleManageStudents}
+                    onEdit={() => handleEditClass(cls.id)}
+                    onDelete={() => handleDeleteClass(cls.id)}
+                    onManageStudents={() => handleManageStudents(cls.id)}
                   />
                 ))}
               </div>
@@ -189,6 +259,7 @@ const ClassManagement = () => {
         </Card>
       </div>
       
+      {/* Dialog for adding a new class */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -245,6 +316,153 @@ const ClassManagement = () => {
             </Button>
             <Button onClick={handleAddClass}>
               Tambah Kelas
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Dialog for editing a class */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Kelas</DialogTitle>
+            <DialogDescription>
+              Ubah informasi kelas
+            </DialogDescription>
+          </DialogHeader>
+          
+          {currentEditClass && (
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="editClassName" className="text-right">
+                  Nama Kelas
+                </Label>
+                <Input
+                  id="editClassName"
+                  value={currentEditClass.name}
+                  onChange={(e) => setCurrentEditClass({...currentEditClass, name: e.target.value})}
+                  className="col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="editClassLevel" className="text-right">
+                  Tingkat
+                </Label>
+                <Input
+                  id="editClassLevel"
+                  value={currentEditClass.level}
+                  onChange={(e) => setCurrentEditClass({...currentEditClass, level: e.target.value})}
+                  className="col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="editClassTeacher" className="text-right">
+                  Wali Kelas
+                </Label>
+                <Input
+                  id="editClassTeacher"
+                  value={currentEditClass.teacher}
+                  onChange={(e) => setCurrentEditClass({...currentEditClass, teacher: e.target.value})}
+                  className="col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="editClassStudents" className="text-right">
+                  Jumlah Siswa
+                </Label>
+                <Input
+                  id="editClassStudents"
+                  type="number"
+                  value={currentEditClass.students}
+                  onChange={(e) => setCurrentEditClass({...currentEditClass, students: parseInt(e.target.value) || 0})}
+                  className="col-span-3"
+                />
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+              Batal
+            </Button>
+            <Button onClick={handleSaveEdit}>
+              Simpan Perubahan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Dialog for managing students */}
+      <Dialog open={isManageStudentsDialogOpen} onOpenChange={setIsManageStudentsDialogOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Kelola Siswa {currentManageClass?.name}</DialogTitle>
+            <DialogDescription>
+              Tambah, edit, atau hapus siswa dari kelas ini
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <div className="flex justify-between mb-4">
+              <div className="relative w-64">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Cari siswa..."
+                  className="pl-8"
+                />
+              </div>
+              <Button onClick={handleAddStudent}>
+                <Plus className="mr-2 h-4 w-4" />
+                Tambah Siswa
+              </Button>
+            </div>
+            
+            <div className="border rounded-md">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b bg-muted/50">
+                    <th className="py-3 px-4 text-left font-medium">No</th>
+                    <th className="py-3 px-4 text-left font-medium">Nama</th>
+                    <th className="py-3 px-4 text-left font-medium">NISN</th>
+                    <th className="py-3 px-4 text-left font-medium">JK</th>
+                    <th className="py-3 px-4 text-left font-medium">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {classStudents.map((student, index) => (
+                    <tr key={student.id} className="border-b">
+                      <td className="py-3 px-4">{index + 1}</td>
+                      <td className="py-3 px-4">{student.name}</td>
+                      <td className="py-3 px-4">{student.nisn}</td>
+                      <td className="py-3 px-4">{student.gender}</td>
+                      <td className="py-3 px-4">
+                        <div className="flex space-x-2">
+                          <Button variant="outline" size="sm">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleRemoveStudent(student.id)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            Hapus
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button onClick={() => setIsManageStudentsDialogOpen(false)}>
+              Selesai
             </Button>
           </DialogFooter>
         </DialogContent>

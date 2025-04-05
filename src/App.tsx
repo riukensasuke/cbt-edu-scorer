@@ -25,6 +25,7 @@ import ExamEdit from "./pages/ExamEdit";
 import LearningData from "./pages/LearningData";
 import TokenManagement from "./pages/TokenManagement";
 import BackupRestore from "./pages/BackupRestore";
+import TeacherProfile from "./pages/TeacherProfile";
 
 // Create protected route component
 const ProtectedRoute = ({ children, allowedRoles }: { children: JSX.Element, allowedRoles: string[] }) => {
@@ -209,6 +210,14 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRoles={["teacher"]}>
                   <TeacherStudents />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/teacher/profile" 
+              element={
+                <ProtectedRoute allowedRoles={["teacher"]}>
+                  <TeacherProfile />
                 </ProtectedRoute>
               } 
             />
