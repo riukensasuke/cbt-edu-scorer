@@ -12,21 +12,24 @@ import ExamListItem from "@/components/exam/ExamListItem";
 import NewExamDialog from "@/components/exam/NewExamDialog";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const ExamManagement = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { activeTab, searchQuery, filteredExams, handleTabChange, handleSearch, deleteExam } = useExamManagement();
   const [isNewExamDialogOpen, setIsNewExamDialogOpen] = useState(false);
-  const { examsList } = useExamData(); // Get exam data from the hook
 
   // Handle view exam
-  const handleViewExam = (examId) => {
+  const handleViewExam = (examId: string) => {
+    console.log("Viewing exam with ID:", examId);
     navigate(`/exams/${examId}`);
   };
 
   // Handle edit exam
-  const handleEditExam = (examId) => {
+  const handleEditExam = (examId: string) => {
+    console.log("Editing exam with ID:", examId);
     navigate(`/exams/edit/${examId}`);
   };
 

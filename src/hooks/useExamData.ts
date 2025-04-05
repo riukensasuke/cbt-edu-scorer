@@ -101,6 +101,8 @@ export const useExamData = () => {
   const [exams, setExams] = useState<Record<string, Exam>>(initialExams);
   
   const getExam = (id: string): Exam | null => {
+    if (!id) return null;
+    
     // First try directly with the provided ID
     if (exams[id]) {
       return exams[id];
@@ -108,10 +110,16 @@ export const useExamData = () => {
     
     // If that doesn't work, try with the 'exam-' prefix
     const examId = id.startsWith('exam-') ? id : `exam-${id}`;
+    
+    // For debugging
+    console.log("Looking for exam:", id, "formatted as:", examId, "exists:", !!exams[examId]);
+    
     return exams[examId] || null;
   };
   
   const updateExam = (id: string, data: Partial<Exam>): void => {
+    if (!id) return;
+    
     const examId = id.startsWith('exam-') ? id : `exam-${id}`;
     setExams(prev => ({
       ...prev,
@@ -130,6 +138,8 @@ export const useExamData = () => {
   };
   
   const deleteExam = (id: string): void => {
+    if (!id) return;
+    
     const examId = id.startsWith('exam-') ? id : `exam-${id}`;
     const newExams = { ...exams };
     delete newExams[examId];
