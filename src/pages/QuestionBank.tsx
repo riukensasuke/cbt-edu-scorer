@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -78,6 +78,7 @@ const QuestionBank = () => {
   const [selectedQuestion, setSelectedQuestion] = useState<QuestionType | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isViewOnly, setIsViewOnly] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Filter questions based on tab and search
   const filteredQuestions = questions.filter(q => {
@@ -91,6 +92,7 @@ const QuestionBank = () => {
   });
 
   const handleAddQuestion = () => {
+    console.log("Add question button clicked");
     setIsAddingQuestion(true);
     setIsEditing(false);
     setIsViewOnly(false);
@@ -98,32 +100,50 @@ const QuestionBank = () => {
   };
 
   const handleEditQuestion = (question: QuestionType) => {
-    setSelectedQuestion(question);
-    setIsEditing(true);
-    setIsViewOnly(false);
-    setIsAddingQuestion(true);
+    console.log("Editing question:", question);
     
-    // Add toast for feedback
-    toast({
-      title: "Edit Soal",
-      description: `Mengedit soal: ${question.question.substring(0, 30)}...`,
-    });
+    // Simulate a loading state
+    setIsLoading(true);
+    
+    setTimeout(() => {
+      setSelectedQuestion(question);
+      setIsEditing(true);
+      setIsViewOnly(false);
+      setIsAddingQuestion(true);
+      setIsLoading(false);
+      
+      // Add toast for feedback
+      toast({
+        title: "Edit Soal",
+        description: `Mengedit soal: ${question.question.substring(0, 30)}...`,
+      });
+    }, 300); // Short timeout to simulate loading
   };
 
   const handleViewQuestion = (question: QuestionType) => {
-    setSelectedQuestion(question);
-    setIsEditing(false);
-    setIsViewOnly(true);
-    setIsAddingQuestion(true);
+    console.log("Viewing question:", question);
     
-    // Add toast for feedback
-    toast({
-      title: "Lihat Soal",
-      description: `Melihat detail soal: ${question.question.substring(0, 30)}...`,
-    });
+    // Simulate a loading state
+    setIsLoading(true);
+    
+    setTimeout(() => {
+      setSelectedQuestion(question);
+      setIsEditing(false);
+      setIsViewOnly(true);
+      setIsAddingQuestion(true);
+      setIsLoading(false);
+      
+      // Add toast for feedback
+      toast({
+        title: "Lihat Soal",
+        description: `Melihat detail soal: ${question.question.substring(0, 30)}...`,
+      });
+    }, 300); // Short timeout to simulate loading
   };
 
   const handleSaveQuestion = (questionData: any) => {
+    console.log("Saving question:", questionData);
+    
     if (isEditing && selectedQuestion) {
       // Update existing question
       setQuestions(prev => prev.map(q => q.id === selectedQuestion.id ? { 
@@ -157,6 +177,7 @@ const QuestionBank = () => {
   };
 
   const handleDeleteQuestion = (id: string) => {
+    console.log("Deleting question:", id);
     setQuestions(prev => prev.filter(q => q.id !== id));
     toast({
       title: "Soal dihapus",
@@ -173,18 +194,33 @@ const QuestionBank = () => {
   };
 
   const handleCancel = () => {
+    console.log("Cancelling question edit/add");
     setIsAddingQuestion(false);
     setIsViewOnly(false);
     setIsEditing(false);
     setSelectedQuestion(null);
   };
 
-  console.log("Current state:", { 
-    isAddingQuestion, 
-    isEditing, 
-    isViewOnly, 
-    selectedQuestion 
-  });
+  // Debug logs
+  useEffect(() => {
+    console.log("QuestionBank state:", { 
+      isAddingQuestion, 
+      isEditing, 
+      isViewOnly, 
+      selectedQuestion,
+      isLoading
+    });
+  }, [isAddingQuestion, isEditing, isViewOnly, selectedQuestion, isLoading]);
+
+  if (isLoading) {
+    return (
+      <DashboardLayout title="Bank Soal">
+        <div className="flex items-center justify-center h-64">
+          <p className="text-lg">Memuat data...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout title="Bank Soal">
@@ -242,9 +278,9 @@ const QuestionBank = () => {
                           <QuestionListItem 
                             key={question.id} 
                             question={question} 
-                            onPreview={() => handleViewQuestion(question)} 
-                            onEdit={() => handleEditQuestion(question)}
-                            onDelete={() => handleDeleteQuestion(question.id)}
+                            onPreview={handleViewQuestion} 
+                            onEdit={handleEditQuestion}
+                            onDelete={handleDeleteQuestion}
                           />
                         ))
                       ) : (

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -43,22 +42,18 @@ const QuestionListItem: React.FC<QuestionListItemProps> = ({
     });
   };
 
-  // Explicitly ensure that the callbacks are called with the correct parameters
-  const handlePreview = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handlePreview = () => {
+    console.log("Preview button clicked for question:", question.id);
     onPreview(question);
   };
 
-  const handleEdit = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleEdit = () => {
+    console.log("Edit button clicked for question:", question.id);
     onEdit(question);
   };
 
-  const handleDelete = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleDelete = () => {
+    console.log("Delete button clicked for question:", question.id);
     onDelete(question.id);
   };
 
