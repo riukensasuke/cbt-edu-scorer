@@ -73,9 +73,28 @@ const initialExams: Record<string, Exam> = {
 
 // Add more exams
 for (let i = 4; i <= 10; i++) {
-  initialExams[`exam-${i}`] = {
-    id: `exam-${i}`,
+  const examId = `exam-${i}`;
+  initialExams[examId] = {
+    id: examId,
     title: `Ujian Sample ${i}`,
+    subject: i % 3 === 0 ? "Matematika" : i % 3 === 1 ? "Bahasa Indonesia" : "IPA",
+    grade: `Kelas ${Math.floor(Math.random() * 6) + 1}`,
+    status: i % 4 === 0 ? "active" : i % 4 === 1 ? "scheduled" : i % 4 === 2 ? "completed" : "draft",
+    type: i % 3 === 0 ? "mid" : i % 3 === 1 ? "final" : "daily",
+    duration: 60 + (i * 10),
+    questions: 10 + i,
+    startDate: new Date(Date.now() + (i * 86400000)).toISOString(),
+    endDate: new Date(Date.now() + (i * 86400000) + 3600000).toISOString(),
+    createdBy: i % 2 === 0 ? "Ibu Siti" : "Bapak Ahmad",
+    description: `Deskripsi untuk ujian sample ${i}`,
+    instructions: `Petunjuk pengerjaan untuk ujian sample ${i}`,
+    passingScore: 60 + i,
+  };
+  
+  // Add an exam with numeric ID for testing
+  initialExams[i.toString()] = {
+    id: i.toString(),
+    title: `Ujian Sample ${i} (ID Numerik)`,
     subject: i % 3 === 0 ? "Matematika" : i % 3 === 1 ? "Bahasa Indonesia" : "IPA",
     grade: `Kelas ${Math.floor(Math.random() * 6) + 1}`,
     status: i % 4 === 0 ? "active" : i % 4 === 1 ? "scheduled" : i % 4 === 2 ? "completed" : "draft",
@@ -91,7 +110,7 @@ for (let i = 4; i <= 10; i++) {
   };
 }
 
-// Make the exams available globally
+// Make the exams available globally (for debugging)
 if (typeof window !== 'undefined') {
   // @ts-ignore
   window.mockExamData = initialExams;
@@ -103,31 +122,54 @@ export const useExamData = () => {
   const getExam = (id: string): Exam | null => {
     if (!id) return null;
     
-    // First try directly with the provided ID
+    console.log("Looking for exam with ID:", id);
+    
+    // Try direct lookup first
     if (exams[id]) {
+      console.log("Found exam with exact ID match:", id);
       return exams[id];
     }
     
-    // If that doesn't work, try with the 'exam-' prefix
+    // Try with 'exam-' prefix if needed
     const examId = id.startsWith('exam-') ? id : `exam-${id}`;
+    if (exams[examId]) {
+      console.log("Found exam with prefixed ID:", examId);
+      return exams[examId];
+    }
     
-    // For debugging
-    console.log("Looking for exam:", id, "formatted as:", examId, "exists:", !!exams[examId]);
+    // Try numeric lookup if the ID is a number or number string
+    if (!isNaN(Number(id)) && exams[id.toString()]) {
+      console.log("Found exam with numeric ID:", id);
+      return exams[id.toString()];
+    }
     
-    return exams[examId] || null;
+    console.log("No exam found for ID:", id);
+    return null;
   };
   
   const updateExam = (id: string, data: Partial<Exam>): void => {
     if (!id) return;
     
-    const examId = id.startsWith('exam-') ? id : `exam-${id}`;
-    setExams(prev => ({
-      ...prev,
-      [examId]: {
-        ...prev[examId],
-        ...data
-      }
-    }));
+    // Find the correct ID format to update
+    let examToUpdate: string | null = null;
+    
+    if (exams[id]) {
+      examToUpdate = id;
+    } else if (id.startsWith('exam-')) {
+      examToUpdate = id;
+    } else {
+      examToUpdate = `exam-${id}`;
+    }
+    
+    if (examToUpdate && exams[examToUpdate]) {
+      setExams(prev => ({
+        ...prev,
+        [examToUpdate!]: {
+          ...prev[examToUpdate!],
+          ...data
+        }
+      }));
+    }
   };
   
   const createExam = (exam: Exam): void => {
@@ -140,10 +182,21 @@ export const useExamData = () => {
   const deleteExam = (id: string): void => {
     if (!id) return;
     
-    const examId = id.startsWith('exam-') ? id : `exam-${id}`;
-    const newExams = { ...exams };
-    delete newExams[examId];
-    setExams(newExams);
+    let examToDelete: string | null = null;
+    
+    if (exams[id]) {
+      examToDelete = id;
+    } else if (id.startsWith('exam-')) {
+      examToDelete = id;
+    } else {
+      examToDelete = `exam-${id}`;
+    }
+    
+    if (examToDelete && exams[examToDelete]) {
+      const newExams = { ...exams };
+      delete newExams[examToDelete];
+      setExams(newExams);
+    }
   };
   
   return {

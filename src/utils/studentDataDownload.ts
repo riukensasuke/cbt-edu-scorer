@@ -70,3 +70,68 @@ export const generateSampleStudentData = (count: number = 20, className: string 
   
   return students;
 };
+
+// Create a function to download a template for adding students
+export const downloadStudentTemplate = () => {
+  // Create a sample template with empty rows
+  const templateData = [
+    {
+      name: "",
+      nisn: "",
+      class: "",
+      gender: "",
+      parentName: "",
+      phone: "",
+      address: "",
+      birthDate: ""
+    }
+  ];
+  
+  // Create a worksheet with header formatting
+  const worksheet = XLSX.utils.json_to_sheet(templateData);
+  
+  // Set column widths
+  const colWidths = [
+    { wch: 25 },   // Name
+    { wch: 15 },   // NISN
+    { wch: 10 },   // Class
+    { wch: 15 },   // Gender
+    { wch: 25 },   // Parent's Name
+    { wch: 15 },   // Phone
+    { wch: 30 },   // Address
+    { wch: 15 },   // Birth Date
+  ];
+  
+  // Add header comment/notes about valid format
+  const headerComment = XLSX.utils.encode_cell({r:0, c:0});
+  if(!worksheet.A1) worksheet.A1 = {};
+  if(!worksheet.A1.c) worksheet.A1.c = [];
+  worksheet.A1.c.push({a:"Author", t:"Nama harus diisi"});
+  
+  // Add notes for NISN column
+  const nisnComment = XLSX.utils.encode_cell({r:0, c:1});
+  if(!worksheet[nisnComment]) worksheet[nisnComment] = {};
+  if(!worksheet[nisnComment].c) worksheet[nisnComment].c = [];
+  worksheet[nisnComment].c.push({a:"Author", t:"NISN harus berupa angka"});
+  
+  // Add notes for Gender column
+  const genderComment = XLSX.utils.encode_cell({r:0, c:3});
+  if(!worksheet[genderComment]) worksheet[genderComment] = {};
+  if(!worksheet[genderComment].c) worksheet[genderComment].c = [];
+  worksheet[genderComment].c.push({a:"Author", t:"Gender: Laki-laki atau Perempuan"});
+  
+  worksheet['!cols'] = colWidths;
+  
+  // Create a workbook
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Template Siswa");
+  
+  // Generate Excel file
+  const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+  
+  // Create a Blob and save the file
+  const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  saveAs(blob, `Template_Data_Siswa_${new Date().toISOString().split('T')[0]}.xlsx`);
+  
+  return true;
+};

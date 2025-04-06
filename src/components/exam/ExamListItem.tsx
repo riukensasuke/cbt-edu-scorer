@@ -6,6 +6,7 @@ import { Calendar, Clock, FileText, Eye, Edit, Copy, Trash2 } from "lucide-react
 import { getStatusBadge } from "@/utils/statusUtils";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useExamData } from "@/hooks/useExamData";
 
 interface ExamItemProps {
   exam: {
@@ -29,8 +30,20 @@ interface ExamItemProps {
 const ExamListItem = ({ exam, onDelete, onView, onEdit }: ExamItemProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { getExam } = useExamData();
 
   const handleView = () => {
+    // Verify exam exists first
+    const examData = getExam(exam.id);
+    if (!examData) {
+      toast({
+        title: "Error",
+        description: "Ujian tidak ditemukan",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (onView) {
       onView(exam.id);
     } else {
@@ -43,6 +56,17 @@ const ExamListItem = ({ exam, onDelete, onView, onEdit }: ExamItemProps) => {
   };
 
   const handleEdit = () => {
+    // Verify exam exists first
+    const examData = getExam(exam.id);
+    if (!examData) {
+      toast({
+        title: "Error",
+        description: "Ujian tidak ditemukan",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (onEdit) {
       onEdit(exam.id);
     } else {

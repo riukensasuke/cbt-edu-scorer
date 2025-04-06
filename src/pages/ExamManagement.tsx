@@ -19,20 +19,43 @@ const ExamManagement = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { activeTab, searchQuery, filteredExams, handleTabChange, handleSearch, deleteExam } = useExamManagement();
+  const { getExam } = useExamData();
   const [isNewExamDialogOpen, setIsNewExamDialogOpen] = useState(false);
 
   // Handle view exam
   const handleViewExam = (examId: string) => {
     if (!examId) return;
-    console.log("Viewing exam with ID:", examId);
-    navigate(`/exams/${examId}`);
+    
+    // Check if exam exists before navigating
+    const exam = getExam(examId);
+    if (exam) {
+      console.log("Viewing exam with ID:", examId);
+      navigate(`/exams/${examId}`);
+    } else {
+      toast({
+        title: "Error",
+        description: "Ujian tidak ditemukan",
+        variant: "destructive",
+      });
+    }
   };
 
   // Handle edit exam
   const handleEditExam = (examId: string) => {
     if (!examId) return;
-    console.log("Editing exam with ID:", examId);
-    navigate(`/exams/edit/${examId}`);
+    
+    // Check if exam exists before navigating
+    const exam = getExam(examId);
+    if (exam) {
+      console.log("Editing exam with ID:", examId);
+      navigate(`/exams/edit/${examId}`);
+    } else {
+      toast({
+        title: "Error",
+        description: "Ujian tidak ditemukan",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

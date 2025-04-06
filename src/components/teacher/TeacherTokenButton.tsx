@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -83,10 +83,23 @@ const TeacherTokenButton = () => {
     setTimeout(() => setIsCopied(false), 2000);
   };
 
+  // Ensure dialog opens properly and doesn't immediately close
+  const handleOpenTokenDialog = () => {
+    setIsDialogOpen(true);
+    
+    // Set default values if needed
+    if (!selectedClass && classes.length > 0) {
+      setSelectedClass(classes[0]);
+    }
+    if (!selectedSubject && subjects.length > 0) {
+      setSelectedSubject(subjects[0]);
+    }
+  };
+
   return (
     <>
       <Button 
-        onClick={() => setIsDialogOpen(true)} 
+        onClick={handleOpenTokenDialog} 
         className="bg-blue-600 hover:bg-blue-700 flex gap-2 items-center"
       >
         <Key className="h-4 w-4" />

@@ -73,10 +73,11 @@ const QuestionBank = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [questions, setQuestions] = useState(mockQuestions);
+  const [questions, setQuestions] = useState<QuestionType[]>(mockQuestions);
   const [isAddingQuestion, setIsAddingQuestion] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<QuestionType | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isViewOnly, setIsViewOnly] = useState(false);
 
   // Filter questions based on tab and search
   const filteredQuestions = questions.filter(q => {
@@ -92,12 +93,23 @@ const QuestionBank = () => {
   const handleAddQuestion = () => {
     setIsAddingQuestion(true);
     setIsEditing(false);
+    setIsViewOnly(false);
     setSelectedQuestion(null);
   };
 
   const handleEditQuestion = (question: QuestionType) => {
+    if (!question) {
+      toast({
+        title: "Error",
+        description: "Tidak dapat menemukan soal",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setSelectedQuestion(question);
     setIsEditing(true);
+    setIsViewOnly(false);
     setIsAddingQuestion(true);
     
     // Add toast for feedback
@@ -108,8 +120,18 @@ const QuestionBank = () => {
   };
 
   const handleViewQuestion = (question: QuestionType) => {
+    if (!question) {
+      toast({
+        title: "Error",
+        description: "Tidak dapat menemukan soal",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setSelectedQuestion(question);
     setIsEditing(false);
+    setIsViewOnly(true);
     setIsAddingQuestion(true);
     
     // Add toast for feedback
@@ -147,6 +169,7 @@ const QuestionBank = () => {
       });
     }
     setIsAddingQuestion(false);
+    setIsViewOnly(false);
   };
 
   const handleDeleteQuestion = (id: string) => {
@@ -165,6 +188,13 @@ const QuestionBank = () => {
     setActiveTab(value);
   };
 
+  const handleCancel = () => {
+    setIsAddingQuestion(false);
+    setIsViewOnly(false);
+    setIsEditing(false);
+    setSelectedQuestion(null);
+  };
+
   return (
     <DashboardLayout title="Bank Soal">
       <div className="space-y-6">
@@ -172,9 +202,9 @@ const QuestionBank = () => {
           <QuestionForm 
             initialValues={selectedQuestion} 
             onSubmit={handleSaveQuestion} 
-            onCancel={() => setIsAddingQuestion(false)}
+            onCancel={handleCancel}
             isEditing={isEditing}
-            isViewOnly={!isEditing && !!selectedQuestion}
+            isViewOnly={isViewOnly}
           />
         ) : (
           <>
