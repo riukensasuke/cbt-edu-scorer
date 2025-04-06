@@ -43,6 +43,25 @@ const QuestionListItem: React.FC<QuestionListItemProps> = ({
     });
   };
 
+  // Explicitly ensure that the callbacks are called with the correct parameters
+  const handlePreview = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onPreview(question);
+  };
+
+  const handleEdit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onEdit(question);
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onDelete(question.id);
+  };
+
   const getDifficultyBadge = (difficulty: string) => {
     switch (difficulty) {
       case "easy": 
@@ -112,19 +131,43 @@ const QuestionListItem: React.FC<QuestionListItemProps> = ({
       </div>
 
       <div className="flex items-center justify-end space-x-2">
-        <Button variant="outline" size="sm" onClick={() => onPreview(question)} className="bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800" title="Lihat">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handlePreview} 
+          className="bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800" 
+          title="Lihat Detail"
+        >
           <Eye className="h-4 w-4 mr-1" />
           <span>Lihat Detail</span>
         </Button>
-        <Button variant="outline" size="sm" onClick={() => onEdit(question)} className="bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800" title="Edit">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleEdit} 
+          className="bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800" 
+          title="Edit Soal"
+        >
           <Edit className="h-4 w-4 mr-1" />
           <span>Edit Soal</span>
         </Button>
-        <Button variant="outline" size="sm" onClick={handleCopy} className="bg-purple-50 text-purple-700 hover:bg-purple-100 hover:text-purple-800" title="Duplikasi">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleCopy} 
+          className="bg-purple-50 text-purple-700 hover:bg-purple-100 hover:text-purple-800" 
+          title="Duplikasi"
+        >
           <Copy className="h-4 w-4 mr-1" />
           <span>Duplikasi</span>
         </Button>
-        <Button variant="outline" size="sm" onClick={() => onDelete(question.id)} className="bg-red-50 text-red-700 hover:bg-red-100 hover:text-red-800" title="Hapus">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleDelete} 
+          className="bg-red-50 text-red-700 hover:bg-red-100 hover:text-red-800" 
+          title="Hapus"
+        >
           <Trash2 className="h-4 w-4 mr-1" />
           <span>Hapus</span>
         </Button>

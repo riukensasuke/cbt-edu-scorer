@@ -98,15 +98,6 @@ const QuestionBank = () => {
   };
 
   const handleEditQuestion = (question: QuestionType) => {
-    if (!question) {
-      toast({
-        title: "Error",
-        description: "Tidak dapat menemukan soal",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     setSelectedQuestion(question);
     setIsEditing(true);
     setIsViewOnly(false);
@@ -120,15 +111,6 @@ const QuestionBank = () => {
   };
 
   const handleViewQuestion = (question: QuestionType) => {
-    if (!question) {
-      toast({
-        title: "Error",
-        description: "Tidak dapat menemukan soal",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     setSelectedQuestion(question);
     setIsEditing(false);
     setIsViewOnly(true);
@@ -169,7 +151,9 @@ const QuestionBank = () => {
       });
     }
     setIsAddingQuestion(false);
+    setSelectedQuestion(null);
     setIsViewOnly(false);
+    setIsEditing(false);
   };
 
   const handleDeleteQuestion = (id: string) => {
@@ -194,6 +178,13 @@ const QuestionBank = () => {
     setIsEditing(false);
     setSelectedQuestion(null);
   };
+
+  console.log("Current state:", { 
+    isAddingQuestion, 
+    isEditing, 
+    isViewOnly, 
+    selectedQuestion 
+  });
 
   return (
     <DashboardLayout title="Bank Soal">
