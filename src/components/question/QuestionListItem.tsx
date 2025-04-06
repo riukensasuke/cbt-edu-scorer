@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Edit, Copy, Trash2, CheckCircle, HelpCircle, AlertCircle } from "lucide-react";
+import { Eye, Edit, Copy, Trash2, CheckCircle, HelpCircle, AlertCircle, BookOpen, Puzzle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
 
@@ -25,17 +26,21 @@ interface QuestionListItemProps {
   onEdit: (question: QuestionType) => void;
   onPreview: (question: QuestionType) => void;
   onDelete: (id: string) => void;
+  onDuplicate: (question: QuestionType) => void;
 }
 
 const QuestionListItem: React.FC<QuestionListItemProps> = ({ 
   question, 
   onEdit,
   onPreview,
-  onDelete
+  onDelete,
+  onDuplicate
 }) => {
   const { toast } = useToast();
 
   const handleCopy = () => {
+    console.log("Duplicate button clicked for question:", question.id);
+    onDuplicate(question);
     toast({
       title: "Soal Diduplikasi",
       description: "Soal berhasil diduplikasi",
@@ -74,8 +79,14 @@ const QuestionListItem: React.FC<QuestionListItemProps> = ({
     switch (type) {
       case "multiple_choice":
         return <CheckCircle className="h-4 w-4 text-blue-500" />;
+      case "multiple_choice_complex":
+        return <CheckCircle className="h-4 w-4 text-purple-500" />;
       case "true_false":
         return <AlertCircle className="h-4 w-4 text-green-500" />;
+      case "essay":
+        return <BookOpen className="h-4 w-4 text-amber-500" />;
+      case "matching":
+        return <Puzzle className="h-4 w-4 text-cyan-500" />;
       default:
         return <HelpCircle className="h-4 w-4 text-purple-500" />;
     }
@@ -85,12 +96,16 @@ const QuestionListItem: React.FC<QuestionListItemProps> = ({
     switch (type) {
       case "multiple_choice":
         return "Pilihan Ganda";
-      case "true_false":
-        return "Benar/Salah";
       case "multiple_choice_complex":
         return "PG Kompleks";
-      default:
+      case "true_false":
+        return "Benar/Salah";
+      case "essay":
         return "Essay";
+      case "matching":
+        return "Menjodohkan";
+      default:
+        return "Lainnya";
     }
   };
 
@@ -125,12 +140,12 @@ const QuestionListItem: React.FC<QuestionListItemProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center justify-end space-x-2">
+      <div className="flex items-center justify-end space-x-2 flex-wrap">
         <Button 
           variant="outline" 
           size="sm" 
           onClick={handlePreview} 
-          className="bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800" 
+          className="bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800 mt-1" 
           title="Lihat Detail"
         >
           <Eye className="h-4 w-4 mr-1" />
@@ -140,7 +155,7 @@ const QuestionListItem: React.FC<QuestionListItemProps> = ({
           variant="outline" 
           size="sm" 
           onClick={handleEdit} 
-          className="bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800" 
+          className="bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 mt-1" 
           title="Edit Soal"
         >
           <Edit className="h-4 w-4 mr-1" />
@@ -150,7 +165,7 @@ const QuestionListItem: React.FC<QuestionListItemProps> = ({
           variant="outline" 
           size="sm" 
           onClick={handleCopy} 
-          className="bg-purple-50 text-purple-700 hover:bg-purple-100 hover:text-purple-800" 
+          className="bg-purple-50 text-purple-700 hover:bg-purple-100 hover:text-purple-800 mt-1" 
           title="Duplikasi"
         >
           <Copy className="h-4 w-4 mr-1" />
@@ -160,7 +175,7 @@ const QuestionListItem: React.FC<QuestionListItemProps> = ({
           variant="outline" 
           size="sm" 
           onClick={handleDelete} 
-          className="bg-red-50 text-red-700 hover:bg-red-100 hover:text-red-800" 
+          className="bg-red-50 text-red-700 hover:bg-red-100 hover:text-red-800 mt-1" 
           title="Hapus"
         >
           <Trash2 className="h-4 w-4 mr-1" />

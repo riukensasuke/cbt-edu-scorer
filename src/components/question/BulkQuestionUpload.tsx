@@ -7,8 +7,7 @@ import {
   DialogDescription, 
   DialogFooter, 
   DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+  DialogTitle 
 } from '@/components/ui/dialog';
 import { Upload, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -24,6 +23,7 @@ const BulkQuestionUpload = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setSelectedFile(e.target.files[0]);
+      console.log("File selected:", e.target.files[0].name);
     }
   };
 
@@ -37,6 +37,7 @@ const BulkQuestionUpload = () => {
       return;
     }
 
+    console.log("Uploading file:", selectedFile.name);
     setIsUploading(true);
 
     // Simulate upload process
@@ -54,6 +55,7 @@ const BulkQuestionUpload = () => {
   };
 
   const handleOpenTemplateDialog = () => {
+    console.log("Opening template dialog");
     setIsTemplateDialogOpen(true);
   };
 

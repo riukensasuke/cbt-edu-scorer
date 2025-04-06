@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import QuestionListItem from "@/components/question/QuestionListItem";
 import QuestionForm from "@/components/question/QuestionForm";
@@ -28,7 +28,7 @@ interface QuestionType {
   isImage?: boolean;
 }
 
-// Mock data for questions
+// Mock data with expanded question types
 const mockQuestions: QuestionType[] = [
   {
     id: "q1",
@@ -65,6 +65,69 @@ const mockQuestions: QuestionType[] = [
     correctAnswer: "Merkurius",
     createdBy: "Admin",
     createdAt: "2023-08-05",
+  },
+  {
+    id: "q4",
+    question: "Manakah pernyataan yang benar tentang fotosintesis?",
+    type: "multiple_choice_complex",
+    difficulty: "medium",
+    subject: "IPA",
+    grade: "Kelas 6",
+    options: [
+      "Terjadi di daun", 
+      "Menghasilkan oksigen", 
+      "Membutuhkan cahaya matahari", 
+      "Dapat terjadi pada malam hari", 
+      "Menghasilkan karbondioksida"
+    ],
+    correctAnswer: "A,B,C",
+    explanation: "Fotosintesis terjadi di daun, menghasilkan oksigen, dan membutuhkan cahaya matahari.",
+    createdBy: "Admin",
+    createdAt: "2023-08-10",
+  },
+  {
+    id: "q5",
+    question: "Apakah bumi itu bulat?",
+    type: "true_false",
+    difficulty: "easy",
+    subject: "IPA",
+    grade: "Kelas 3",
+    options: ["Benar", "Salah"],
+    correctAnswer: "Benar",
+    explanation: "Bumi memiliki bentuk bulat seperti bola, tepatnya sedikit pepat di kutub-kutubnya.",
+    createdBy: "Admin",
+    createdAt: "2023-08-15",
+  },
+  {
+    id: "q6",
+    question: "Jelaskan proses pembuatan kue tradisional Indonesia yang kamu ketahui!",
+    type: "essay",
+    difficulty: "medium",
+    subject: "Prakarya",
+    grade: "Kelas 5",
+    options: [],
+    correctAnswer: "Jawaban berisi langkah-langkah pembuatan kue tradisional Indonesia dengan lengkap dan runtut.",
+    explanation: "Penilaian berdasarkan kelengkapan langkah, ketepatan bahan, dan keruntutan penjelasan.",
+    createdBy: "Admin",
+    createdAt: "2023-09-01",
+  },
+  {
+    id: "q7",
+    question: "Jodohkan ibukota dengan negaranya!",
+    type: "matching",
+    difficulty: "hard",
+    subject: "IPS",
+    grade: "Kelas 6",
+    options: [
+      "Jakarta - Indonesia", 
+      "Tokyo - Jepang", 
+      "Beijing - China", 
+      "New Delhi - India"
+    ],
+    correctAnswer: "Jakarta-Indonesia;Tokyo-Jepang;Beijing-China;New Delhi-India",
+    explanation: "Setiap ibukota dipasangkan dengan negara tempat ibukota tersebut berada.",
+    createdBy: "Admin",
+    createdAt: "2023-09-10",
   }
 ];
 
@@ -97,6 +160,11 @@ const QuestionBank = () => {
     setIsEditing(false);
     setIsViewOnly(false);
     setSelectedQuestion(null);
+    
+    toast({
+      title: "Tambah Soal Baru",
+      description: "Form tambah soal baru telah dibuka",
+    });
   };
 
   const handleEditQuestion = (question: QuestionType) => {
@@ -139,6 +207,21 @@ const QuestionBank = () => {
         description: `Melihat detail soal: ${question.question.substring(0, 30)}...`,
       });
     }, 300); // Short timeout to simulate loading
+  };
+
+  const handleDuplicateQuestion = (question: QuestionType) => {
+    console.log("Duplicating question:", question);
+    
+    // Create a copy with a new ID
+    const newQuestion = {
+      ...question,
+      id: `q${questions.length + 1}`,
+      createdAt: new Date().toISOString().split('T')[0],
+      createdBy: user?.name || "Admin",
+      question: `${question.question} (copy)`
+    };
+    
+    setQuestions(prev => [...prev, newQuestion]);
   };
 
   const handleSaveQuestion = (questionData: any) => {
@@ -208,9 +291,11 @@ const QuestionBank = () => {
       isEditing, 
       isViewOnly, 
       selectedQuestion,
-      isLoading
+      isLoading,
+      activeTab,
+      filteredQuestions: filteredQuestions.length
     });
-  }, [isAddingQuestion, isEditing, isViewOnly, selectedQuestion, isLoading]);
+  }, [isAddingQuestion, isEditing, isViewOnly, selectedQuestion, isLoading, activeTab, filteredQuestions.length]);
 
   if (isLoading) {
     return (
@@ -255,11 +340,12 @@ const QuestionBank = () => {
             </div>
 
             <Tabs defaultValue="all" value={activeTab} onValueChange={handleTabChange}>
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="grid w-full grid-cols-6">
                 <TabsTrigger value="all">Semua</TabsTrigger>
                 <TabsTrigger value="multiple_choice">Pilihan Ganda</TabsTrigger>
+                <TabsTrigger value="multiple_choice_complex">PG Kompleks</TabsTrigger>
                 <TabsTrigger value="true_false">Benar/Salah</TabsTrigger>
-                <TabsTrigger value="essay">Uraian</TabsTrigger>
+                <TabsTrigger value="essay">Essay</TabsTrigger>
                 <TabsTrigger value="matching">Menjodohkan</TabsTrigger>
               </TabsList>
 
@@ -281,6 +367,7 @@ const QuestionBank = () => {
                             onPreview={handleViewQuestion} 
                             onEdit={handleEditQuestion}
                             onDelete={handleDeleteQuestion}
+                            onDuplicate={handleDuplicateQuestion}
                           />
                         ))
                       ) : (
