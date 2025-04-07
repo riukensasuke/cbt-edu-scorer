@@ -190,7 +190,7 @@ const App = () => (
             <Route 
               path="/token" 
               element={
-                <ProtectedRoute allowedRoles={["admin"]}>
+                <ProtectedRoute allowedRoles={["admin", "teacher"]}>
                   <TokenManagement />
                 </ProtectedRoute>
               } 

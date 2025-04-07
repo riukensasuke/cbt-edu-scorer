@@ -2,15 +2,20 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Book, Users } from "lucide-react";
-import TeacherTokenButton from './TeacherTokenButton';
+import { Book, Users, Key } from "lucide-react";
 
 const TeacherHeaderActions = () => {
   const navigate = useNavigate();
 
   return (
     <div className="flex flex-col sm:flex-row gap-2">
-      <TeacherTokenButton />
+      <Button 
+        onClick={() => navigate('/token')}
+        className="bg-blue-600 hover:bg-blue-700 flex items-center gap-2"
+      >
+        <Key className="h-4 w-4" />
+        Token Gratis Ujian
+      </Button>
       <Button 
         variant="outline" 
         onClick={() => navigate('/questions')}

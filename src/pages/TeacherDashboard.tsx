@@ -25,6 +25,10 @@ const TeacherDashboard = () => {
     navigate("/teacher/profile");
   };
 
+  const handleViewTokens = () => {
+    navigate("/token");
+  };
+
   return (
     <DashboardLayout title="Dashboard Guru">
       <div className="grid gap-6">
@@ -63,9 +67,12 @@ const TeacherDashboard = () => {
                   <p className="text-sm font-medium">Mengajar:</p>
                   <p className="text-sm col-span-2">Matematika, IPA</p>
                 </div>
-                <div className="mt-3">
+                <div className="mt-3 space-y-2">
                   <Button variant="default" size="sm" className="w-full" onClick={handleViewProfile}>
                     Lihat Profil Lengkap
+                  </Button>
+                  <Button variant="outline" size="sm" className="w-full" onClick={handleViewTokens}>
+                    Kelola Token Ujian
                   </Button>
                 </div>
               </div>

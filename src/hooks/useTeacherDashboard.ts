@@ -22,6 +22,15 @@ export interface ResultData {
   date: string;
 }
 
+export interface TokenData {
+  id: string;
+  examId: string;
+  examTitle: string;
+  token: string;
+  expiresAt: string;
+  isActive: boolean;
+}
+
 export const useTeacherDashboard = () => {
   const { user } = useAuth();
   
@@ -77,6 +86,26 @@ export const useTeacherDashboard = () => {
     },
   ];
 
+  // Mock data for teacher's active tokens
+  const activeTokens: TokenData[] = [
+    {
+      id: "1",
+      examId: "UTS-MTK-6A",
+      examTitle: "UTS Matematika Kelas 6A",
+      token: "XH7D9P",
+      expiresAt: new Date(Date.now() + 3600000).toISOString(), // 1 hour from now
+      isActive: true,
+    },
+    {
+      id: "2",
+      examId: "UAS-IPA-5B",
+      examTitle: "UAS IPA Kelas 5B",
+      token: "K9M2LR",
+      expiresAt: new Date(Date.now() + 7200000).toISOString(), // 2 hours from now
+      isActive: true,
+    },
+  ];
+
   // Function to get the appropriate badge for exam status
   const getBadgeForStatus = (status: string) => {
     return getStatusBadge(status);
@@ -86,8 +115,8 @@ export const useTeacherDashboard = () => {
     user,
     upcomingExams,
     recentResults,
+    activeTokens,
     getBadgeForStatus,
     getScoreBadgeColor
   };
 };
-

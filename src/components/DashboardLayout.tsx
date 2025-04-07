@@ -1,4 +1,3 @@
-
 import React, { ReactNode, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -123,7 +122,7 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
         ...baseItems,
         {
           label: "Token Gratis",
-          icon: <RefreshCw size={20} />,
+          icon: <Key size={20} />,
           path: "/token",
         },
         {
