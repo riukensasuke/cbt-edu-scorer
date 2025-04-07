@@ -18,18 +18,18 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface QuestionListItemProps {
   question: {
     id: string;
-    text: string;
+    question: string;
     type: string;
     difficulty: string;
     subject: string;
-    topic: string;
-    options?: { id: string; text: string; isCorrect: boolean }[];
+    grade: string;
+    options?: string[];
     correctAnswer?: string;
+    explanation?: string;
   };
   onView: () => void;
   onEdit: () => void;
@@ -48,11 +48,11 @@ const QuestionListItem = ({
 }: QuestionListItemProps) => {
   const getQuestionTypeBadge = (type: string) => {
     switch (type) {
-      case 'multiple-choice':
+      case 'multiple_choice':
         return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Pilihan Ganda</Badge>;
       case 'essay':
         return <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">Essay</Badge>;
-      case 'true-false':
+      case 'true_false':
         return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Benar/Salah</Badge>;
       default:
         return <Badge variant="outline">{type}</Badge>;
@@ -77,15 +77,6 @@ const QuestionListItem = ({
     return text.substring(0, maxLength) + '...';
   };
 
-  // Strip HTML tags for display in cards
-  const stripHtml = (html: string) => {
-    const tmp = document.createElement('DIV');
-    tmp.innerHTML = html;
-    return tmp.textContent || tmp.innerText || '';
-  };
-
-  const displayText = stripHtml(question.text);
-
   return (
     <Card className="overflow-hidden hover:shadow-md transition-shadow">
       <CardContent className="p-0">
@@ -106,21 +97,21 @@ const QuestionListItem = ({
           </div>
           
           <div className="prose prose-sm max-w-none mb-4">
-            <p className="text-base">{truncateText(displayText)}</p>
+            <p className="text-base">{truncateText(question.question)}</p>
           </div>
           
-          {question.type === 'multiple-choice' && question.options && (
+          {question.options && question.options.length > 0 && (
             <div className="mt-2 space-y-1">
               <p className="text-sm font-medium">Pilihan Jawaban:</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {question.options.map((option, index) => (
                   <div 
-                    key={option.id} 
-                    className={`text-sm p-2 rounded-md ${option.isCorrect ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-200'}`}
+                    key={index} 
+                    className={`text-sm p-2 rounded-md ${option === question.correctAnswer ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-200'}`}
                   >
                     <span className="font-medium mr-1">{String.fromCharCode(65 + index)}.</span> 
-                    {stripHtml(option.text)}
-                    {option.isCorrect && <span className="ml-1 text-green-600">(Benar)</span>}
+                    {option}
+                    {option === question.correctAnswer && <span className="ml-1 text-green-600">(Benar)</span>}
                   </div>
                 ))}
               </div>
@@ -131,7 +122,7 @@ const QuestionListItem = ({
         <div className="p-4 bg-muted/30 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <File className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm">{question.topic || 'Umum'}</span>
+            <span className="text-sm">{question.grade || 'Umum'}</span>
           </div>
           
           <div className="flex gap-2">

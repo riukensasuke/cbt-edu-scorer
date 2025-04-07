@@ -6,10 +6,11 @@ import UpcomingExams from "@/components/dashboard/UpcomingExams";
 import RecentResults from "@/components/dashboard/RecentResults";
 import { useTeacherDashboard } from "@/hooks/useTeacherDashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Users, BookOpen } from "lucide-react";
+import { Calendar, Users, BookOpen, Info, User, Donate } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getScoreBadgeColor } from "@/utils/statusUtils";
 import { useNavigate } from "react-router-dom";
+import { Separator } from "@/components/ui/separator";
 
 const TeacherDashboard = () => {
   const { user, upcomingExams, recentResults, getBadgeForStatus } = useTeacherDashboard();
@@ -135,6 +136,79 @@ const TeacherDashboard = () => {
               </ul>
             </CardContent>
           </Card>
+        </div>
+        
+        {/* Footer section with About, Developer, and Donation info */}
+        <div className="mt-8">
+          <Separator className="my-6" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg flex items-center">
+                  <Info className="h-5 w-5 mr-2" />
+                  Tentang Aplikasi
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Aplikasi Ujian Online adalah sistem manajemen ujian komprehensif yang dikembangkan untuk memudahkan 
+                  pelaksanaan ujian di lingkungan pendidikan. Aplikasi ini memberikan kemudahan bagi guru dan admin 
+                  untuk mengelola bank soal, menyusun ujian, dan menganalisis hasil ujian siswa.
+                </p>
+                <div className="mt-4">
+                  <p className="text-sm font-medium">Versi: 1.2.0</p>
+                  <p className="text-sm text-muted-foreground">Terakhir diperbarui: 5 April 2025</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg flex items-center">
+                  <User className="h-5 w-5 mr-2" />
+                  Pembuat Aplikasi
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Aplikasi ini dikembangkan oleh Tim Pengembang Edukasi Digital dengan dukungan dari Kementerian Pendidikan dan Kebudayaan.
+                </p>
+                <div className="space-y-2">
+                  <p className="text-sm">
+                    <span className="font-medium">Pengembang:</span> PT Edukasi Teknologi Indonesia
+                  </p>
+                  <p className="text-sm">
+                    <span className="font-medium">Website:</span> www.edukasi-teknologi.co.id
+                  </p>
+                  <p className="text-sm">
+                    <span className="font-medium">Email:</span> support@edukasi-teknologi.co.id
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg flex items-center">
+                  <Donate className="h-5 w-5 mr-2" />
+                  Donasi
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Dukung pengembangan aplikasi ini dengan memberikan donasi. Dana yang terkumpul akan digunakan untuk 
+                  meningkatkan fitur dan kualitas layanan aplikasi.
+                </p>
+                <Button className="w-full bg-green-600 hover:bg-green-700">
+                  <Donate className="h-4 w-4 mr-2" />
+                  Donasi Sekarang
+                </Button>
+                <p className="text-xs text-muted-foreground mt-2 text-center">
+                  Untuk informasi lebih lanjut tentang program donasi, hubungi kami di donasi@edukasi-teknologi.co.id
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </DashboardLayout>

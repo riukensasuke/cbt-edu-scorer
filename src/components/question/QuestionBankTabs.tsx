@@ -3,15 +3,16 @@ import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import QuestionListItem from './QuestionListItem';
+import { QuestionType } from '@/hooks/useQuestionBank';
 
 interface QuestionBankTabsProps {
   activeTab: string;
   onTabChange: (value: string) => void;
-  filteredQuestions: any[];
-  onViewQuestion: (question: any) => void;
-  onEditQuestion: (question: any) => void;
+  filteredQuestions: QuestionType[];
+  onViewQuestion: (question: QuestionType) => void;
+  onEditQuestion: (question: QuestionType) => void;
   onDeleteQuestion: (questionId: string) => void;
-  onDuplicateQuestion: (question: any) => void;
+  onDuplicateQuestion: (question: QuestionType) => void;
   examId?: string | null;
 }
 
@@ -29,9 +30,9 @@ const QuestionBankTabs = ({
     <Tabs defaultValue="all" value={activeTab} onValueChange={onTabChange}>
       <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="all">Semua</TabsTrigger>
-        <TabsTrigger value="multiple-choice">Pilihan Ganda</TabsTrigger>
+        <TabsTrigger value="multiple_choice">Pilihan Ganda</TabsTrigger>
         <TabsTrigger value="essay">Essay</TabsTrigger>
-        <TabsTrigger value="true-false">Benar/Salah</TabsTrigger>
+        <TabsTrigger value="true_false">Benar/Salah</TabsTrigger>
       </TabsList>
       
       <TabsContent value={activeTab} className="mt-6">
