@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -132,17 +133,29 @@ export const useQuestionBank = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isViewOnly, setIsViewOnly] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [filteredQuestions, setFilteredQuestions] = useState<QuestionType[]>(mockQuestions);
 
-  // Filter questions based on tab and search
-  const filteredQuestions = questions.filter(q => {
-    if (activeTab !== "all" && q.type !== activeTab) {
-      return false;
-    }
-    if (searchQuery && !q.question.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false;
-    }
-    return true;
-  });
+  // Filter questions based on tab and search whenever dependencies change
+  useEffect(() => {
+    const filtered = questions.filter(q => {
+      if (activeTab !== "all" && q.type !== activeTab) {
+        return false;
+      }
+      if (searchQuery && !q.question.toLowerCase().includes(searchQuery.toLowerCase())) {
+        return false;
+      }
+      return true;
+    });
+    
+    setFilteredQuestions(filtered);
+    
+    console.log("Filtering questions:", {
+      activeTab,
+      searchQuery,
+      total: questions.length,
+      filtered: filtered.length
+    });
+  }, [questions, activeTab, searchQuery]);
 
   const handleAddQuestion = () => {
     console.log("Add question button clicked");
@@ -150,6 +163,11 @@ export const useQuestionBank = () => {
     setIsEditing(false);
     setIsViewOnly(false);
     setSelectedQuestion(null);
+    
+    toast({
+      title: "Tambah Soal",
+      description: "Form tambah soal baru telah dibuka",
+    });
   };
 
   const handleEditQuestion = (question: QuestionType) => {
@@ -207,6 +225,11 @@ export const useQuestionBank = () => {
     };
     
     setQuestions(prev => [...prev, newQuestion]);
+    
+    toast({
+      title: "Soal Diduplikasi",
+      description: "Salinan soal berhasil dibuat",
+    });
   };
 
   const handleSaveQuestion = (questionData: any) => {
@@ -254,10 +277,12 @@ export const useQuestionBank = () => {
   };
 
   const handleSearch = (value: string) => {
+    console.log("Search query:", value);
     setSearchQuery(value);
   };
 
   const handleTabChange = (value: string) => {
+    console.log("Tab changed to:", value);
     setActiveTab(value);
   };
 
@@ -267,6 +292,11 @@ export const useQuestionBank = () => {
     setIsViewOnly(false);
     setIsEditing(false);
     setSelectedQuestion(null);
+    
+    toast({
+      title: "Dibatalkan",
+      description: "Perubahan tidak disimpan",
+    });
   };
 
   // Debug logs
