@@ -1,4 +1,3 @@
-
 import React from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import WelcomeCard from "@/components/dashboard/WelcomeCard";
@@ -6,7 +5,7 @@ import UpcomingExams from "@/components/dashboard/UpcomingExams";
 import RecentResults from "@/components/dashboard/RecentResults";
 import { useTeacherDashboard } from "@/hooks/useTeacherDashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Users, BookOpen, Info, User, Donate } from "lucide-react";
+import { Calendar, Users, BookOpen, Info, User, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getScoreBadgeColor } from "@/utils/statusUtils";
 import { useNavigate } from "react-router-dom";
@@ -138,7 +137,6 @@ const TeacherDashboard = () => {
           </Card>
         </div>
         
-        {/* Footer section with About, Developer, and Donation info */}
         <div className="mt-8">
           <Separator className="my-6" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -190,7 +188,7 @@ const TeacherDashboard = () => {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center">
-                  <Donate className="h-5 w-5 mr-2" />
+                  <Gift className="h-5 w-5 mr-2" />
                   Donasi
                 </CardTitle>
               </CardHeader>
@@ -200,7 +198,7 @@ const TeacherDashboard = () => {
                   meningkatkan fitur dan kualitas layanan aplikasi.
                 </p>
                 <Button className="w-full bg-green-600 hover:bg-green-700">
-                  <Donate className="h-4 w-4 mr-2" />
+                  <Gift className="h-4 w-4 mr-2" />
                   Donasi Sekarang
                 </Button>
                 <p className="text-xs text-muted-foreground mt-2 text-center">
