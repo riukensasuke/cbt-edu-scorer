@@ -38,7 +38,6 @@ const QuestionBank = () => {
     handleSearch,
     handleTabChange,
     handleCancel,
-    setFilteredQuestions,
   } = useQuestionBank();
 
   // If we have an examId in the URL, fetch that exam's details

@@ -18,6 +18,11 @@ const QuestionBankHeader = ({
   onAddQuestion,
   examId 
 }: QuestionBankHeaderProps) => {
+  // Handle the input change to match the expected function signature
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onSearchChange(e.target.value);
+  };
+
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
       <div className="relative w-full sm:w-64">
@@ -26,7 +31,7 @@ const QuestionBankHeader = ({
           type="search"
           placeholder="Cari soal..."
           value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
+          onChange={handleSearchChange}
           className="pl-8 w-full sm:w-64"
         />
       </div>

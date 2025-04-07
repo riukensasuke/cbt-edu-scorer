@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
   Dialog, 
@@ -13,7 +13,11 @@ import { Upload, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import BulkQuestionUploadTemplate from './BulkQuestionUploadTemplate';
 
-const BulkQuestionUpload = () => {
+interface BulkQuestionUploadProps {
+  children: ReactNode;
+}
+
+const BulkQuestionUpload = ({ children }: BulkQuestionUploadProps) => {
   const { toast } = useToast();
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
@@ -61,14 +65,9 @@ const BulkQuestionUpload = () => {
 
   return (
     <>
-      <Button 
-        variant="outline" 
-        onClick={() => setIsUploadDialogOpen(true)}
-        className="w-full md:w-auto"
-      >
-        <Upload className="mr-2 h-4 w-4" />
-        Unggah Soal Massal
-      </Button>
+      <div onClick={() => setIsUploadDialogOpen(true)}>
+        {children}
+      </div>
 
       <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
         <DialogContent>
