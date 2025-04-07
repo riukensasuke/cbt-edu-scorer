@@ -1,4 +1,5 @@
 
+// This file is deprecated, using ExamList.tsx instead
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

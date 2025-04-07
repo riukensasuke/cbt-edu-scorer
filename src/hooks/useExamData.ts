@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { useToast } from "@/hooks/use-toast";
 
 // Mock exam data structure
 interface Exam {
@@ -17,6 +18,8 @@ interface Exam {
   description: string;
   instructions: string;
   passingScore: number;
+  class?: string;
+  date?: string;
 }
 
 // Initial mock data
@@ -118,6 +121,7 @@ if (typeof window !== 'undefined') {
 
 export const useExamData = () => {
   const [exams, setExams] = useState<Record<string, Exam>>(initialExams);
+  const { toast } = useToast();
   
   const getExam = (id: string): Exam | null => {
     if (!id) return null;
@@ -169,14 +173,28 @@ export const useExamData = () => {
           ...data
         }
       }));
+      
+      toast({
+        title: "Ujian diperbarui",
+        description: "Perubahan berhasil disimpan",
+      });
     }
   };
   
   const createExam = (exam: Exam): void => {
+    // Make sure exam has an ID
+    const examId = exam.id || `exam-${Date.now()}`;
+    const examWithId = { ...exam, id: examId };
+    
     setExams(prev => ({
       ...prev,
-      [exam.id]: exam
+      [examId]: examWithId
     }));
+    
+    toast({
+      title: "Ujian baru dibuat",
+      description: `Ujian "${exam.title}" berhasil dibuat`,
+    });
   };
   
   const deleteExam = (id: string): void => {
@@ -193,9 +211,15 @@ export const useExamData = () => {
     }
     
     if (examToDelete && exams[examToDelete]) {
+      const examTitle = exams[examToDelete].title;
       const newExams = { ...exams };
       delete newExams[examToDelete];
       setExams(newExams);
+      
+      toast({
+        title: "Ujian dihapus",
+        description: `Ujian "${examTitle}" berhasil dihapus`,
+      });
     }
   };
   
