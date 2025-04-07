@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   Calendar, Clock, FileText, Type, GraduationCap, 
-  Eye, Edit, Copy, Trash2, MoreVertical 
+  Eye, Edit, Copy, Trash2, MoreVertical, BookOpen 
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getStatusBadge } from "@/utils/statusUtils";
@@ -45,9 +45,10 @@ interface ExamListProps {
   onView: (id: string) => void;
   onEdit: (id: string) => void;
   onDuplicate: (id: string) => void;
+  onViewQuestions?: (id: string) => void;
 }
 
-const ExamList = ({ exams, onDelete, onView, onEdit, onDuplicate }: ExamListProps) => {
+const ExamList = ({ exams, onDelete, onView, onEdit, onDuplicate, onViewQuestions }: ExamListProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -92,6 +93,17 @@ const ExamList = ({ exams, onDelete, onView, onEdit, onDuplicate }: ExamListProp
                         <Eye className="mr-2 h-4 w-4" />
                         Lihat Detail
                       </Button>
+                      {onViewQuestions && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="justify-start" 
+                          onClick={() => onViewQuestions(exam.id)}
+                        >
+                          <BookOpen className="mr-2 h-4 w-4" />
+                          Lihat Soal
+                        </Button>
+                      )}
                       <Button 
                         variant="ghost" 
                         size="sm" 
@@ -198,6 +210,17 @@ const ExamList = ({ exams, onDelete, onView, onEdit, onDuplicate }: ExamListProp
                   <Eye className="h-4 w-4" />
                   Lihat
                 </Button>
+                {onViewQuestions && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => onViewQuestions(exam.id)}
+                    className="hidden sm:flex items-center gap-1"
+                  >
+                    <BookOpen className="h-4 w-4" />
+                    Soal
+                  </Button>
+                )}
                 <Button 
                   variant="outline" 
                   size="sm" 

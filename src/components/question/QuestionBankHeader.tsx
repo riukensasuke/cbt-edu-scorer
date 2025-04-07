@@ -1,52 +1,56 @@
 
 import React from 'react';
-import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import BulkQuestionUpload from './BulkQuestionUpload';
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Plus, SearchIcon, FileUp } from "lucide-react";
+import BulkQuestionUpload from "./BulkQuestionUpload";
 
 interface QuestionBankHeaderProps {
   searchQuery: string;
-  onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSearchChange: (value: string) => void;
   onAddQuestion: () => void;
+  examId?: string | null;
 }
 
-const QuestionBankHeader: React.FC<QuestionBankHeaderProps> = ({
-  searchQuery,
-  onSearchChange,
-  onAddQuestion
-}) => {
-  const { toast } = useToast();
-
-  const handleAddQuestion = () => {
-    console.log("Add question button clicked in QuestionBankHeader");
-    onAddQuestion();
-    
-    toast({
-      title: "Tambah Soal Baru",
-      description: "Form tambah soal baru telah dibuka",
-    });
-  };
-
+const QuestionBankHeader = ({ 
+  searchQuery, 
+  onSearchChange, 
+  onAddQuestion,
+  examId 
+}: QuestionBankHeaderProps) => {
   return (
-    <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-      <div className="relative w-full md:w-64">
-        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div className="relative w-full sm:w-64">
+        <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
+          type="search"
           placeholder="Cari soal..."
-          className="pl-8"
           value={searchQuery}
-          onChange={onSearchChange}
+          onChange={(e) => onSearchChange(e.target.value)}
+          className="pl-8 w-full sm:w-64"
         />
       </div>
-      <div className="flex gap-3 w-full md:w-auto">
-        <BulkQuestionUpload />
-        <Button onClick={handleAddQuestion} className="bg-green-600 hover:bg-green-700 w-full md:w-auto">
+      
+      <div className="flex items-center gap-2 w-full sm:w-auto">
+        <Button 
+          onClick={onAddQuestion}
+          className="bg-green-600 hover:bg-green-700 flex-1 sm:flex-none"
+        >
           <Plus className="mr-2 h-4 w-4" />
-          Tambah Soal Baru
+          Tambah Soal {examId ? 'ke Ujian' : 'Baru'}
         </Button>
+        
+        {!examId && (
+          <BulkQuestionUpload>
+            <Button 
+              variant="outline" 
+              className="flex-1 sm:flex-none"
+            >
+              <FileUp className="mr-2 h-4 w-4" />
+              Upload Soal
+            </Button>
+          </BulkQuestionUpload>
+        )}
       </div>
     </div>
   );

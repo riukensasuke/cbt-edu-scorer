@@ -1,187 +1,177 @@
 
 import React from 'react';
+import {
+  Card,
+  CardContent,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Edit, Copy, Trash2, CheckCircle, HelpCircle, AlertCircle, BookOpen, Puzzle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { Card } from "@/components/ui/card";
-
-export interface QuestionType {
-  id: string;
-  type: string;
-  subject: string;
-  grade: string;
-  difficulty: string;
-  question: string;
-  options?: string[];
-  correctAnswer: string;
-  explanation?: string;
-  createdBy: string;
-  createdAt: string;
-  isImage?: boolean;
-}
+import { Eye, Edit, Copy, Trash2, File } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface QuestionListItemProps {
-  question: QuestionType;
-  onEdit: (question: QuestionType) => void;
-  onPreview: (question: QuestionType) => void;
-  onDelete: (id: string) => void;
-  onDuplicate: (question: QuestionType) => void;
+  question: {
+    id: string;
+    text: string;
+    type: string;
+    difficulty: string;
+    subject: string;
+    topic: string;
+    options?: { id: string; text: string; isCorrect: boolean }[];
+    correctAnswer?: string;
+  };
+  onView: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  onDuplicate: () => void;
+  examContext?: boolean;
 }
 
-const QuestionListItem: React.FC<QuestionListItemProps> = ({ 
-  question, 
+const QuestionListItem = ({
+  question,
+  onView,
   onEdit,
-  onPreview,
   onDelete,
-  onDuplicate
-}) => {
-  const { toast } = useToast();
-
-  const handleCopy = () => {
-    console.log("Duplicate button clicked for question:", question.id);
-    onDuplicate(question);
-    toast({
-      title: "Soal Diduplikasi",
-      description: "Soal berhasil diduplikasi",
-    });
-  };
-
-  const handlePreview = () => {
-    console.log("Preview button clicked for question:", question.id);
-    onPreview(question);
-  };
-
-  const handleEdit = () => {
-    console.log("Edit button clicked for question:", question.id);
-    onEdit(question);
-  };
-
-  const handleDelete = () => {
-    console.log("Delete button clicked for question:", question.id);
-    onDelete(question.id);
+  onDuplicate,
+  examContext = false,
+}: QuestionListItemProps) => {
+  const getQuestionTypeBadge = (type: string) => {
+    switch (type) {
+      case 'multiple-choice':
+        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Pilihan Ganda</Badge>;
+      case 'essay':
+        return <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">Essay</Badge>;
+      case 'true-false':
+        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Benar/Salah</Badge>;
+      default:
+        return <Badge variant="outline">{type}</Badge>;
+    }
   };
 
   const getDifficultyBadge = (difficulty: string) => {
     switch (difficulty) {
-      case "easy": 
-        return <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-200">Mudah</Badge>;
-      case "medium": 
-        return <Badge variant="default" className="bg-yellow-100 text-yellow-700 hover:bg-yellow-200">Sedang</Badge>;
-      case "hard": 
-        return <Badge variant="destructive" className="bg-red-100 text-red-700 hover:bg-red-200">Sulit</Badge>;
-      default: 
-        return <Badge variant="outline">Lainnya</Badge>;
+      case 'easy':
+        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Mudah</Badge>;
+      case 'medium':
+        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">Sedang</Badge>;
+      case 'hard':
+        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Sulit</Badge>;
+      default:
+        return <Badge variant="outline">{difficulty}</Badge>;
     }
   };
 
-  const getQuestionTypeIcon = (type: string) => {
-    switch (type) {
-      case "multiple_choice":
-        return <CheckCircle className="h-4 w-4 text-blue-500" />;
-      case "multiple_choice_complex":
-        return <CheckCircle className="h-4 w-4 text-purple-500" />;
-      case "true_false":
-        return <AlertCircle className="h-4 w-4 text-green-500" />;
-      case "essay":
-        return <BookOpen className="h-4 w-4 text-amber-500" />;
-      case "matching":
-        return <Puzzle className="h-4 w-4 text-cyan-500" />;
-      default:
-        return <HelpCircle className="h-4 w-4 text-purple-500" />;
-    }
+  const truncateText = (text: string, maxLength: number = 200) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
   };
 
-  const getQuestionTypeLabel = (type: string) => {
-    switch (type) {
-      case "multiple_choice":
-        return "Pilihan Ganda";
-      case "multiple_choice_complex":
-        return "PG Kompleks";
-      case "true_false":
-        return "Benar/Salah";
-      case "essay":
-        return "Essay";
-      case "matching":
-        return "Menjodohkan";
-      default:
-        return "Lainnya";
-    }
+  // Strip HTML tags for display in cards
+  const stripHtml = (html: string) => {
+    const tmp = document.createElement('DIV');
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || '';
   };
+
+  const displayText = stripHtml(question.text);
 
   return (
-    <Card className="p-4 hover:shadow-md transition-all duration-200 border-l-4 border-l-blue-500">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center">
-            {getQuestionTypeIcon(question.type)}
-            <Badge variant="outline" className="ml-2">
-              {getQuestionTypeLabel(question.type)}
-            </Badge>
+    <Card className="overflow-hidden hover:shadow-md transition-shadow">
+      <CardContent className="p-0">
+        <div className="p-5 border-b">
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 mb-3">
+            <div className="flex flex-wrap gap-2">
+              {getQuestionTypeBadge(question.type)}
+              {getDifficultyBadge(question.difficulty)}
+              {question.subject && (
+                <Badge variant="outline" className="bg-gray-50 border-gray-200">
+                  {question.subject}
+                </Badge>
+              )}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              ID: {question.id}
+            </div>
           </div>
-          {question.isImage && <Badge variant="outline" className="bg-blue-50 text-blue-700">Bergambar</Badge>}
+          
+          <div className="prose prose-sm max-w-none mb-4">
+            <p className="text-base">{truncateText(displayText)}</p>
+          </div>
+          
+          {question.type === 'multiple-choice' && question.options && (
+            <div className="mt-2 space-y-1">
+              <p className="text-sm font-medium">Pilihan Jawaban:</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {question.options.map((option, index) => (
+                  <div 
+                    key={option.id} 
+                    className={`text-sm p-2 rounded-md ${option.isCorrect ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-200'}`}
+                  >
+                    <span className="font-medium mr-1">{String.fromCharCode(65 + index)}.</span> 
+                    {stripHtml(option.text)}
+                    {option.isCorrect && <span className="ml-1 text-green-600">(Benar)</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-        {getDifficultyBadge(question.difficulty)}
-      </div>
-
-      <div className="mb-3 bg-slate-50 p-3 rounded-md shadow-inner">
-        <p className="font-medium text-base">{question.question}</p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-muted-foreground mb-4">
-        <div className="flex items-center">
-          <span className="font-medium text-gray-600 mr-1">Mata Pelajaran:</span> {question.subject}
+        
+        <div className="p-4 bg-muted/30 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <File className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm">{question.topic || 'Umum'}</span>
+          </div>
+          
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={onView}>
+              <Eye className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">Lihat</span>
+            </Button>
+            <Button variant="outline" size="sm" onClick={onEdit}>
+              <Edit className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">Edit</span>
+            </Button>
+            <Button variant="outline" size="sm" onClick={onDuplicate}>
+              <Copy className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">Duplikasi</span>
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" className="text-destructive">
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  <span className="hidden sm:inline">Hapus</span>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Hapus Soal</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Apakah Anda yakin ingin menghapus soal ini? Tindakan ini tidak dapat dibatalkan.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Batal</AlertDialogCancel>
+                  <AlertDialogAction onClick={onDelete} className="bg-destructive text-destructive-foreground">
+                    Hapus
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
-        <div className="flex items-center">
-          <span className="font-medium text-gray-600 mr-1">Kelas:</span> {question.grade}
-        </div>
-        <div className="flex items-center">
-          <span className="font-medium text-gray-600 mr-1">Pembuat:</span> {question.createdBy}
-        </div>
-      </div>
-
-      <div className="flex items-center justify-end space-x-2 flex-wrap">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={handlePreview} 
-          className="bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800 mt-1" 
-          title="Lihat Detail"
-        >
-          <Eye className="h-4 w-4 mr-1" />
-          <span>Lihat Detail</span>
-        </Button>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={handleEdit} 
-          className="bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 mt-1" 
-          title="Edit Soal"
-        >
-          <Edit className="h-4 w-4 mr-1" />
-          <span>Edit Soal</span>
-        </Button>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={handleCopy} 
-          className="bg-purple-50 text-purple-700 hover:bg-purple-100 hover:text-purple-800 mt-1" 
-          title="Duplikasi"
-        >
-          <Copy className="h-4 w-4 mr-1" />
-          <span>Duplikasi</span>
-        </Button>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={handleDelete} 
-          className="bg-red-50 text-red-700 hover:bg-red-100 hover:text-red-800 mt-1" 
-          title="Hapus"
-        >
-          <Trash2 className="h-4 w-4 mr-1" />
-          <span>Hapus</span>
-        </Button>
-      </div>
+      </CardContent>
     </Card>
   );
 };

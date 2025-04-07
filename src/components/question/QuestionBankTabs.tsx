@@ -2,99 +2,72 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { QuestionType } from './QuestionListItem';
+import QuestionListItem from './QuestionListItem';
 
 interface QuestionBankTabsProps {
   activeTab: string;
   onTabChange: (value: string) => void;
-  filteredQuestions: QuestionType[];
-  onViewQuestion: (question: QuestionType) => void;
-  onEditQuestion: (question: QuestionType) => void;
-  onDeleteQuestion: (id: string) => void;
-  onDuplicateQuestion: (question: QuestionType) => void;
+  filteredQuestions: any[];
+  onViewQuestion: (question: any) => void;
+  onEditQuestion: (question: any) => void;
+  onDeleteQuestion: (questionId: string) => void;
+  onDuplicateQuestion: (question: any) => void;
+  examId?: string | null;
 }
 
-const QuestionBankTabs: React.FC<QuestionBankTabsProps> = ({
+const QuestionBankTabs = ({
   activeTab,
   onTabChange,
   filteredQuestions,
   onViewQuestion,
   onEditQuestion,
   onDeleteQuestion,
-  onDuplicateQuestion
-}) => {
+  onDuplicateQuestion,
+  examId
+}: QuestionBankTabsProps) => {
   return (
     <Tabs defaultValue="all" value={activeTab} onValueChange={onTabChange}>
-      <TabsList className="grid w-full grid-cols-6">
+      <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="all">Semua</TabsTrigger>
-        <TabsTrigger value="multiple_choice">Pilihan Ganda</TabsTrigger>
-        <TabsTrigger value="multiple_choice_complex">PG Kompleks</TabsTrigger>
-        <TabsTrigger value="true_false">Benar/Salah</TabsTrigger>
+        <TabsTrigger value="multiple-choice">Pilihan Ganda</TabsTrigger>
         <TabsTrigger value="essay">Essay</TabsTrigger>
-        <TabsTrigger value="matching">Menjodohkan</TabsTrigger>
+        <TabsTrigger value="true-false">Benar/Salah</TabsTrigger>
       </TabsList>
-
+      
       <TabsContent value={activeTab} className="mt-6">
         <Card>
           <CardHeader>
             <CardTitle>Daftar Soal</CardTitle>
             <CardDescription>
-              Kelola soal ujian yang tersedia
+              {examId 
+                ? "Kelola soal untuk ujian ini" 
+                : "Kelola seluruh soal dalam bank soal"}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <QuestionBankList 
-              questions={filteredQuestions}
-              onViewQuestion={onViewQuestion}
-              onEditQuestion={onEditQuestion}
-              onDeleteQuestion={onDeleteQuestion}
-              onDuplicateQuestion={onDuplicateQuestion}
-            />
+            {filteredQuestions.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">Tidak ada soal ditemukan</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filteredQuestions.map((question) => (
+                  <QuestionListItem
+                    key={question.id}
+                    question={question}
+                    onView={() => onViewQuestion(question)}
+                    onEdit={() => onEditQuestion(question)}
+                    onDelete={() => onDeleteQuestion(question.id)}
+                    onDuplicate={() => onDuplicateQuestion(question)}
+                    examContext={!!examId}
+                  />
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </TabsContent>
     </Tabs>
-  );
-};
-
-// Internal component for the list of questions
-const QuestionBankList = ({ 
-  questions, 
-  onViewQuestion, 
-  onEditQuestion, 
-  onDeleteQuestion, 
-  onDuplicateQuestion 
-}: { 
-  questions: QuestionType[],
-  onViewQuestion: (question: QuestionType) => void,
-  onEditQuestion: (question: QuestionType) => void,
-  onDeleteQuestion: (id: string) => void,
-  onDuplicateQuestion: (question: QuestionType) => void
-}) => {
-  const QuestionListItem = React.lazy(() => import('./QuestionListItem'));
-
-  if (questions.length === 0) {
-    return (
-      <div className="text-center py-10">
-        <p className="text-muted-foreground">Tidak ada soal ditemukan</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      {questions.map((question) => (
-        <React.Suspense key={question.id} fallback={<div>Loading...</div>}>
-          <QuestionListItem 
-            question={question} 
-            onPreview={onViewQuestion} 
-            onEdit={onEditQuestion}
-            onDelete={onDeleteQuestion}
-            onDuplicate={onDuplicateQuestion}
-          />
-        </React.Suspense>
-      ))}
-    </div>
   );
 };
 

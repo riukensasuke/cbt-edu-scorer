@@ -89,6 +89,27 @@ const ExamManagement = () => {
     }
   };
 
+  // Handle view questions for an exam
+  const handleViewQuestions = (examId: string) => {
+    if (!examId) return;
+    
+    // Check if exam exists before navigating
+    const exam = getExam(examId);
+    if (exam) {
+      toast({
+        title: "Lihat Soal",
+        description: `Melihat soal untuk ujian "${exam.title}"`,
+      });
+      navigate(`/questions?examId=${examId}`);
+    } else {
+      toast({
+        title: "Error",
+        description: "Ujian tidak ditemukan",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Handle add new exam
   const handleExamCreated = (examData: any) => {
     createExam(examData);
@@ -146,6 +167,7 @@ const ExamManagement = () => {
                   onView={handleViewExam}
                   onEdit={handleEditExam}
                   onDuplicate={handleDuplicateExam}
+                  onViewQuestions={handleViewQuestions}
                 />
               </CardContent>
             </Card>
