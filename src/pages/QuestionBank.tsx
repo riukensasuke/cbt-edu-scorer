@@ -129,7 +129,7 @@ const QuestionBank = () => {
             </CardHeader>
             <CardContent>
               {selectedQuestion && (
-                <Alert className="mb-6" variant={isViewOnly ? "default" : "info"}>
+                <Alert className="mb-6" variant={isViewOnly ? "default" : "default"}>
                   <FileQuestion className="h-4 w-4" />
                   <AlertTitle>{isViewOnly ? "Mode Lihat Soal" : "Mode Edit Soal"}</AlertTitle>
                   <AlertDescription>
