@@ -1,14 +1,19 @@
 
 import React from 'react';
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, SearchIcon, FileUp } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { 
+  Search, 
+  Plus, 
+  Filter, 
+  Upload
+} from "lucide-react";
 
 interface QuestionBankHeaderProps {
   searchQuery: string;
   onSearchChange: (value: string) => void;
   onAddQuestion: () => void;
+  onUploadClick?: () => void;
   examId?: string | null;
 }
 
@@ -16,72 +21,56 @@ const QuestionBankHeader = ({
   searchQuery, 
   onSearchChange, 
   onAddQuestion,
+  onUploadClick,
   examId 
 }: QuestionBankHeaderProps) => {
-  // Handle the input change to match the expected function signature
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onSearchChange(e.target.value);
-  };
-
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-      <div className="relative w-full sm:w-64">
-        <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          type="search"
-          placeholder="Cari soal..."
-          value={searchQuery}
-          onChange={handleSearchChange}
-          className="pl-8 w-full sm:w-64"
-        />
-      </div>
-      
-      <div className="flex items-center gap-2 w-full sm:w-auto">
-        <Button 
-          onClick={onAddQuestion}
-          className="bg-green-600 hover:bg-green-700 flex-1 sm:flex-none"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Tambah Soal {examId ? 'ke Ujian' : 'Baru'}
-        </Button>
+    <div className="bg-white shadow-sm rounded-lg p-4 border border-gray-100">
+      <div className="flex flex-col sm:flex-row justify-between gap-4">
+        <div className="flex-1">
+          <h2 className="text-xl font-semibold mb-2">
+            {examId ? "Soal Ujian" : "Bank Soal"}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {examId 
+              ? "Kelola soal untuk ujian ini. Tambahkan soal baru atau pilih dari bank soal." 
+              : "Kelola semua soal dalam bank soal. Tambahkan, edit, atau hapus soal."}
+          </p>
+        </div>
         
-        {!examId && (
-          <Dialog>
-            <DialogTrigger asChild>
+        <div className="flex flex-col sm:flex-row gap-2 sm:items-start">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Cari soal..."
+              className="pl-8 w-full sm:w-[250px]"
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+            />
+          </div>
+          
+          <div className="flex gap-2">
+            {onUploadClick && (
               <Button 
                 variant="outline" 
-                className="flex-1 sm:flex-none"
+                onClick={onUploadClick}
+                className="whitespace-nowrap"
               >
-                <FileUp className="mr-2 h-4 w-4" />
+                <Upload className="h-4 w-4 mr-2" />
                 Upload Soal
               </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Upload Soal</DialogTitle>
-                <DialogDescription>
-                  Upload soal dalam format Excel untuk menambahkan banyak soal sekaligus.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="py-4">
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  <FileUp className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                  <p className="text-sm text-gray-500 mb-2">Klik atau seret file ke sini</p>
-                  <p className="text-xs text-gray-400">Format yang didukung: .xlsx, .xls</p>
-                  <Button variant="outline" size="sm" className="mt-4">
-                    Pilih File
-                  </Button>
-                </div>
-                <div className="mt-4 text-sm text-gray-500">
-                  <p>Pastikan file Excel Anda mengikuti format yang benar.</p>
-                  <Button variant="link" size="sm" className="p-0 h-auto mt-1">
-                    Unduh Template
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
+            )}
+            
+            <Button 
+              onClick={onAddQuestion}
+              className="whitespace-nowrap bg-green-600 hover:bg-green-700"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Tambah Soal
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );

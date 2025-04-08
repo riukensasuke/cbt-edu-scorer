@@ -10,8 +10,25 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { useToast } from '@/hooks/use-toast';
 import { useExamData } from '@/hooks/useExamData';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ExternalLink, FileQuestion, HelpCircle } from 'lucide-react';
+import { 
+  ArrowLeft, 
+  ExternalLink, 
+  FileQuestion, 
+  HelpCircle,
+  Upload,
+  FileUp,
+  Download
+} from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { 
+  Dialog,
+  DialogContent, 
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose
+} from "@/components/ui/dialog";
 
 const QuestionBank = () => {
   const location = useLocation();
@@ -23,6 +40,8 @@ const QuestionBank = () => {
   
   // State to track if the page has been loaded 
   const [pageLoaded, setPageLoaded] = useState(false);
+  // State for the upload dialog
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   
   const {
     activeTab,
@@ -62,6 +81,37 @@ const QuestionBank = () => {
 
   const handleBackToExams = () => {
     navigate('/exams');
+  };
+
+  const handleUploadClick = () => {
+    setIsUploadDialogOpen(true);
+  };
+
+  const handleDownloadTemplate = () => {
+    // Simulate download of template
+    toast({
+      title: "Template Diunduh",
+      description: "Template untuk upload soal telah diunduh"
+    });
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Simulate file upload processing
+    if (e.target.files && e.target.files.length > 0) {
+      toast({
+        title: "File Diterima",
+        description: `File "${e.target.files[0].name}" sedang diproses`,
+      });
+      
+      // Close the dialog after "processing"
+      setTimeout(() => {
+        setIsUploadDialogOpen(false);
+        toast({
+          title: "Upload Berhasil",
+          description: "Soal berhasil diupload ke bank soal"
+        });
+      }, 1500);
+    }
   };
 
   if (isLoading) {
@@ -129,7 +179,7 @@ const QuestionBank = () => {
             </CardHeader>
             <CardContent>
               {selectedQuestion && (
-                <Alert className="mb-6" variant={isViewOnly ? "default" : "default"}>
+                <Alert className="mb-6" variant="default">
                   <FileQuestion className="h-4 w-4" />
                   <AlertTitle>{isViewOnly ? "Mode Lihat Soal" : "Mode Edit Soal"}</AlertTitle>
                   <AlertDescription>
@@ -155,6 +205,7 @@ const QuestionBank = () => {
               searchQuery={searchQuery}
               onSearchChange={(value) => handleSearch(value)}
               onAddQuestion={handleAddQuestion}
+              onUploadClick={handleUploadClick}
               examId={examId}
             />
 
@@ -195,6 +246,70 @@ const QuestionBank = () => {
           </Card>
         )}
       </div>
+
+      {/* Dialog for uploading questions */}
+      <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Upload Soal</DialogTitle>
+            <DialogDescription>
+              Upload file Excel berisi soal-soal untuk ditambahkan ke bank soal.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            <div className="border-2 border-dashed rounded-md p-6 flex flex-col items-center justify-center">
+              <Upload className="h-10 w-10 text-muted-foreground mb-2" />
+              <p className="text-sm font-medium">Unggah file soal</p>
+              <p className="text-xs text-muted-foreground mb-4">Format Excel (.xlsx, .xls)</p>
+              <input
+                type="file"
+                id="question-upload"
+                className="hidden"
+                accept=".xlsx,.xls"
+                onChange={handleFileUpload}
+              />
+              <label htmlFor="question-upload">
+                <Button variant="outline" className="cursor-pointer" asChild>
+                  <span>Pilih File</span>
+                </Button>
+              </label>
+            </div>
+            
+            <div className="bg-muted/50 p-3 rounded-md">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <FileUp className="h-5 w-5 text-muted-foreground mr-2" />
+                  <div>
+                    <p className="text-sm font-medium">Unduh Template</p>
+                    <p className="text-xs text-muted-foreground">Format standar untuk upload soal</p>
+                  </div>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleDownloadTemplate}
+                  className="text-primary"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Unduh
+                </Button>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter className="sm:justify-end">
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">
+                Batal
+              </Button>
+            </DialogClose>
+            <Button type="button" onClick={() => document.getElementById('question-upload')?.click()}>
+              Upload
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };

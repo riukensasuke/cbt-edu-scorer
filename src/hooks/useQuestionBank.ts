@@ -299,6 +299,15 @@ export const useQuestionBank = () => {
     });
   };
 
+  const handleUploadQuestions = (questions: QuestionType[]) => {
+    console.log("Uploading questions:", questions);
+    setQuestions(prev => [...prev, ...questions]);
+    toast({
+      title: "Soal diimpor",
+      description: `${questions.length} soal berhasil ditambahkan`,
+    });
+  };
+
   // Debug logs
   useEffect(() => {
     console.log("QuestionBank state:", { 
@@ -329,6 +338,7 @@ export const useQuestionBank = () => {
     handleDeleteQuestion,
     handleSearch,
     handleTabChange,
-    handleCancel
+    handleCancel,
+    handleUploadQuestions
   };
 };

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -19,22 +18,36 @@ const ExamManagement = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { activeTab, searchQuery, filteredExams, handleTabChange, handleSearch, deleteExam } = useExamManagement();
-  const { getExam, createExam } = useExamData();
+  const { getExam, createExam, examsList } = useExamData();
   const [isNewExamDialogOpen, setIsNewExamDialogOpen] = useState(false);
 
   // Handle view exam
   const handleViewExam = (examId: string) => {
     if (!examId) return;
     
-    // Check if exam exists before navigating
-    const exam = getExam(examId);
-    if (exam) {
+    // Use try-catch to handle potential errors
+    try {
       console.log("Viewing exam with ID:", examId);
-      navigate(`/exams/${examId}`);
-    } else {
+      console.log("Available exams:", examsList);
+      
+      // Check if exam exists before navigating
+      const exam = getExam(examId);
+      if (exam) {
+        console.log("Found exam:", exam);
+        navigate(`/exams/${examId}`);
+      } else {
+        console.error("Exam not found:", examId);
+        toast({
+          title: "Error",
+          description: "Ujian tidak ditemukan. Silakan coba lagi.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error viewing exam:", error);
       toast({
         title: "Error",
-        description: "Ujian tidak ditemukan",
+        description: "Terjadi kesalahan saat membuka ujian",
         variant: "destructive",
       });
     }
@@ -44,15 +57,26 @@ const ExamManagement = () => {
   const handleEditExam = (examId: string) => {
     if (!examId) return;
     
-    // Check if exam exists before navigating
-    const exam = getExam(examId);
-    if (exam) {
+    try {
       console.log("Editing exam with ID:", examId);
-      navigate(`/exams/edit/${examId}`);
-    } else {
+      // Check if exam exists before navigating
+      const exam = getExam(examId);
+      if (exam) {
+        console.log("Found exam for editing:", exam);
+        navigate(`/exams/edit/${examId}`);
+      } else {
+        console.error("Exam not found for editing:", examId);
+        toast({
+          title: "Error",
+          description: "Ujian tidak ditemukan untuk diedit",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error editing exam:", error);
       toast({
         title: "Error",
-        description: "Ujian tidak ditemukan",
+        description: "Terjadi kesalahan saat mengedit ujian",
         variant: "destructive",
       });
     }
@@ -83,7 +107,7 @@ const ExamManagement = () => {
     } else {
       toast({
         title: "Error",
-        description: "Ujian tidak ditemukan",
+        description: "Ujian tidak ditemukan untuk diduplikasi",
         variant: "destructive",
       });
     }
@@ -93,18 +117,30 @@ const ExamManagement = () => {
   const handleViewQuestions = (examId: string) => {
     if (!examId) return;
     
-    // Check if exam exists before navigating
-    const exam = getExam(examId);
-    if (exam) {
-      toast({
-        title: "Lihat Soal",
-        description: `Melihat soal untuk ujian "${exam.title}"`,
-      });
-      navigate(`/questions?examId=${examId}`);
-    } else {
+    try {
+      console.log("Viewing questions for exam ID:", examId);
+      // Check if exam exists before navigating
+      const exam = getExam(examId);
+      if (exam) {
+        console.log("Found exam for questions:", exam);
+        toast({
+          title: "Lihat Soal",
+          description: `Melihat soal untuk ujian "${exam.title}"`,
+        });
+        navigate(`/questions?examId=${examId}`);
+      } else {
+        console.error("Exam not found for viewing questions:", examId);
+        toast({
+          title: "Error",
+          description: "Ujian tidak ditemukan untuk melihat soal",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error viewing questions:", error);
       toast({
         title: "Error",
-        description: "Ujian tidak ditemukan",
+        description: "Terjadi kesalahan saat melihat soal ujian",
         variant: "destructive",
       });
     }
@@ -138,6 +174,7 @@ const ExamManagement = () => {
                 />
               </div>
               <Button 
+                id="create-exam-btn"
                 onClick={() => setIsNewExamDialogOpen(true)} 
                 size="default" 
                 className="bg-green-600 hover:bg-green-700 w-full sm:w-auto transition-colors duration-200"
