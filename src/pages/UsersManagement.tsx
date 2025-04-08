@@ -7,6 +7,17 @@ import { Input } from "@/components/ui/input";
 import { Plus, Search, UserPlus, RefreshCw } from "lucide-react";
 import DapodikSyncButton from '@/components/admin/DapodikSyncButton';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Mock initial users data
 const initialUsers = [
@@ -23,6 +34,15 @@ const UsersManagement = () => {
   const { toast } = useToast();
   const [users, setUsers] = useState(initialUsers);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
+  const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [newUser, setNewUser] = useState({
+    name: "",
+    username: "",
+    role: "student",
+    status: "active"
+  });
   
   // Filter users based on search query
   const filteredUsers = users.filter(user => 
@@ -51,9 +71,49 @@ const UsersManagement = () => {
   };
 
   const handleAddUser = () => {
+    setIsAddUserDialogOpen(true);
+  };
+
+  const handleEditUser = (user: any) => {
+    setCurrentUser(user);
+    setIsEditUserDialogOpen(true);
+  };
+
+  const handleSaveNewUser = () => {
+    const userId = `u${Date.now()}`;
+    const user = { id: userId, ...newUser };
+    setUsers([...users, user]);
+    setIsAddUserDialogOpen(false);
+    setNewUser({
+      name: "",
+      username: "",
+      role: "student",
+      status: "active"
+    });
     toast({
-      title: "Tambah Pengguna",
-      description: "Form tambah pengguna baru",
+      title: "Pengguna ditambahkan",
+      description: `${newUser.name} telah berhasil ditambahkan sebagai ${newUser.role}`,
+    });
+  };
+
+  const handleUpdateUser = () => {
+    if (!currentUser) return;
+    
+    setUsers(users.map(user => 
+      user.id === currentUser.id ? currentUser : user
+    ));
+    setIsEditUserDialogOpen(false);
+    toast({
+      title: "Pengguna diperbarui",
+      description: `Data pengguna ${currentUser.name} telah diperbarui`,
+    });
+  };
+
+  const handleDeleteUser = (id: string) => {
+    setUsers(users.filter(user => user.id !== id));
+    toast({
+      title: "Pengguna dihapus",
+      description: "Pengguna telah berhasil dihapus dari sistem",
     });
   };
 
@@ -128,10 +188,10 @@ const UsersManagement = () => {
                         <td className="py-3 px-4">{getStatusBadge(user.status)}</td>
                         <td className="py-3 px-4 text-right">
                           <div className="flex justify-end space-x-2">
-                            <Button variant="outline" size="sm">
+                            <Button variant="outline" size="sm" onClick={() => handleEditUser(user)}>
                               Edit
                             </Button>
-                            <Button variant="outline" size="sm" className="text-destructive">
+                            <Button variant="outline" size="sm" className="text-destructive" onClick={() => handleDeleteUser(user.id)}>
                               Hapus
                             </Button>
                           </div>
@@ -145,6 +205,162 @@ const UsersManagement = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Add User Dialog */}
+      <Dialog open={isAddUserDialogOpen} onOpenChange={setIsAddUserDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Tambah Pengguna Baru</DialogTitle>
+            <DialogDescription>
+              Isi form berikut untuk menambahkan pengguna baru ke sistem.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Nama
+              </Label>
+              <Input
+                id="name"
+                value={newUser.name}
+                onChange={(e) => setNewUser({...newUser, name: e.target.value})}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="username" className="text-right">
+                Username
+              </Label>
+              <Input
+                id="username"
+                value={newUser.username}
+                onChange={(e) => setNewUser({...newUser, username: e.target.value})}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="role" className="text-right">
+                Role
+              </Label>
+              <Select
+                value={newUser.role}
+                onValueChange={(value) => setNewUser({...newUser, role: value})}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Pilih role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="teacher">Guru</SelectItem>
+                  <SelectItem value="student">Siswa</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="status" className="text-right">
+                Status
+              </Label>
+              <Select
+                value={newUser.status}
+                onValueChange={(value) => setNewUser({...newUser, status: value})}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Pilih status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Aktif</SelectItem>
+                  <SelectItem value="inactive">Nonaktif</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">Batal</Button>
+            </DialogClose>
+            <Button type="button" onClick={handleSaveNewUser}>Simpan</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User Dialog */}
+      <Dialog open={isEditUserDialogOpen} onOpenChange={setIsEditUserDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Pengguna</DialogTitle>
+            <DialogDescription>
+              Edit informasi pengguna berikut ini.
+            </DialogDescription>
+          </DialogHeader>
+          {currentUser && (
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-name" className="text-right">
+                  Nama
+                </Label>
+                <Input
+                  id="edit-name"
+                  value={currentUser.name}
+                  onChange={(e) => setCurrentUser({...currentUser, name: e.target.value})}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-username" className="text-right">
+                  Username
+                </Label>
+                <Input
+                  id="edit-username"
+                  value={currentUser.username}
+                  onChange={(e) => setCurrentUser({...currentUser, username: e.target.value})}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-role" className="text-right">
+                  Role
+                </Label>
+                <Select
+                  value={currentUser.role}
+                  onValueChange={(value) => setCurrentUser({...currentUser, role: value})}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Pilih role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="teacher">Guru</SelectItem>
+                    <SelectItem value="student">Siswa</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-status" className="text-right">
+                  Status
+                </Label>
+                <Select
+                  value={currentUser.status}
+                  onValueChange={(value) => setCurrentUser({...currentUser, status: value})}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Pilih status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Aktif</SelectItem>
+                    <SelectItem value="inactive">Nonaktif</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">Batal</Button>
+            </DialogClose>
+            <Button type="button" onClick={handleUpdateUser}>Simpan Perubahan</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };

@@ -56,6 +56,7 @@ const QuestionBankHeader = ({
                 variant="outline" 
                 onClick={onUploadClick}
                 className="whitespace-nowrap"
+                id="upload-question-btn"
               >
                 <Upload className="h-4 w-4 mr-2" />
                 Upload Soal
@@ -65,6 +66,7 @@ const QuestionBankHeader = ({
             <Button 
               onClick={onAddQuestion}
               className="whitespace-nowrap bg-green-600 hover:bg-green-700"
+              id="add-question-btn"
             >
               <Plus className="h-4 w-4 mr-2" />
               Tambah Soal

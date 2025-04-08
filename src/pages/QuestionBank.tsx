@@ -29,6 +29,7 @@ import {
   DialogFooter,
   DialogClose
 } from "@/components/ui/dialog";
+import { downloadQuestionTemplate } from '@/utils/ExcelTemplateDownload';
 
 const QuestionBank = () => {
   const location = useLocation();
@@ -42,6 +43,7 @@ const QuestionBank = () => {
   const [pageLoaded, setPageLoaded] = useState(false);
   // State for the upload dialog
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   
   const {
     activeTab,
@@ -61,6 +63,7 @@ const QuestionBank = () => {
     handleSearch,
     handleTabChange,
     handleCancel,
+    handleUploadQuestions
   } = useQuestionBank();
 
   // If we have an examId in the URL, fetch that exam's details
@@ -88,30 +91,92 @@ const QuestionBank = () => {
   };
 
   const handleDownloadTemplate = () => {
-    // Simulate download of template
-    toast({
-      title: "Template Diunduh",
-      description: "Template untuk upload soal telah diunduh"
-    });
+    // Use our template download function
+    const result = downloadQuestionTemplate();
+    
+    if (result) {
+      toast({
+        title: "Template Diunduh",
+        description: "Template untuk upload soal telah diunduh"
+      });
+    } else {
+      toast({
+        title: "Kesalahan",
+        description: "Terjadi kesalahan saat mengunduh template",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Simulate file upload processing
     if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      setSelectedFile(file);
+      
       toast({
         title: "File Diterima",
-        description: `File "${e.target.files[0].name}" sedang diproses`,
+        description: `File "${file.name}" dipilih`,
       });
-      
-      // Close the dialog after "processing"
-      setTimeout(() => {
-        setIsUploadDialogOpen(false);
-        toast({
-          title: "Upload Berhasil",
-          description: "Soal berhasil diupload ke bank soal"
-        });
-      }, 1500);
     }
+  };
+
+  const handleProcessUpload = () => {
+    if (!selectedFile) {
+      toast({
+        title: "Peringatan",
+        description: "Silakan pilih file terlebih dahulu",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    toast({
+      title: "File Diproses",
+      description: `File "${selectedFile.name}" sedang diproses`,
+    });
+    
+    // Simulate processing
+    setTimeout(() => {
+      // Create mock questions from upload
+      const mockUploadedQuestions = [
+        {
+          id: `q${Date.now()}-1`,
+          question: "Soal dari file: Berapakah hasil dari 10 x 5?",
+          type: "multiple_choice",
+          difficulty: "easy",
+          subject: "Matematika",
+          grade: "Kelas 4",
+          options: ["40", "50", "60", "70"],
+          correctAnswer: "50",
+          createdBy: "Admin",
+          createdAt: new Date().toISOString().split('T')[0],
+        },
+        {
+          id: `q${Date.now()}-2`,
+          question: "Soal dari file: Apa nama ibukota Indonesia?",
+          type: "multiple_choice",
+          difficulty: "easy",
+          subject: "IPS",
+          grade: "Kelas 3",
+          options: ["Jakarta", "Bandung", "Surabaya", "Medan"],
+          correctAnswer: "Jakarta",
+          createdBy: "Admin",
+          createdAt: new Date().toISOString().split('T')[0],
+        }
+      ];
+      
+      // Add the uploaded questions to the bank
+      handleUploadQuestions(mockUploadedQuestions);
+      
+      // Close the dialog
+      setIsUploadDialogOpen(false);
+      setSelectedFile(null);
+      
+      toast({
+        title: "Upload Berhasil",
+        description: `${mockUploadedQuestions.length} soal berhasil ditambahkan ke bank soal`
+      });
+    }, 1500);
   };
 
   if (isLoading) {
@@ -274,6 +339,11 @@ const QuestionBank = () => {
                   <span>Pilih File</span>
                 </Button>
               </label>
+              {selectedFile && (
+                <div className="mt-4 text-sm">
+                  <span className="font-medium">File terpilih:</span> {selectedFile.name}
+                </div>
+              )}
             </div>
             
             <div className="bg-muted/50 p-3 rounded-md">
@@ -290,6 +360,7 @@ const QuestionBank = () => {
                   size="sm" 
                   onClick={handleDownloadTemplate}
                   className="text-primary"
+                  id="download-template-btn"
                 >
                   <Download className="h-4 w-4 mr-2" />
                   Unduh
@@ -304,7 +375,11 @@ const QuestionBank = () => {
                 Batal
               </Button>
             </DialogClose>
-            <Button type="button" onClick={() => document.getElementById('question-upload')?.click()}>
+            <Button 
+              type="button" 
+              onClick={handleProcessUpload}
+              disabled={!selectedFile}
+            >
               Upload
             </Button>
           </DialogFooter>

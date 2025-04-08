@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +11,7 @@ import ExamFilters from "@/components/exam/ExamFilters";
 import ExamList from "@/components/exam/ExamList";
 import NewExamDialog from "@/components/exam/NewExamDialog";
 import { Button } from "@/components/ui/button";
-import { Plus, FileText } from "lucide-react";
+import { Plus, FileText, Edit, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const ExamManagement = () => {
@@ -20,15 +21,15 @@ const ExamManagement = () => {
   const { activeTab, searchQuery, filteredExams, handleTabChange, handleSearch, deleteExam } = useExamManagement();
   const { getExam, createExam, examsList } = useExamData();
   const [isNewExamDialogOpen, setIsNewExamDialogOpen] = useState(false);
+  const [loadingExamId, setLoadingExamId] = useState<string | null>(null);
 
   // Handle view exam
   const handleViewExam = (examId: string) => {
     if (!examId) return;
     
-    // Use try-catch to handle potential errors
     try {
+      setLoadingExamId(examId);
       console.log("Viewing exam with ID:", examId);
-      console.log("Available exams:", examsList);
       
       // Check if exam exists before navigating
       const exam = getExam(examId);
@@ -50,6 +51,8 @@ const ExamManagement = () => {
         description: "Terjadi kesalahan saat membuka ujian",
         variant: "destructive",
       });
+    } finally {
+      setLoadingExamId(null);
     }
   };
 
@@ -58,12 +61,19 @@ const ExamManagement = () => {
     if (!examId) return;
     
     try {
+      setLoadingExamId(examId);
       console.log("Editing exam with ID:", examId);
+      
       // Check if exam exists before navigating
       const exam = getExam(examId);
       if (exam) {
         console.log("Found exam for editing:", exam);
-        navigate(`/exams/edit/${examId}`);
+        
+        // Simulate loading
+        setTimeout(() => {
+          navigate(`/exams/edit/${examId}`);
+          setLoadingExamId(null);
+        }, 500);
       } else {
         console.error("Exam not found for editing:", examId);
         toast({
@@ -71,6 +81,7 @@ const ExamManagement = () => {
           description: "Ujian tidak ditemukan untuk diedit",
           variant: "destructive",
         });
+        setLoadingExamId(null);
       }
     } catch (error) {
       console.error("Error editing exam:", error);
@@ -79,6 +90,7 @@ const ExamManagement = () => {
         description: "Terjadi kesalahan saat mengedit ujian",
         variant: "destructive",
       });
+      setLoadingExamId(null);
     }
   };
 
@@ -118,7 +130,9 @@ const ExamManagement = () => {
     if (!examId) return;
     
     try {
+      setLoadingExamId(examId);
       console.log("Viewing questions for exam ID:", examId);
+      
       // Check if exam exists before navigating
       const exam = getExam(examId);
       if (exam) {
@@ -143,6 +157,8 @@ const ExamManagement = () => {
         description: "Terjadi kesalahan saat melihat soal ujian",
         variant: "destructive",
       });
+    } finally {
+      setLoadingExamId(null);
     }
   };
 
@@ -154,6 +170,12 @@ const ExamManagement = () => {
       description: "Ujian baru telah dibuat dan disimpan",
     });
   };
+
+  // Prefetch exams on component mount
+  useEffect(() => {
+    // This could be replaced with a real API call in a production app
+    console.log("Available exams:", examsList);
+  }, [examsList]);
 
   return (
     <DashboardLayout title="Manajemen Ujian">
@@ -206,6 +228,7 @@ const ExamManagement = () => {
                   onEdit={handleEditExam}
                   onDuplicate={handleDuplicateExam}
                   onViewQuestions={handleViewQuestions}
+                  loadingExamId={loadingExamId}
                 />
               </TabsContent>
             </Tabs>
@@ -232,11 +255,11 @@ const ExamManagement = () => {
                 </li>
                 <li className="flex items-start">
                   <span className="bg-blue-100 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center mr-2 shrink-0 mt-0.5">3</span>
-                  <span>Klik "Lihat Soal" untuk mengelola soal-soal dalam ujian</span>
+                  <span>Klik <Eye className="inline h-4 w-4" /> untuk melihat detail ujian</span>
                 </li>
                 <li className="flex items-start">
                   <span className="bg-blue-100 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center mr-2 shrink-0 mt-0.5">4</span>
-                  <span>Status "Aktif" berarti ujian sedang berlangsung, "Terjadwal" berarti ujian akan datang, dan "Draft" berarti ujian masih dalam persiapan</span>
+                  <span>Klik <Edit className="inline h-4 w-4" /> untuk mengedit ujian</span>
                 </li>
               </ul>
             </CardContent>
